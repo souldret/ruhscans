@@ -1,21 +1,23 @@
-@extends('layouts.app')
+@extends('layouts.site')
 
 @section('title', 'Oyunlar — '.config('app.name'))
 
 @section('content')
-    <h1 class="mb-6 text-2xl font-semibold">Oyunlar</h1>
+    <h1 class="font-display text-3xl font-semibold">Oyunlar</h1>
+
+    <form method="GET" action="{{ route('games.index') }}" role="search" class="mt-4">
+        <label for="q" class="sr-only">Ara</label>
+        <input id="q" name="q" value="{{ $query }}" placeholder="Oyun, geliştirici veya etiket" class="w-full rounded-full border-ink-line bg-ink-surface px-4 py-2.5 text-sm text-ink-text placeholder:text-ink-muted">
+    </form>
 
     @if ($games->isEmpty())
-        <p class="text-zinc-400">Henüz yayınlanmış oyun yok.</p>
+        <p class="mt-8 rounded-2xl border border-ink-line bg-ink-surface px-5 py-10 text-ink-muted">Aramanla eşleşen oyun yok. Başka bir kelime dene.</p>
     @else
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-8 flex flex-wrap gap-4">
             @foreach ($games as $game)
-                @include('games._card', ['game' => $game])
+                <x-game-card :game="$game" />
             @endforeach
         </div>
-
-        <div class="mt-8">
-            {{ $games->links() }}
-        </div>
+        <div class="mt-8">{{ $games->links() }}</div>
     @endif
 @endsection
