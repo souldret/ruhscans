@@ -11,8 +11,26 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                ink: {
+                    DEFAULT: '#0A0A0F',
+                    surface: '#12121A',
+                    raised: '#1B1B27',
+                    line: 'rgba(255,255,255,0.08)',
+                    text: '#F2F2F7',
+                    muted: '#9A9AAE',
+                },
+                ok: '#3DDC97',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Plus Jakarta Sans', ...defaultTheme.fontFamily.sans],
+                display: ['Sora', ...defaultTheme.fontFamily.sans],
+            },
+            transitionDuration: {
+                base: '200ms',
+            },
+            transitionTimingFunction: {
+                out: 'cubic-bezier(0.16, 1, 0.3, 1)',
             },
         },
     },
