@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\GameAccess;
+use App\Enums\TranslationStatus;
 use Database\Factories\GameFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Game extends Model
 {
@@ -21,14 +21,22 @@ class Game extends Model
     protected $fillable = [
         'title',
         'slug',
+        'original_title',
+        'developer',
         'description',
         'cover_path',
-        'archive_disk',
-        'archive_path',
-        'version',
-        'engine',
-        'uploaded_by',
+        'banner_path',
+        'screenshots',
+        'game_version',
+        'translation_version',
+        'translation_status',
+        'translation_percent',
+        'size_mb',
+        'access',
+        'is_published',
         'published_at',
+        'view_count',
+        'download_count',
     ];
 
     /**
@@ -37,36 +45,25 @@ class Game extends Model
     protected function casts(): array
     {
         return [
+            'screenshots' => 'array',
+            'translation_status' => TranslationStatus::class,
+            'translation_percent' => 'integer',
+            'size_mb' => 'integer',
+            'access' => GameAccess::class,
+            'is_published' => 'boolean',
             'published_at' => 'datetime',
+            'view_count' => 'integer',
+            'download_count' => 'integer',
         ];
     }
 
-    public function uploader(): BelongsTo
+    public function tags(): BelongsToMany
     {
-        return $this->belongsTo(User::class, 'uploaded_by');
+        return $this->belongsToMany(Tag::class);
     }
 
-    public function downloads(): HasMany
+    public function files(): HasMany
     {
-        return $this->hasMany(Download::class);
-    }
-
-    public function scopePublished(Builder $query): Builder
-    {
-        return $query->whereNotNull('published_at')->where('published_at', '<=', now());
-    }
-
-    public function isPublished(): bool
-    {
-        return $this->published_at !== null && $this->published_at->lte(now());
-    }
-
-    public function coverUrl(): ?string
-    {
-        if ($this->cover_path === null) {
-            return null;
-        }
-
-        return Storage::disk('public')->url($this->cover_path);
+        return $this->hasMany(GameFile::class);
     }
 }

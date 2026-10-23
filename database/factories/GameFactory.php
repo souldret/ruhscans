@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\GameAccess;
+use App\Enums\TranslationStatus;
 use App\Models\Game;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -17,26 +18,42 @@ class GameFactory extends Factory
      */
     public function definition(): array
     {
-        $title = fake()->unique()->sentence(3);
+        $title = fake()->unique()->words(3, true);
 
         return [
-            'title' => rtrim($title, '.'),
+            'title' => Str::title($title),
             'slug' => Str::slug($title).'-'.fake()->unique()->numerify('###'),
+            'original_title' => Str::title(fake()->words(2, true)),
+            'developer' => fake()->company(),
             'description' => fake()->paragraph(),
-            'cover_path' => null,
-            'archive_disk' => 'games',
-            'archive_path' => 'games/'.Str::uuid().'.zip',
-            'version' => '1.0',
-            'engine' => 'renpy',
-            'uploaded_by' => User::factory(),
+            'cover_path' => 'placeholders/cover.svg',
+            'banner_path' => 'placeholders/banner.svg',
+            'screenshots' => ['placeholders/shot.svg'],
+            'game_version' => '1.0',
+            'translation_version' => '1.0',
+            'translation_status' => TranslationStatus::Ongoing,
+            'translation_percent' => fake()->numberBetween(10, 90),
+            'size_mb' => fake()->numberBetween(200, 4000),
+            'access' => GameAccess::Free,
+            'is_published' => true,
             'published_at' => now(),
+            'view_count' => 0,
+            'download_count' => 0,
         ];
     }
 
-    public function draft(): static
+    public function vip(): static
     {
         return $this->state(fn (array $attributes) => [
-            'published_at' => null,
+            'access' => GameAccess::Vip,
+        ]);
+    }
+
+    public function complete(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'translation_status' => TranslationStatus::Complete,
+            'translation_percent' => 100,
         ]);
     }
 }

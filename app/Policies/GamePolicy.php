@@ -14,12 +14,7 @@ class GamePolicy
 
     public function view(?User $user, Game $game): bool
     {
-        return $game->isPublished() || ($user?->isAdmin() ?? false);
-    }
-
-    public function download(User $user, Game $game): bool
-    {
-        return $game->isPublished() && $game->archive_path !== null;
+        return $game->is_published || ($user?->isAdmin() ?? false);
     }
 
     public function create(User $user): bool

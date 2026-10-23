@@ -13,9 +13,6 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
     /**
@@ -29,6 +26,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::Member,
+            'vip_until' => null,
+            'avatar_path' => null,
             'remember_token' => Str::random(10),
         ];
     }
@@ -44,6 +43,13 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::Admin,
+        ]);
+    }
+
+    public function vip(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'vip_until' => now()->addDays(30),
         ]);
     }
 }

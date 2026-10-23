@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\GameAccess;
+use App\Enums\Platform;
+use App\Enums\TranslationStatus;
 use App\Filament\Resources\GameResource\Pages;
 use App\Models\Game;
 use Filament\Forms;
@@ -25,8 +28,8 @@ class GameResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
+        return $form->schema([
+            Forms\Components\Section::make('Oyun')->schema([
                 Forms\Components\TextInput::make('title')
                     ->label('Başlık')
                     ->required()
@@ -38,41 +41,89 @@ class GameResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
-                Forms\Components\Textarea::make('description')
-                    ->label('Açıklama')
-                    ->rows(5)
+                Forms\Components\TextInput::make('original_title')->label('Özgün ad')->maxLength(255),
+                Forms\Components\TextInput::make('developer')->label('Geliştirici')->maxLength(255),
+                Forms\Components\Textarea::make('description')->label('Açıklama')->rows(5)->columnSpanFull(),
+                Forms\Components\Select::make('tags')
+                    ->label('Etiketler')
+                    ->relationship('tags', 'name')
+                    ->multiple()
+                    ->preload(),
+            ])->columns(2),
+
+            Forms\Components\Section::make('Görseller')->schema([
+                Forms\Components\FileUpload::make('cover_path')
+                    ->label('Kapak')
+                    ->image()
+                    ->disk('public')
+                    ->directory('games/covers'),
+                Forms\Components\FileUpload::make('banner_path')
+                    ->label('Banner')
+                    ->image()
+                    ->disk('public')
+                    ->directory('games/banners'),
+                Forms\Components\FileUpload::make('screenshots')
+                    ->label('Ekran görüntüleri')
+                    ->image()
+                    ->multiple()
+                    ->reorderable()
+                    ->disk('public')
+                    ->directory('games/screenshots')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('version')
-                    ->label('Sürüm')
-                    ->maxLength(50),
-                Forms\Components\TextInput::make('archive_path')
-                    ->label('Arşiv yolu')
-                    ->helperText('games diskindeki dosya yolu, örneğin games/ornek.zip')
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('published_at')
-                    ->label('Yayın tarihi')
-                    ->native(false),
-            ]);
+            ])->columns(2),
+
+            Forms\Components\Section::make('Çeviri ve erişim')->schema([
+                Forms\Components\TextInput::make('game_version')->label('Oyun sürümü')->maxLength(50),
+                Forms\Components\TextInput::make('translation_version')->label('Çeviri sürümü')->maxLength(50),
+                Forms\Components\Select::make('translation_status')
+                    ->label('Çeviri durumu')
+                    ->options(collect(TranslationStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()]))
+                    ->required(),
+                Forms\Components\TextInput::make('translation_percent')
+                    ->label('Çeviri yüzdesi')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->required(),
+                Forms\Components\TextInput::make('size_mb')->label('Boyut (MB)')->numeric()->minValue(0)->required(),
+                Forms\Components\Select::make('access')
+                    ->label('Erişim')
+                    ->options(collect(GameAccess::cases())->mapWithKeys(fn ($a) => [$a->value => $a->label()]))
+                    ->required(),
+                Forms\Components\Toggle::make('is_published')->label('Yayında'),
+                Forms\Components\DateTimePicker::make('published_at')->label('Yayın tarihi')->native(false),
+            ])->columns(2),
+
+            Forms\Components\Section::make('Dosyalar')->schema([
+                Forms\Components\Repeater::make('files')
+                    ->label('Oyun dosyaları')
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\TextInput::make('label')->label('Etiket')->required()->maxLength(255),
+                        Forms\Components\Select::make('platform')
+                            ->label('Platform')
+                            ->options(collect(Platform::cases())->mapWithKeys(fn ($p) => [$p->value => $p->label()]))
+                            ->required(),
+                        Forms\Components\TextInput::make('storage_path')->label('Depolama yolu')->required()->maxLength(255),
+                        Forms\Components\TextInput::make('size_bytes')->label('Boyut (bayt)')->numeric()->minValue(0)->required(),
+                        Forms\Components\TextInput::make('version')->label('Sürüm')->maxLength(50),
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
+            ]),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Başlık')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('version')
-                    ->label('Sürüm'),
-                Tables\Columns\TextColumn::make('downloads_count')
-                    ->label('İndirme')
-                    ->counts('downloads')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('published_at')
-                    ->label('Yayın')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable(),
+                Tables\Columns\ImageColumn::make('cover_path')->label('Kapak')->disk('public'),
+                Tables\Columns\TextColumn::make('title')->label('Başlık')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('access')->label('Erişim')->formatStateUsing(fn (GameAccess $state) => $state->label()),
+                Tables\Columns\TextColumn::make('translation_percent')->label('Çeviri')->suffix('%')->sortable(),
+                Tables\Columns\IconColumn::make('is_published')->label('Yayın')->boolean(),
+                Tables\Columns\TextColumn::make('download_count')->label('İndirme')->sortable(),
             ])
             ->defaultSort('published_at', 'desc')
             ->actions([

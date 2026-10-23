@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
 use App\Enums\UserRole;
+use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -42,6 +42,15 @@ class UserResource extends Resource
                     fn (UserRole $role) => [$role->value => $role->label()]
                 ))
                 ->required(),
+            Forms\Components\DateTimePicker::make('vip_until')
+                ->label('VIP bitiş')
+                ->native(false),
+            Forms\Components\FileUpload::make('avatar_path')
+                ->label('Avatar')
+                ->image()
+                ->disk('public')
+                ->directory('avatars')
+                ->avatar(),
             Forms\Components\TextInput::make('password')
                 ->label('Parola')
                 ->password()

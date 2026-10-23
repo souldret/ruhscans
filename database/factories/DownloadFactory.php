@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Download;
-use App\Models\Game;
+use App\Models\GameFile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,8 +19,8 @@ class DownloadFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'game_id' => Game::factory(),
-            'ip_address' => fake()->ipv4(),
+            'game_file_id' => GameFile::factory(),
+            'ip' => fake()->ipv4(),
         ];
     }
 }

@@ -12,13 +12,15 @@ class Download extends Model
     /** @use HasFactory<DownloadFactory> */
     use HasFactory;
 
+    public const UPDATED_AT = null;
+
     /**
      * @var list<string>
      */
     protected $fillable = [
         'user_id',
-        'game_id',
-        'ip_address',
+        'game_file_id',
+        'ip',
     ];
 
     public function user(): BelongsTo
@@ -26,8 +28,8 @@ class Download extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function game(): BelongsTo
+    public function gameFile(): BelongsTo
     {
-        return $this->belongsTo(Game::class);
+        return $this->belongsTo(GameFile::class);
     }
 }
