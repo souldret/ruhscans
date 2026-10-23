@@ -1,26 +1,20 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\DownloadController;
-use App\Http\Controllers\GameController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', HomeController::class)->name('home');
-
-Route::get('/oyunlar', [GameController::class, 'index'])->name('games.index');
-Route::get('/oyunlar/{game:slug}', [GameController::class, 'show'])->name('games.show');
-
-Route::middleware('guest')->group(function () {
-    Route::get('/kayit', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('/kayit', [RegisteredUserController::class, 'store']);
-
-    Route::get('/giris', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/giris', [AuthenticatedSessionController::class, 'store']);
+Route::get('/', function () {
+    return view('welcome');
 });
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::post('/cikis', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-    Route::get('/oyunlar/{game:slug}/indir', DownloadController::class)->name('games.download');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+require __DIR__.'/auth.php';
