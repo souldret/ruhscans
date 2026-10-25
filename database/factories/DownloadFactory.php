@@ -21,6 +21,8 @@ class DownloadFactory extends Factory
             'user_id' => User::factory(),
             'game_file_id' => GameFile::factory(),
             'ip' => fake()->ipv4(),
+            'day' => now()->toDateString(),
+            'created_at' => now(),
         ];
     }
 }

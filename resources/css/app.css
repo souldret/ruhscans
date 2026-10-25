@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+[x-cloak] { display: none !important; }
+
 @font-face {
     font-family: 'Sora';
     font-style: normal;
@@ -17,24 +19,6 @@
     font-weight: 600;
     font-display: swap;
     src: url('../fonts/sora-ext-600.woff2') format('woff2');
-    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-    font-family: 'Sora';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url('../fonts/sora-700.woff2') format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-    font-family: 'Sora';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url('../fonts/sora-ext-700.woff2') format('woff2');
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -59,6 +43,24 @@
 @font-face {
     font-family: 'Plus Jakarta Sans';
     font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/plus-jakarta-sans-600.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/plus-jakarta-sans-ext-600.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
     font-weight: 500;
     font-display: swap;
     src: url('../fonts/plus-jakarta-sans-500.woff2') format('woff2');
@@ -75,20 +77,20 @@
 }
 
 @font-face {
-    font-family: 'Plus Jakarta Sans';
+    font-family: 'Sora';
     font-style: normal;
-    font-weight: 600;
+    font-weight: 700;
     font-display: swap;
-    src: url('../fonts/plus-jakarta-sans-600.woff2') format('woff2');
+    src: url('../fonts/sora-700.woff2') format('woff2');
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-    font-family: 'Plus Jakarta Sans';
+    font-family: 'Sora';
     font-style: normal;
-    font-weight: 600;
+    font-weight: 700;
     font-display: swap;
-    src: url('../fonts/plus-jakarta-sans-ext-600.woff2') format('woff2');
+    src: url('../fonts/sora-ext-700.woff2') format('woff2');
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -98,17 +100,135 @@
     }
 
     html {
-        background: #0a0a0f;
+        background: #08080d;
+        -webkit-tap-highlight-color: transparent;
+        scroll-behavior: smooth;
+        overflow-x: clip;
     }
 
     body {
-        background: #0a0a0f;
+        background: #08080d;
         color: #f2f2f7;
+    }
+
+    ::selection {
+        background: rgba(255, 77, 141, 0.35);
+        color: #fff;
     }
 
     :focus-visible {
         outline: 2px solid #ff4d8d;
         outline-offset: 3px;
+    }
+
+    /* Koyu temada form kontrolleri */
+    [type='checkbox'],
+    [type='radio'] {
+        background-color: #1a1a26;
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #ff4d8d;
+    }
+
+    [type='checkbox']:focus,
+    [type='radio']:focus {
+        --tw-ring-color: rgba(255, 77, 141, 0.5);
+        --tw-ring-offset-color: #08080d;
+    }
+
+    select option {
+        background: #111119;
+    }
+
+    /* Kaydırma çubuğu */
+    * {
+        scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+        scrollbar-width: thin;
+    }
+}
+
+@layer components {
+    /* Sayfanın arkasındaki yumuşak renk ışıkları */
+    .ambient {
+        @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden;
+    }
+
+    .ambient::before,
+    .ambient::after {
+        content: '';
+        @apply absolute rounded-full opacity-60 blur-3xl motion-safe:animate-float;
+        width: 42rem;
+        height: 42rem;
+    }
+
+    .ambient::before {
+        top: -18rem;
+        left: -12rem;
+        background: radial-gradient(closest-side, rgba(177, 76, 255, 0.22), transparent);
+    }
+
+    .ambient::after {
+        top: 8rem;
+        right: -16rem;
+        background: radial-gradient(closest-side, rgba(255, 77, 141, 0.16), transparent);
+        animation-delay: -6s;
+    }
+
+    .card {
+        @apply rounded-3xl border border-ink-line bg-ink-surface/80 shadow-card backdrop-blur-sm;
+    }
+
+    .card-flat {
+        @apply rounded-3xl border border-ink-line bg-white/[0.02];
+    }
+
+    .eyebrow {
+        @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-muted;
+    }
+
+    .section-title {
+        @apply font-display text-xl font-semibold tracking-tight sm:text-2xl;
+    }
+
+    .field {
+        @apply block w-full rounded-2xl border border-ink-line bg-ink-deep/60 px-4 py-3 text-sm text-ink-text shadow-none transition duration-base ease-out placeholder:text-ink-faint hover:border-ink-line-strong focus:border-brand-pink/60 focus:bg-ink-deep focus:outline-none focus:ring-4 focus:ring-brand-pink/15;
+    }
+
+    .field-label {
+        @apply mb-1.5 block text-sm font-medium text-ink-text;
+    }
+
+    .field-error {
+        @apply mt-1.5 text-sm text-danger;
+    }
+
+    .link {
+        @apply text-ink-text underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-brand-pink;
+    }
+
+    /* Filtre çipleri: gizli input + görünen etiket */
+    .chip {
+        @apply inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border border-ink-line bg-white/[0.03] px-3.5 py-1.5 text-sm text-ink-muted transition duration-base ease-out hover:border-ink-line-strong hover:text-ink-text;
+    }
+
+    .peer:checked + .chip {
+        @apply border-brand-pink/50 bg-brand-pink/15 text-white shadow-[0_0_0_1px_rgba(255,77,141,0.25)];
+    }
+
+    .peer:focus-visible + .chip {
+        outline: 2px solid #ff4d8d;
+        outline-offset: 2px;
+    }
+
+    .alert-ok {
+        @apply rounded-2xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-ink-text;
+    }
+
+    .alert-gold {
+        @apply rounded-2xl border border-brand-gold/40 bg-brand-gold/10 px-4 py-3 text-sm text-ink-text;
+    }
+
+    .alert-danger {
+        @apply rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-ink-text;
     }
 }
 
@@ -128,6 +248,13 @@
         color: transparent;
     }
 
+    .text-gold {
+        background-image: linear-gradient(120deg, #ffd36a, #f5a524);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
     .glow-accent {
         box-shadow: 0 0 0 1px rgba(177, 76, 255, 0.35), 0 18px 40px -24px rgba(255, 77, 141, 0.85);
     }
@@ -139,9 +266,17 @@
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
+
+    .mask-fade-x {
+        mask-image: linear-gradient(to right, transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
     *,
     *::before,
     *::after {

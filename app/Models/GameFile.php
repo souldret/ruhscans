@@ -37,11 +37,17 @@ class GameFile extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Game, $this>
+     */
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }
 
+    /**
+     * @return HasMany<Download, $this>
+     */
     public function downloads(): HasMany
     {
         return $this->hasMany(Download::class);

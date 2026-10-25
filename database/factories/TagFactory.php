@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Tag;
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -20,7 +21,7 @@ class TagFactory extends Factory
 
         return [
             'name' => Str::title($name),
-            'slug' => Str::slug($name),
+            'slug' => Slug::from($name),
         ];
     }
 }

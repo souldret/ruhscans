@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Enums\CoinTransactionType;
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Services\CoinService;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -13,8 +14,6 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    protected static ?string $password;
-
     /**
      * @return array<string, mixed>
      */
@@ -24,9 +23,8 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => 'password',
             'role' => UserRole::Member,
-            'vip_until' => null,
             'avatar_path' => null,
             'remember_token' => Str::random(10),
         ];
@@ -46,10 +44,10 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function vip(): static
+    public function rich(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'vip_until' => now()->addDays(30),
-        ]);
+        return $this->afterCreating(function (User $user): void {
+            app(CoinService::class)->credit($user, 1000, CoinTransactionType::Bonus, note: 'test bakiyesi');
+        });
     }
 }

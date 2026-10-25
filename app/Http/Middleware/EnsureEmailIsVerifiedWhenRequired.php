@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,7 +20,7 @@ class EnsureEmailIsVerifiedWhenRequired
 
         $user = $request->user();
 
-        if (! $user || ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail())) {
+        if (! $user instanceof User || ! $user->hasVerifiedEmail()) {
             return $request->expectsJson()
                 ? abort(403, 'E-posta adresin henüz doğrulanmadı.')
                 : redirect()->guest(route($redirectToRoute ?: 'verification.notice'));

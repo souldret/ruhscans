@@ -14,7 +14,7 @@ class GamePolicy
 
     public function view(?User $user, Game $game): bool
     {
-        return $game->is_published || ($user?->isAdmin() ?? false);
+        return true;
     }
 
     public function create(User $user): bool

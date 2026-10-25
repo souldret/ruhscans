@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\GameAccess;
 use App\Enums\TranslationStatus;
 use App\Models\Game;
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -18,12 +18,12 @@ class GameFactory extends Factory
      */
     public function definition(): array
     {
-        $title = fake()->unique()->words(3, true);
+        $title = $this->title(3);
 
         return [
             'title' => Str::title($title),
-            'slug' => Str::slug($title).'-'.fake()->unique()->numerify('###'),
-            'original_title' => Str::title(fake()->words(2, true)),
+            'slug' => Slug::from($title).'-'.fake()->unique()->numerify('###'),
+            'original_title' => Str::title($this->title(2)),
             'developer' => fake()->company(),
             'description' => fake()->paragraph(),
             'cover_path' => 'placeholders/cover.svg',
@@ -34,7 +34,7 @@ class GameFactory extends Factory
             'translation_status' => TranslationStatus::Ongoing,
             'translation_percent' => fake()->numberBetween(10, 90),
             'size_mb' => fake()->numberBetween(200, 4000),
-            'access' => GameAccess::Free,
+            'coin_price' => 0,
             'is_published' => true,
             'published_at' => now(),
             'view_count' => 0,
@@ -42,11 +42,11 @@ class GameFactory extends Factory
         ];
     }
 
-    public function vip(): static
+    private function title(int $words): string
     {
-        return $this->state(fn (array $attributes) => [
-            'access' => GameAccess::Vip,
-        ]);
+        $value = fake()->unique()->words($words, true);
+
+        return is_string($value) ? $value : implode(' ', $value);
     }
 
     public function complete(): static

@@ -37,11 +37,17 @@ class VipCode extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<CodeBatch, $this>
+     */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(CodeBatch::class, 'batch_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'used_by');

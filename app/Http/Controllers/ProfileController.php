@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Auth\Concerns\ResolvesAuthenticatedUser;
+use App\Http\Requests\Auth\DeleteAccountRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,44 +14,36 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
+    use ResolvesAuthenticatedUser;
+
     public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $this->authenticatedUser($request),
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $this->authenticatedUser($request);
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(DeleteAccountRequest $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
+        $user = $this->authenticatedUser($request);
 
         Auth::logout();
+
+        app(AuditLogger::class)->write('user.deleted', $user, 'Üye kendi hesabını sildi.', [], $user);
 
         $user->delete();
 

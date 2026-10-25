@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\ConfigureJsonLogging;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -63,6 +64,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [ConfigureJsonLogging::class],
         ],
 
         'daily' => [

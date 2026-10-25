@@ -3,24 +3,43 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         executionOrder="random"
+         resolveDependencies="true"
+         cacheDirectory=".phpunit.cache"
 >
     <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
         <include>
-            <directory>app</directory>
+            <file>app/Services/CoinService.php</file>
+            <file>app/Services/VipCodeIssuer.php</file>
+            <file>app/Support/VipCodeGenerator.php</file>
+            <file>app/Support/VipCodeNormalizer.php</file>
+            <file>app/Http/Controllers/DownloadController.php</file>
+            <file>app/Http/Controllers/SignedDownloadController.php</file>
+            <file>app/Policies/GameFilePolicy.php</file>
+            <file>app/Http/Controllers/Api/V1/AuthController.php</file>
+            <file>app/Http/Requests/Api/V1/LoginRequest.php</file>
+            <file>app/Http/Controllers/Auth/AuthenticatedSessionController.php</file>
+            <file>app/Http/Controllers/Auth/RegisteredUserController.php</file>
+            <file>app/Http/Requests/Auth/LoginRequest.php</file>
+            <file>app/Http/Requests/StoreRegistrationRequest.php</file>
         </include>
     </source>
+    <coverage>
+        <report>
+            <clover outputFile="coverage/clover.xml"/>
+            <text outputFile="php://stdout" showUncoveredFiles="true"/>
+        </report>
+    </coverage>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="HASH_DRIVER" value="bcrypt"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
@@ -29,6 +48,8 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="SESSION_SECURE_COOKIE" value="false"/>
+        <env name="AUTH_PASSWORD_TIMEOUT" value="10800"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

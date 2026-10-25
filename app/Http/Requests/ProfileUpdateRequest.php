@@ -9,13 +9,18 @@ use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
+    }
+
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $user = $this->user();
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -24,7 +29,7 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+                Rule::unique(User::class)->ignore($user instanceof User ? $user->id : null),
             ],
         ];
     }

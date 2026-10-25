@@ -1,0 +1,87 @@
+name: Testler
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php:
+    name: Pint, Larastan, PHPUnit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: xdebug
+          tools: composer
+
+      - name: Bağımlılıklar
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Ortam
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          mkdir -p database
+          touch database/database.sqlite
+
+      - name: Pint
+        run: vendor/bin/pint --test
+
+      - name: Larastan
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: PHPUnit ve kapsam
+        run: php artisan test --coverage --min=85 --order-by=random
+
+  playwright:
+    name: Playwright
+    runs-on: ubuntu-latest
+    needs: php
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: PHP bağımlılıkları
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Ortam ve demo veri
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          mkdir -p database
+          touch database/database.sqlite
+          php artisan migrate:fresh --seed --force
+        env:
+          GAMES_DISK: local
+
+      - name: Ön yüz
+        run: |
+          npm install
+          npm run build
+
+      - name: Playwright ve Lighthouse
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+          npx playwright test
+          npx --yes @lhci/cli autorun --collect.url=http://127.0.0.1:8888
+        env:
+          CI: 'true'
+          APP_URL: http://127.0.0.1:8888
+          GAMES_DISK: local
+

@@ -3,46 +3,37 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRegistrationRequest;
 use App\Models\User;
+use App\Services\CoinAnomaly;
+use App\Services\Turnstile;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRegistrationRequest $request, Turnstile $turnstile): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        if (! $turnstile->passes($request->string('cf-turnstile-response')->toString(), $request->ip())) {
+            return back()->withInput()->withErrors(['email' => 'Doğrulama tamamlanmadı.']);
+        }
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $request->string('name')->toString(),
+            'email' => $request->string('email')->toString(),
+            'password' => Hash::make($request->string('password')->toString()),
         ]);
 
         event(new Registered($user));
+        app(CoinAnomaly::class)->registration($request->ip());
 
         Auth::login($user);
 

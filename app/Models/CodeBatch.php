@@ -34,11 +34,17 @@ class CodeBatch extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @return HasMany<VipCode, $this>
+     */
     public function codes(): HasMany
     {
         return $this->hasMany(VipCode::class, 'batch_id');

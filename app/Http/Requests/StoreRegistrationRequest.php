@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
+use App\Rules\NotDisposableEmail;
+use App\Services\Turnstile;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class StoreRegistrationRequest extends FormRequest
 {
@@ -18,8 +22,10 @@ class StoreRegistrationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, new NotDisposableEmail],
+            'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()],
+            'company' => ['nullable', 'max:0'],
+            'cf-turnstile-response' => [app(Turnstile::class)->enabled() ? 'required' : 'nullable', 'string'],
         ];
     }
 
@@ -33,9 +39,11 @@ class StoreRegistrationRequest extends FormRequest
             'email.required' => 'E-posta alanı zorunludur.',
             'email.email' => 'Geçerli bir e-posta adresi girin.',
             'email.unique' => 'Bu e-posta adresi zaten kayıtlı.',
+            'cf-turnstile-response.required' => 'Doğrulama tamamlanmadı.',
             'password.required' => 'Parola alanı zorunludur.',
-            'password.min' => 'Parola en az 8 karakter olmalıdır.',
+            'password.min' => 'Şifre en az 12 karakter, büyük harf, küçük harf ve rakam içermeli.',
             'password.confirmed' => 'Parola tekrarı eşleşmiyor.',
+            'company.max' => 'Kayıt tamamlanamadı.',
         ];
     }
 }

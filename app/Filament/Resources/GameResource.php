@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\GameAccess;
 use App\Enums\Platform;
 use App\Enums\TranslationStatus;
 use App\Filament\Resources\GameResource\Pages;
 use App\Models\Game;
+use App\Support\Slug;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Collection;
 
 class GameResource extends Resource
 {
@@ -35,7 +35,7 @@ class GameResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Str::slug((string) $state))),
+                    ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Slug::from((string) $state))),
                 Forms\Components\TextInput::make('slug')
                     ->label('Adres')
                     ->required()
@@ -54,17 +54,20 @@ class GameResource extends Resource
             Forms\Components\Section::make('Görseller')->schema([
                 Forms\Components\FileUpload::make('cover_path')
                     ->label('Kapak')
-                    ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->rules(['mimetypes:image/jpeg,image/png,image/webp'])
                     ->disk('public')
                     ->directory('games/covers'),
                 Forms\Components\FileUpload::make('banner_path')
                     ->label('Banner')
-                    ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->rules(['mimetypes:image/jpeg,image/png,image/webp'])
                     ->disk('public')
                     ->directory('games/banners'),
                 Forms\Components\FileUpload::make('screenshots')
                     ->label('Ekran görüntüleri')
-                    ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->rules(['mimetypes:image/jpeg,image/png,image/webp'])
                     ->multiple()
                     ->reorderable()
                     ->disk('public')
@@ -85,11 +88,23 @@ class GameResource extends Resource
                     ->minValue(0)
                     ->maxValue(100)
                     ->required(),
-                Forms\Components\TextInput::make('size_mb')->label('Boyut (MB)')->numeric()->minValue(0)->required(),
-                Forms\Components\Select::make('access')
-                    ->label('Erişim')
-                    ->options(collect(GameAccess::cases())->mapWithKeys(fn ($a) => [$a->value => $a->label()]))
-                    ->required(),
+                Forms\Components\TextInput::make('size_mb')->label('PC boyutu (MB)')->numeric()->minValue(0)->required(),
+                Forms\Components\TextInput::make('apk_size_mb')->label('APK boyutu (MB)')->numeric()->minValue(0),
+                Forms\Components\TextInput::make('playtime_hours')->label('Oynanış süresi (saat)')->numeric()->minValue(0)->maxValue(999),
+                Forms\Components\TextInput::make('coin_price')
+                    ->label('Coin fiyatı')
+                    ->helperText('0 ücretsiz demektir.')
+                    ->numeric()
+                    ->minValue(0)
+                    ->integer()
+                    ->required()
+                    ->default(0),
+                Forms\Components\TextInput::make('sale_price')
+                    ->label('İndirimli fiyat')
+                    ->numeric()
+                    ->minValue(0)
+                    ->integer(),
+                Forms\Components\DateTimePicker::make('sale_ends_at')->label('İndirim bitişi')->native(false),
                 Forms\Components\Toggle::make('is_published')->label('Yayında'),
                 Forms\Components\DateTimePicker::make('published_at')->label('Yayın tarihi')->native(false),
             ])->columns(2),
@@ -104,7 +119,12 @@ class GameResource extends Resource
                             ->label('Platform')
                             ->options(collect(Platform::cases())->mapWithKeys(fn ($p) => [$p->value => $p->label()]))
                             ->required(),
-                        Forms\Components\TextInput::make('storage_path')->label('Depolama yolu')->required()->maxLength(255),
+                        Forms\Components\TextInput::make('storage_path')
+                            ->label('R2 yolu')
+                            ->helperText('Özel diskteki yol. .. içeremez.')
+                            ->required()
+                            ->maxLength(255)
+                            ->regex('/^(?!.*\.\.)[A-Za-z0-9_\-\/\.]+$/'),
                         Forms\Components\TextInput::make('size_bytes')->label('Boyut (bayt)')->numeric()->minValue(0)->required(),
                         Forms\Components\TextInput::make('version')->label('Sürüm')->maxLength(50),
                     ])
@@ -117,10 +137,11 @@ class GameResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('tags'))
             ->columns([
                 Tables\Columns\ImageColumn::make('cover_path')->label('Kapak')->disk('public'),
                 Tables\Columns\TextColumn::make('title')->label('Başlık')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('access')->label('Erişim')->formatStateUsing(fn (GameAccess $state) => $state->label()),
+                Tables\Columns\TextColumn::make('coin_price')->label('Coin')->sortable(),
                 Tables\Columns\TextColumn::make('translation_percent')->label('Çeviri')->suffix('%')->sortable(),
                 Tables\Columns\IconColumn::make('is_published')->label('Yayın')->boolean(),
                 Tables\Columns\TextColumn::make('download_count')->label('İndirme')->sortable(),
@@ -131,6 +152,28 @@ class GameResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('setCoinPrice')
+                        ->label('Fiyat ata')
+                        ->icon('heroicon-o-banknotes')
+                        ->form([
+                            Forms\Components\TextInput::make('coin_price')
+                                ->label('Coin fiyatı')
+                                ->helperText('0 ücretsiz yapar.')
+                                ->numeric()
+                                ->minValue(0)
+                                ->integer()
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                if (! $record instanceof Game) {
+                                    continue;
+                                }
+
+                                $record->update(['coin_price' => (int) $data['coin_price']]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

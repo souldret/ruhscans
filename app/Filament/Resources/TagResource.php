@@ -4,12 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TagResource\Pages;
 use App\Models\Tag;
+use App\Support\Slug;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 
 class TagResource extends Resource
 {
@@ -31,7 +31,7 @@ class TagResource extends Resource
                 ->required()
                 ->maxLength(255)
                 ->live(onBlur: true)
-                ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Str::slug((string) $state))),
+                ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Slug::from((string) $state))),
             Forms\Components\TextInput::make('slug')
                 ->label('Adres')
                 ->required()

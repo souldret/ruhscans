@@ -19,6 +19,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+/composer.phar
+/storage/phpstan-raw.txt
+/coverage
+/test-results
+/playwright-report
 Homestead.json
 Homestead.yaml
 Thumbs.db

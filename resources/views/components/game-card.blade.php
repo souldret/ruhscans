@@ -1,46 +1,48 @@
 @props(['game'])
 
 @php
-    $cover = $game->cover_path ? asset('storage/'.$game->cover_path) : asset('images/poster.svg');
-    $percent = (int) $game->translation_percent;
+    $percent = max(0, min(100, (int) $game->translation_percent));
     $dash = round(97.4 * $percent / 100, 1);
+    $version = $game->translation_version ?: $game->game_version;
+    $ringColor = $percent >= 100 ? '#3DDC97' : '#FF4D8D';
 @endphp
 
-<a href="{{ route('games.show', $game) }}" class="group block w-44 shrink-0 focus-visible:outline sm:w-52">
+<a href="{{ route('games.show', $game) }}" {{ $attributes->merge(['class' => 'group block w-36 rounded-2xl focus-visible:outline sm:w-40']) }}>
     <article>
-        <div class="relative aspect-[3/4] overflow-hidden rounded-2xl bg-ink-raised transition duration-base ease-out group-hover:-translate-y-1 group-hover:glow-accent motion-reduce:transform-none">
-            <img
-                src="{{ $cover }}"
-                alt="{{ $game->title }} afişi"
-                width="600"
-                height="800"
-                loading="lazy"
-                decoding="async"
-                class="h-full w-full object-cover"
-            >
-            <div class="absolute left-2 top-2">
-                @if ($game->access->value === 'vip')
-                    <x-badge tone="vip">
-                        <svg viewBox="0 0 16 16" class="h-3 w-3" aria-hidden="true" fill="currentColor"><path d="M2 12.5h12l-1.2-6.2-3.2 2.4L8 4.2 6.4 8.7 3.2 6.3 2 12.5Z"/></svg>
-                        VIP
-                    </x-badge>
-                @else
-                    <x-badge>Ücretsiz</x-badge>
-                @endif
+        <div class="relative overflow-hidden rounded-2xl bg-ink-raised ring-1 ring-inset ring-white/5 transition duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-glow" style="aspect-ratio:3/4">
+            <x-cover :game="$game" class="transition duration-500 ease-out group-hover:scale-105 {{ $adult ? '' : 'blur-md' }}" />
+            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 opacity-80 transition-opacity duration-300 group-hover:opacity-100"></div>
+            <div class="absolute left-2 top-2 flex flex-col items-start gap-1">
+ @php $sale = ! $game->isFree() && $game->sale_price !== null && ($game->sale_ends_at === null || $game->sale_ends_at->isFuture()) && $game->sale_price < $game->coin_price; @endphp
+ @if ($game->owned ?? false)
+ <x-badge tone="ok">Sahipsin</x-badge>
+ @elseif ($game->isFree())
+ <x-badge>ÜCRETSİZ</x-badge>
+ @else
+ <x-badge tone="vip">
+ <svg viewBox="0 0 16 16" class="h-3 w-3" fill="currentColor" aria-hidden="true"><path d="M8 1.2 9.7 5.6H14.4L10.6 8.3 12 12.8 8 10.1 4 12.8l1.4-4.5L1.6 5.6h4.7L8 1.2Z"/></svg>
+ {{ $game->effectivePrice() }}
+ </x-badge>
+ @if ($sale)
+ <span class="rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white/70 line-through">{{ $game->coin_price }}</span>
+ @endif
+ @endif
+ </div>
+ <div class="absolute bottom-2 right-2 rounded-full bg-black/55 p-0.5 backdrop-blur">
+                <svg viewBox="0 0 36 36" class="block" style="width:1.9rem;height:1.9rem" role="img" aria-label="Çeviri yüzde {{ $percent }}">
+                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3"></circle>
+                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="{{ $ringColor }}" stroke-width="3" stroke-linecap="round"
+                            stroke-dasharray="{{ $dash }} 97.4" transform="rotate(-90 18 18)"></circle>
+                    <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" fill="#F2F2F7" font-size="10" font-weight="600" font-family="Plus Jakarta Sans">{{ $percent }}</text>
+                </svg>
             </div>
         </div>
 
-        <div class="mt-3 flex items-start justify-between gap-3">
-            <div class="min-w-0">
-                <h3 class="truncate font-display text-sm font-semibold text-ink-text">{{ $game->title }}</h3>
-                <p class="mt-0.5 text-xs text-ink-muted">sürüm {{ $game->translation_version ?: $game->game_version }}</p>
-            </div>
-            <svg viewBox="0 0 36 36" class="h-9 w-9 shrink-0" role="img" aria-label="Çeviri yüzde {{ $percent }}">
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"></circle>
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#ff4d8d" stroke-width="3" stroke-linecap="round"
-                        stroke-dasharray="{{ $dash }} 97.4" transform="rotate(-90 18 18)"></circle>
-                <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" fill="#F2F2F7" font-size="8" font-family="Plus Jakarta Sans">{{ $percent }}</text>
-            </svg>
+        <div class="mt-3 min-w-0 px-0.5">
+            <h3 class="line-clamp-2 break-words font-display text-sm font-semibold leading-snug text-ink-text transition-colors group-hover:text-white" title="{{ $game->title }}">{{ $game->title }}</h3>
+            @if ($version)
+                <p class="mt-1 truncate text-xs text-ink-muted">sürüm {{ $version }}</p>
+            @endif
         </div>
     </article>
 </a>

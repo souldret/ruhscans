@@ -17,18 +17,18 @@ class PasswordUpdateTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
+            ->from('/hesap')
             ->put('/password', [
                 'current_password' => 'password',
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
+                'password' => 'Yeni-Parola-12',
+                'password_confirmation' => 'Yeni-Parola-12',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect(route('account.show'));
 
-        $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+        $this->assertTrue(Hash::check('Yeni-Parola-12', $user->refresh()->password));
     }
 
     public function test_correct_password_must_be_provided_to_update_password(): void
@@ -37,15 +37,15 @@ class PasswordUpdateTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
+            ->from('/hesap')
             ->put('/password', [
                 'current_password' => 'wrong-password',
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
+                'password' => 'Yeni-Parola-12',
+                'password_confirmation' => 'Yeni-Parola-12',
             ]);
 
         $response
             ->assertSessionHasErrorsIn('updatePassword', 'current_password')
-            ->assertRedirect('/profile');
+            ->assertRedirect('/hesap');
     }
 }

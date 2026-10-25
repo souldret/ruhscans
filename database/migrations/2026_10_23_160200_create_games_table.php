@@ -23,14 +23,15 @@ return new class extends Migration
             $table->string('translation_status')->default('ongoing');
             $table->unsignedTinyInteger('translation_percent')->default(0);
             $table->unsignedInteger('size_mb')->default(0);
-            $table->string('access')->default('free');
+            $table->unsignedInteger('coin_price')->default(0);
+            $table->unsignedInteger('sale_price')->nullable();
+            $table->timestamp('sale_ends_at')->nullable();
             $table->boolean('is_published')->default(false)->index();
             $table->timestamp('published_at')->nullable()->index();
             $table->unsignedBigInteger('view_count')->default(0);
             $table->unsignedBigInteger('download_count')->default(0);
             $table->timestamps();
 
-            $table->index('access');
         });
     }
 

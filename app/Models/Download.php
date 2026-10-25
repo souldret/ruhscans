@@ -21,13 +21,28 @@ class Download extends Model
         'user_id',
         'game_file_id',
         'ip',
+        'country',
+        'day',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'day' => 'date',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<GameFile, $this>
+     */
     public function gameFile(): BelongsTo
     {
         return $this->belongsTo(GameFile::class);
