@@ -26,6 +26,9 @@ class Game extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'uploaded_by',
+        'archive_disk',
+        'engine',
         'title',
         'slug',
         'original_title',
