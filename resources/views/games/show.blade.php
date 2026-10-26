@@ -28,11 +28,22 @@
         $negative = $totalReviews - $positive;
         $positivePercent = $totalReviews > 0 ? (int) round(($positive / $totalReviews) * 100) : null;
 
-        $pc = $game->files->first(fn ($file) => $file->platform->value !== 'android');
-        $apk = $game->files->first(fn ($file) => $file->platform->value === 'android');
-        $pcMb = $pc ? (int) round($pc->size_bytes / 1048576) : (int) $game->size_mb;
-        $apkMb = $apk ? (int) round($apk->size_bytes / 1048576) : (int) $game->apk_size_mb;
-        $viewer = auth()->user();
+ $pc = $game->files->first(fn ($file) => $file->platform->value !== 'android');
+ $apk = $game->files->first(fn ($file) => $file->platform->value === 'android');
+ $pcMb = $pc && $pc->size_bytes > 0 ? (int) round($pc->size_bytes / 1048576) : (int) $game->size_mb;
+ $apkMb = $apk && $apk->size_bytes > 0 ? (int) round($apk->size_bytes / 1048576) : (int) $game->apk_size_mb;
+ $size = function (int $mb, string $suffix): ?string {
+ if ($mb <= 0) {
+ return null;
+ }
+
+ return $mb >= 1024
+ ? number_format($mb / 1024, 2, ',', '.').' GB '.$suffix
+ : number_format($mb, 0, ',', '.').' MB '.$suffix;
+ };
+ $sizeLabel = collect([$size($pcMb, 'PC'), $size($apkMb, 'APK')])->filter()->implode(' · ') ?: '—';
+ $viewer = auth()->user();
+
 
         $rows = [
             ['Geliştirici', $game->developer ?: '—'],
@@ -41,7 +52,7 @@
             ['Çıkış tarihi', $game->released_on?->timezone(config('app.display_timezone'))->translatedFormat('d.m.Y') ?: '—'],
             ['Son güncelleme', $game->updated_at?->timezone(config('app.display_timezone'))->translatedFormat('d.m.Y') ?: '—'],
             ['Yaklaşık oynanış', $game->playtime_hours ? $game->playtime_hours.' saat' : '—'],
-            ['Boyut', trim(($pcMb ? number_format($pcMb / 1024, 2, ',', '.').' GB PC' : '').($apkMb ? ' · '.$apkMb.' MB APK' : '')) ?: '—'],
+ ['Boyut', $sizeLabel],
         ];
     @endphp
 

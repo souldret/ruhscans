@@ -45,6 +45,21 @@ class GameFile extends Model
         return $this->belongsTo(Game::class);
     }
 
+ public function sizeLabel(): string
+ {
+ $mb = $this->size_bytes / 1048576;
+
+ if ($mb >= 1024) {
+ return number_format($mb / 1024, 2, ',', '.').' GB';
+ }
+
+ if ($mb >= 1) {
+ return number_format($mb, 0, ',', '.').' MB';
+ }
+
+ return number_format(max(0, $this->size_bytes) / 1024, 0, ',', '.').' KB';
+ }
+
     /**
      * @return HasMany<Download, $this>
      */

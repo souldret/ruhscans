@@ -44,6 +44,7 @@ class GameResource extends Resource
                     ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('original_title')->label('Özgün ad')->maxLength(255),
                 Forms\Components\TextInput::make('developer')->label('Geliştirici')->maxLength(255),
+ Forms\Components\DatePicker::make('released_on')->label('Çıkış tarihi')->native(false),
                 Forms\Components\Textarea::make('description')->label('Açıklama')->rows(5)->columnSpanFull(),
                 Forms\Components\Select::make('tags')
                     ->label('Etiketler')
@@ -148,7 +149,14 @@ class GameResource extends Resource
  }
  };
  }),
-                        Forms\Components\TextInput::make('size_bytes')->label('Boyut (bayt)')->numeric()->minValue(0)->required(),
+                        Forms\Components\TextInput::make('size_bytes')
+ ->label('Boyut (MB)')
+ ->helperText('100 yazarsan 100 MB olur.')
+ ->numeric()
+ ->minValue(0)
+ ->required()
+ ->formatStateUsing(fn ($state) => $state === null || $state === '' ? $state : (int) round(((int) $state) / 1048576))
+ ->dehydrateStateUsing(fn ($state) => (int) round(((float) $state) * 1048576)),
                         Forms\Components\TextInput::make('version')->label('Sürüm')->maxLength(50),
                     ])
                     ->columns(2)

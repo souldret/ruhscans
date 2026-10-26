@@ -12,7 +12,7 @@
                 <li class="flex items-center justify-between gap-3 rounded-2xl border border-ink-line bg-ink-deep/60 p-4">
                     <div class="min-w-0">
                         <p class="truncate text-sm font-semibold">{{ $file->label }}</p>
-                        <p class="mt-0.5 text-xs text-ink-muted">{{ number_format($file->size_bytes / 1048576, 0, ',', '.') }} MB</p>
+                        <p class="mt-0.5 text-xs text-ink-muted">{{ $file->sizeLabel() }}</p>
                     </div>
                     <x-button :href="route('downloads.show', $file)" size="sm">İndir</x-button>
                 </li>
