@@ -53,7 +53,6 @@ class UserResource extends Resource
                 ->label('Avatar')
                 ->image()
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                ->rules(['mimetypes:image/jpeg,image/png,image/webp'])
                 ->disk('public')
                 ->directory('avatars')
                 ->avatar(),
