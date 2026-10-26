@@ -156,7 +156,14 @@ class GameResource extends Resource
  ->minValue(0)
  ->required()
  ->formatStateUsing(fn ($state) => $state === null || $state === '' ? $state : (int) round(((int) $state) / 1048576))
- ->dehydrateStateUsing(fn ($state) => (int) round(((float) $state) * 1048576)),
+ ->dehydrateStateUsing(function ($state) {
+ $value = (float) $state;
+
+ // Alan megabayt gösterir. Değer zaten bayt cinsindense tekrar çarpma.
+ return $value >= 10_000_000
+ ? (int) round($value)
+ : (int) round($value * 1048576);
+ }),
                         Forms\Components\TextInput::make('version')->label('Sürüm')->maxLength(50),
                     ])
                     ->columns(2)
