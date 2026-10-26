@@ -112,6 +112,7 @@ class GameResource extends Resource
                 Forms\Components\Repeater::make('files')
                     ->label('Oyun dosyaları')
                     ->relationship()
+ ->defaultItems(0)
                     ->schema([
                         Forms\Components\TextInput::make('label')->label('Etiket')->required()->maxLength(255),
                         Forms\Components\Select::make('platform')
