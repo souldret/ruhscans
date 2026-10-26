@@ -86,7 +86,7 @@ Alpine.data('heroSlider', (total) => ({
  return Number(this.index) === Number(i) ? 'w-10' : 'w-4 hover:bg-white/40';
  },
  slideClass(i) {
- return Number(this.index) === Number(i) ? 'relative' : 'absolute inset-0';
+ return 'absolute inset-0';
  },
  progressClass() {
  return !this.paused && !this.reduced ? 'animate-progress' : '';

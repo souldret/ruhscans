@@ -31,8 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(config('app.name').' Yönetim')
             ->favicon(asset('favicon.jpeg'))
             ->colors([
-                'primary' => Color::Rose,
+                'primary' => Color::hex('#F5A524'),
             ])
+            ->darkMode(true)
             ->userMenuItems([
                 'site' => \Filament\Navigation\MenuItem::make()
                     ->label('Siteye dön')

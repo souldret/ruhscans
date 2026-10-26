@@ -90,9 +90,9 @@
  @if (auth()->user()->isAdmin())
  <a href="{{ url('/yonetim') }}" class="hidden rounded-full px-3 py-2 text-brand-gold transition hover:bg-brand-gold/10 sm:inline-flex">Yönetim</a>
  @endif
- <a href="{{ route('coins') }}" class="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-brand-gold/40 bg-brand-gold/10 px-2.5 text-brand-gold transition hover:bg-brand-gold/20" aria-label="Coin bakiyen, paketlere git">
- <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="currentColor" aria-hidden="true"><path d="M8 1.2 9.7 5.6H14.4L10.6 8.3 12 12.8 8 10.1 4 12.8l1.4-4.5L1.6 5.6h4.7L8 1.2Z"/></svg>
- <span class="inline-block font-display text-sm font-bold transition duration-200">{{ number_format(auth()->user()->coin_balance ?? 0, 0, ',', '.') }}</span>
+ <a href="{{ route('coins') }}" class="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-brand-gold/40 bg-brand-gold/15 px-3 text-brand-gold transition hover:bg-brand-gold/25" aria-label="Coin bakiyen, paketlere git">
+ <svg viewBox="0 0 16 16" class="h-4 w-4" fill="currentColor" aria-hidden="true"><path d="M8 1.2 9.7 5.6H14.4L10.6 8.3 12 12.8 8 10.1 4 12.8l1.4-4.5L1.6 5.6h4.7L8 1.2Z"/></svg>
+ <span class="font-display text-base font-bold">{{ number_format(auth()->user()->coin_balance ?? 0, 0, ',', '.') }}</span>
  </a>
  <a href="{{ route('account.show') }}" class="inline-flex items-center gap-2 rounded-full border border-ink-line bg-white/[0.03] py-1 pl-1 pr-3.5 transition hover:border-ink-line-strong hover:bg-white/[0.06] {{ request()->routeIs('account.*', 'profile.*') ? 'border-brand-pink/40' : '' }}">
  <span class="grid h-7 w-7 place-items-center rounded-full bg-accent text-xs font-bold text-white">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
@@ -182,12 +182,11 @@
  ['href' => route('home'), 'match' => ['home'], 'label' => 'Keşfet', 'icon' => 'M3 10.5 10 4l7 6.5V17a1 1 0 0 1-1 1h-3.5v-5h-5v5H4a1 1 0 0 1-1-1v-6.5Z'],
  ['href' => route('games.index'), 'match' => ['games.*'], 'label' => 'Oyunlar', 'icon' => 'M3 4h5v5H3zM12 4h5v5h-5zM3 12h5v5H3zM12 12h5v5h-5z'],
  ['href' => route('coins'), 'match' => ['coins'], 'label' => 'Coin', 'icon' => 'M2.5 15.5h15l-1.5-8-4 3L10 4.5 8 10.5l-4-3-1.5 8Z'],
- ['href' => route('support.index'), 'match' => ['support.*'], 'label' => 'Destek', 'icon' => 'M4 4h12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H8l-3 3v-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z'],
  ['href' => auth()->check() ? route('account.show') : route('login'), 'match' => ['account.*', 'profile.*', 'login'], 'label' => 'Hesap', 'icon' => 'M10 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-6.5 7.5c.8-3 3.4-5 6.5-5s5.7 2 6.5 5'],
  ];
  @endphp
  <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-ink-line bg-ink/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden" aria-label="Mobil menü">
- <div class="grid grid-cols-5 text-center text-[11px]">
+ <div class="grid grid-cols-4 text-center text-[11px]">
  @foreach ($mobileItems as $item)
  @php $active = request()->routeIs(...$item['match']); @endphp
  <a href="{{ $item['href'] }}" @if ($active) aria-current="page" @endif class="relative flex flex-col items-center gap-1 py-2.5 transition {{ $active ? 'text-white' : 'text-ink-muted hover:text-ink-text' }}">

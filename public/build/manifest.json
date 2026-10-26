@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-D-c3U8JE.css",
+    "file": "assets/app-PL27-ubN.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -49,7 +49,7 @@
     "src": "resources/fonts/sora-ext-700.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-Cbp3bmZB.js",
+    "file": "assets/app-iaA2CyUm.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

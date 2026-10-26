@@ -120,8 +120,8 @@ class GameResource extends Resource
                             ->options(collect(Platform::cases())->mapWithKeys(fn ($p) => [$p->value => $p->label()]))
                             ->required(),
                         Forms\Components\TextInput::make('storage_path')
-                            ->label('R2 yolu')
-                            ->helperText('Özel diskteki yol. .. içeremez.')
+                            ->label('Dosya yolu')
+                            ->helperText('Seçili indirme diskindeki yol. .. içeremez. Disk .env içindeki GAMES_DISK ile değişir.')
                             ->required()
                             ->maxLength(255)
                             ->regex('/^(?!.*\.\.)[A-Za-z0-9_\-\/\.]+$/'),

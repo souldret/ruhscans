@@ -10,7 +10,7 @@
  @focusin="stop()"
  @keydown.arrow-right="forward()"
  @keydown.arrow-left="previous()"
- class="relative isolate overflow-hidden rounded-[2rem] border border-ink-line bg-ink-surface shadow-card"
+ class="relative isolate h-[24rem] overflow-hidden rounded-[2rem] border border-ink-line bg-ink-surface shadow-card sm:h-[28rem]"
     aria-roledescription="slayt gösterisi"
     aria-label="Öne çıkan oyunlar"
 >
@@ -28,7 +28,7 @@
  x-transition:leave="transition duration-500 ease-in"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
- class="min-h-[24rem] sm:min-h-[28rem]"
+ class="absolute inset-0"
  :class="slideClass({{ $i }})"
             role="group"
             aria-roledescription="slayt"

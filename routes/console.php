@@ -14,3 +14,5 @@ Schedule::job(new FlushCounters)->everyFiveMinutes()->withoutOverlapping();
 
 // Defter toplamı bakiyeden ayrılırsa yöneticiye haber ver.
 Schedule::command('coins:audit')->daily()->withoutOverlapping();
+
+Schedule::command('db:backup')->dailyAt('03:10')->withoutOverlapping();

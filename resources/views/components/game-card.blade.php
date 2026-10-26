@@ -2,10 +2,8 @@
 
 @php
     $percent = max(0, min(100, (int) $game->translation_percent));
-    $dash = round(97.4 * $percent / 100, 1);
-    $version = $game->translation_version ?: $game->game_version;
-    $ringColor = $percent >= 100 ? '#3DDC97' : '#FF4D8D';
-@endphp
+       $version = $game->translation_version ?: $game->game_version;
+   @endphp
 
 <a href="{{ route('games.show', $game) }}" {{ $attributes->merge(['class' => 'group block w-36 rounded-2xl focus-visible:outline sm:w-40']) }}>
     <article>
@@ -28,14 +26,7 @@
  @endif
  @endif
  </div>
- <div class="absolute bottom-2 right-2 rounded-full bg-black/55 p-0.5 backdrop-blur">
-                <svg viewBox="0 0 36 36" class="block" style="width:1.9rem;height:1.9rem" role="img" aria-label="Çeviri yüzde {{ $percent }}">
-                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3"></circle>
-                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="{{ $ringColor }}" stroke-width="3" stroke-linecap="round"
-                            stroke-dasharray="{{ $dash }} 97.4" transform="rotate(-90 18 18)"></circle>
-                    <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" fill="#F2F2F7" font-size="10" font-weight="600" font-family="Plus Jakarta Sans">{{ $percent }}</text>
-                </svg>
-            </div>
+ <div class="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">%{{ $percent }}</div>
         </div>
 
         <div class="mt-3 min-w-0 px-0.5">
