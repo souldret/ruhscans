@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-D6k2FlZQ.css",
+    "file": "assets/app-DDv2nfVb.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -47,6 +47,12 @@
   "resources/fonts/sora-ext-700.woff2": {
     "file": "assets/sora-ext-700-DM0oy5s8.woff2",
     "src": "resources/fonts/sora-ext-700.woff2"
+  },
+  "resources/js/admin-upload.js": {
+    "file": "assets/admin-upload-rTSFzsw9.js",
+    "name": "admin-upload",
+    "src": "resources/js/admin-upload.js",
+    "isEntry": true
   },
   "resources/js/app.js": {
     "file": "assets/app-CwCLBnRr.js",
