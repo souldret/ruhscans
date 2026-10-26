@@ -24,7 +24,7 @@ class SignedDownloadController extends Controller
         $userId = $request->query('uye');
         $locked = ! $game->isFree();
 
-        // VIP dosyaları her zaman bir üyeye bağlı imzalı bağlantıyla indirilebilir.
+        // Kilitli dosya her zaman bir üyeye bağlı imzalı bağlantıyla indirilebilir.
         abort_if($locked && ! is_numeric($userId), 403);
 
         if (is_numeric($userId)) {
@@ -37,7 +37,7 @@ class SignedDownloadController extends Controller
         $path = $file->storage_path;
         abort_unless($path !== '' && ! str_contains($path, '..'), 404);
 
-        $diskName = (string) config('membership.games_disk', 'games');
+        $diskName = (string) config('membership.games_disk', 'local');
 
         return Storage::disk($diskName)->download($path, basename($path));
     }

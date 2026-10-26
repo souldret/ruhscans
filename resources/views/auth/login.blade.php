@@ -35,7 +35,7 @@
             </label>
         </div>
 
-        @if (config('membership.turnstile_site'))
+        @if (app(\App\Services\Turnstile::class)->enabled())
             <div class="mt-4">
                 <div class="cf-turnstile" data-sitekey="{{ config('membership.turnstile_site') }}"></div>
                 <x-input-error :messages="$errors->get('cf-turnstile-response')" />

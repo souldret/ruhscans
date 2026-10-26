@@ -23,7 +23,7 @@ class Login extends BaseLogin
                     '<div class="cf-turnstile" data-sitekey="'.e((string) config('membership.turnstile_site')).'"></div>'
                     .'<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>'
                 ))
-                ->visible(fn (): bool => filled(config('membership.turnstile_site'))),
+                ->visible(fn (): bool => app(Turnstile::class)->enabled()),
             $this->getRememberFormComponent(),
         ]);
     }

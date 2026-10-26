@@ -52,6 +52,44 @@ class AbuseControlTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'bot@ornek.test']);
     }
 
+    public function test_turnstile_blocks_login_when_it_is_enabled(): void
+    {
+        config([
+            'membership.turnstile_secret' => 'gizli',
+            'membership.turnstile_site' => 'site',
+        ]);
+        Http::fake(['challenges.cloudflare.com/*' => Http::response(['success' => false])]);
+
+        $user = User::factory()->create();
+
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'cf-turnstile-response' => 'sahte',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_a_verified_turnstile_token_lets_login_through(): void
+    {
+        config([
+            'membership.turnstile_secret' => 'gizli',
+            'membership.turnstile_site' => 'site',
+        ]);
+        Http::fake(['challenges.cloudflare.com/*' => Http::response(['success' => true])]);
+
+        $user = User::factory()->create();
+
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'cf-turnstile-response' => 'gecerli',
+        ])->assertRedirect();
+
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_a_third_session_is_dropped(): void
     {
         config(['session.driver' => 'database', 'membership.max_sessions' => 2]);

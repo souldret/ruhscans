@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('games', function (Blueprint $table) {
             $table->foreignId('uploaded_by')->nullable()->after('id')->constrained('users')->nullOnDelete();
-            $table->string('archive_disk', 32)->default('games')->after('uploaded_by');
+            $table->string('archive_disk', 32)->default('local')->after('uploaded_by');
             $table->string('engine', 32)->default('renpy')->after('archive_disk');
         });
     }

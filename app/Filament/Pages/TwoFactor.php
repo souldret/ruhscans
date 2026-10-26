@@ -19,6 +19,11 @@ class TwoFactor extends Page implements HasForms
 
     protected static bool $shouldRegisterNavigation = false;
 
+    public static function canAccess(): bool
+    {
+        return false;
+    }
+
  protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
     protected static ?string $navigationLabel = 'İki aşamalı doğrulama';

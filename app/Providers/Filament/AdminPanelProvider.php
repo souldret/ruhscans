@@ -33,6 +33,13 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Rose,
             ])
+            ->userMenuItems([
+                'site' => \Filament\Navigation\MenuItem::make()
+                    ->label('Siteye dön')
+                    ->url(fn (): string => route('home'))
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->sort(-1),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

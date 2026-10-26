@@ -9,8 +9,10 @@ class Turnstile
     public function enabled(): bool
     {
         $secret = config('membership.turnstile_secret');
+        $site = config('membership.turnstile_site');
 
-        return is_string($secret) && $secret !== '';
+        return is_string($secret) && $secret !== ''
+            && is_string($site) && $site !== '';
     }
 
     public function passes(?string $token, ?string $ip): bool

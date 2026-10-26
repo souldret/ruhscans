@@ -16,7 +16,7 @@ return [
 
     'require_login_for_free' => (bool) env('REQUIRE_LOGIN_FOR_FREE', true),
 
-    'games_disk' => env('GAMES_DISK', 'games'),
+    'games_disk' => env('GAMES_DISK', 'local'),
 
     'signed_url_minutes' => 5,
 

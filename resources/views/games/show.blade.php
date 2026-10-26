@@ -134,7 +134,7 @@
             </div>
             <div class="no-scrollbar mt-5 flex gap-4 overflow-x-auto pb-2">
                 @foreach ($shots as $shot)
-                    <button type="button" @click="show('{{ $shot }}')" class="group relative shrink-0 overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
+                    <button type="button" @click="show(@js($shot))" class="group relative shrink-0 overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
                         <img src="{{ $shot }}" alt="{{ $game->title }} ekran görüntüsü" width="320" height="180" loading="lazy" class="h-36 w-64 object-cover transition duration-300 group-hover:scale-105 sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9">
                         <div class="pointer-events-none absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
                         <span class="pointer-events-none absolute bottom-2 right-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur">
@@ -144,11 +144,11 @@
                 @endforeach
             </div>
 
-            {{-- Modal Büyütme --}}
+        <template x-teleport="body">
             <div x-show="open" x-cloak @click.self="close()" @keydown.escape.window="close()"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-50 grid place-items-center bg-black/90 p-4 backdrop-blur-md">
+                 class="fixed inset-0 z-[90] grid place-items-center bg-black/90 p-4 backdrop-blur-md">
                 <div class="relative max-h-[90vh] max-w-5xl">
                     <img :src="src" alt="" class="max-h-[85vh] w-auto rounded-2xl shadow-2xl ring-1 ring-white/10">
                     <button type="button" @click="close()" class="absolute -right-3 -top-3 grid h-9 w-9 place-items-center rounded-full bg-ink-surface text-ink-text shadow-lg ring-1 ring-white/20 transition hover:bg-white hover:text-ink" aria-label="Kapat">
@@ -156,6 +156,7 @@
                     </button>
                 </div>
             </div>
+        </template>
         </section>
     @endif
 
