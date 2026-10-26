@@ -36,8 +36,8 @@
         </div>
 
         @if (app(\App\Services\Turnstile::class)->enabled())
-            <div class="mt-4">
-                <div class="cf-turnstile" data-sitekey="{{ config('membership.turnstile_site') }}"></div>
+            <div class="mt-4" wire:ignore>
+                <div class="cf-turnstile" data-sitekey="{{ app(\App\Services\Turnstile::class)->siteKey() }}"></div>
                 <x-input-error :messages="$errors->get('cf-turnstile-response')" />
             </div>
             <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

@@ -20,7 +20,7 @@ class Login extends BaseLogin
             Placeholder::make('turnstile')
                 ->hiddenLabel()
                 ->content(fn (): HtmlString => new HtmlString(
-                    '<div class="cf-turnstile" data-sitekey="'.e((string) config('membership.turnstile_site')).'"></div>'
+                    '<div class="cf-turnstile" data-sitekey="'.e(app(Turnstile::class)->siteKey()).'"></div>'
                     .'<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>'
                 ))
                 ->visible(fn (): bool => app(Turnstile::class)->enabled()),

@@ -31,7 +31,7 @@ class TurnstileSettings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'site_key' => (string) config('membership.turnstile_site'),
+            'site_key' => app(Turnstile::class)->siteKey(),
             'secret' => '',
         ]);
     }
@@ -47,7 +47,7 @@ class TurnstileSettings extends Page implements HasForms
                 ->label('Gizli anahtar')
                 ->password()
                 ->revealable()
-                ->helperText(filled(config('membership.turnstile_secret'))
+                ->helperText(app(Turnstile::class)->secret() !== ''
                     ? 'Kayıtlı bir gizli anahtar var. Değiştirmek için yenisini yaz, boş bırakırsan durur.'
                     : 'Cloudflare Turnstile panelindeki secret key.')
                 ->maxLength(255),
@@ -59,7 +59,7 @@ class TurnstileSettings extends Page implements HasForms
         $data = $this->form->getState();
         $site = trim((string) ($data['site_key'] ?? ''));
         $secret = trim((string) ($data['secret'] ?? ''));
-        $current = config('membership.turnstile_secret');
+        $current = app(Turnstile::class)->secret();
         $kept = is_string($current) ? $current : '';
 
         if ($secret === '') {
@@ -75,39 +75,11 @@ class TurnstileSettings extends Page implements HasForms
             return;
         }
 
-        $this->writeEnv([
-            'TURNSTILE_SITE_KEY' => $site,
-            'TURNSTILE_SECRET_KEY' => $secret,
-        ]);
-
-        config([
-            'membership.turnstile_site' => $site,
-            'membership.turnstile_secret' => $secret,
-        ]);
+        app(Turnstile::class)->store($site, $secret);
 
         Notification::make()
             ->title(app(Turnstile::class)->enabled() ? 'Doğrulama açıldı.' : 'Doğrulama kapatıldı.')
             ->success()
             ->send();
-    }
-
-    /**
-     * @param array<string, string> $values
-     */
-    private function writeEnv(array $values): void
-    {
-        $path = base_path('.env');
-        $contents = is_file($path) ? (string) file_get_contents($path) : '';
-
-        foreach ($values as $key => $value) {
-            $safe = str_replace(["\r", "\n"], '', $value);
-            $line = $key.'='.$safe;
-            $pattern = '/^'.preg_quote($key, '/').'=.*$/m';
-            $contents = preg_match($pattern, $contents) === 1
-                ? (string) preg_replace($pattern, $line, $contents, 1)
-                : rtrim($contents).PHP_EOL.$line.PHP_EOL;
-        }
-
-        file_put_contents($path, $contents);
     }
 }
