@@ -55,7 +55,7 @@
                         <x-button :href="route('games.show', $game)" variant="ghost" size="lg">Detay</x-button>
                     </div>
                 </div>
-                <x-cover :game="$game" :width="176" :height="235" sizes="176px" :lazy="$i > 0" class="hidden h-56 w-auto max-w-full shrink-0 justify-self-end self-center rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 min-[900px]:block {{ $adult ? '' : 'blur-lg' }}" />
+                <img src="{{ $cover }}" alt="{{ $game->title }} afişi" width="176" height="235" @if ($i > 0) loading="lazy" @endif decoding="async" class="hidden h-56 w-auto max-w-full shrink-0 justify-self-end self-center rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 min-[900px]:block {{ $adult ? '' : 'blur-lg' }}">
             </div>
         </div>
     @empty
