@@ -144,21 +144,17 @@
                 @endforeach
             </div>
 
-        <template x-teleport="body">
-            <div x-show="open" x-cloak @click.self="close()" @keydown.escape.window="close()" @keydown.right.window="next()" @keydown.left.window="previous()"
-                 x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-[90] grid place-items-center bg-black/90 p-4 backdrop-blur-md">
-                <div class="relative max-h-[90vh] max-w-5xl">
-            <button type="button" @click="previous()" x-show="shots.length > 1" class="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Önceki">‹</button>
-                    <img :src="src" alt="" class="max-h-[85vh] w-auto rounded-2xl shadow-2xl ring-1 ring-white/10">
-            <button type="button" @click="next()" x-show="shots.length > 1" class="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Sonraki">›</button>
-                    <button type="button" @click="close()" class="absolute -right-3 -top-3 grid h-9 w-9 place-items-center rounded-full bg-ink-surface text-ink-text shadow-lg ring-1 ring-white/20 transition hover:bg-white hover:text-ink" aria-label="Kapat">
-                        <svg viewBox="0 0 20 20" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
-                    </button>
-                </div>
-            </div>
-        </template>
+ <div x-show="open" x-cloak @click.self="close()" @keydown.escape.window="close()" @keydown.right.window="next()" @keydown.left.window="previous()"
+ class="fixed inset-0 z-[90] grid place-items-center bg-black/90 p-4 backdrop-blur-md">
+ <div class="relative max-h-[90vh] max-w-5xl">
+ <button type="button" @click="previous()" x-show="several()" class="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Önceki">‹</button>
+ <img :src="src" alt="" class="max-h-[85vh] w-auto rounded-2xl shadow-2xl ring-1 ring-white/10">
+ <button type="button" @click="next()" x-show="several()" class="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Sonraki">›</button>
+ <button type="button" @click="close()" class="absolute -right-3 -top-3 grid h-9 w-9 place-items-center rounded-full bg-ink-surface text-ink-text shadow-lg ring-1 ring-white/20 transition hover:bg-white hover:text-ink" aria-label="Kapat">
+ <svg viewBox="0 0 20 20" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+ </button>
+ </div>
+ </div>
         </section>
     @endif
 

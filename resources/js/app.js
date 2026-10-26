@@ -119,39 +119,45 @@ Alpine.data('rowScroller', () => ({
 }));
 
 Alpine.data('lightbox', () => ({
-    open: false,
-    shots: [],
-    index: 0,
-    src: '',
-    init() {
-        this.shots = JSON.parse(this.$root.dataset.shots || '[]');
-    },
-    show(index) {
-        if (this.shots.length === 0) {
-            this.shots = JSON.parse(this.$root.dataset.shots || '[]');
-        }
-        this.index = Number(index);
-        this.paint();
-        this.open = true;
-    },
-    paint() {
-        this.src = this.shots[this.index] || '';
-    },
-    next() {
-        if (this.shots.length > 1) {
-            this.index = (this.index + 1) % this.shots.length;
-            this.paint();
-        }
-    },
-    previous() {
-        if (this.shots.length > 1) {
-            this.index = (this.index - 1 + this.shots.length) % this.shots.length;
-            this.paint();
-        }
-    },
-    close() {
-        this.open = false;
-    },
+ open: false,
+ shots: [],
+ index: 0,
+ src: '',
+ init() {
+ this.shots = JSON.parse(this.$root.dataset.shots || '[]');
+ document.body.classList.remove('overflow-y-hidden');
+ },
+ show(index) {
+ if (this.shots.length === 0) {
+ this.shots = JSON.parse(this.$root.dataset.shots || '[]');
+ }
+ this.index = Number(index);
+ this.paint();
+ this.open = true;
+ document.body.classList.add('overflow-y-hidden');
+ },
+ paint() {
+ this.src = this.shots[this.index] || '';
+ },
+ next() {
+ if (this.shots.length > 1) {
+ this.index = (this.index + 1) % this.shots.length;
+ this.paint();
+ }
+ },
+ previous() {
+ if (this.shots.length > 1) {
+ this.index = (this.index - 1 + this.shots.length) % this.shots.length;
+ this.paint();
+ }
+ },
+ close() {
+ this.open = false;
+ document.body.classList.remove('overflow-y-hidden');
+ },
+ several() {
+ return this.shots.length > 1;
+ },
 }));
 
 Alpine.data('faq', () => ({
