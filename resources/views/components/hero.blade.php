@@ -66,7 +66,7 @@
                         <x-button :href="route('games.show', $game)" variant="ghost" size="lg">Detay</x-button>
                     </div>
                 </div>
-                <img src="{{ $cover }}" alt="{{ $game->title }} afişi" width="176" height="235" @if ($i > 0) loading="lazy" @endif class="hidden rotate-2 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition duration-500 hover:rotate-0 lg:block {{ $adult ? '' : 'blur-lg' }}" style="width:11rem;aspect-ratio:3/4">
+                <x-cover :game="$game" :width="176" :height="235" sizes="176px" :lazy="$i > 0" class="hidden w-44 rotate-2 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition duration-500 hover:rotate-0 lg:block {{ $adult ? '' : 'blur-lg' }}" style="aspect-ratio:3/4" />
             </div>
         </div>
     @empty
