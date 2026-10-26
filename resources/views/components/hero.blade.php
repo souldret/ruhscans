@@ -31,8 +31,8 @@
             <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/10"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
 
-            <div class="relative grid h-full min-h-[24rem] items-end gap-8 p-6 pb-14 sm:min-h-[28rem] sm:p-10 sm:pb-16 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div class="max-w-xl motion-safe:animate-fade-up">
+            <div class="relative grid h-full min-h-0 items-center gap-6 overflow-hidden px-6 py-8 pb-16 sm:px-10 min-[900px]:grid-cols-[minmax(0,1fr)_11rem]">
+                <div class="min-w-0 max-w-xl motion-safe:animate-fade-up">
                     <div class="flex flex-wrap items-center gap-2">
                         <x-badge tone="patch">Türkçe Yama</x-badge>
                         @if (! $game->isFree())
@@ -42,11 +42,11 @@
                             <x-badge tone="muted">%{{ (int) $game->translation_percent }} çevrildi</x-badge>
                         @endif
                     </div>
-                    <h2 class="mt-5 max-w-3xl break-words font-display text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">{{ $game->title }}</h2>
+                    <h2 class="mt-5 line-clamp-2 break-words font-display text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">{{ $game->title }}</h2>
                     @if ($game->developer)
                         <p class="mt-2 text-sm text-ink-muted">{{ $game->developer }}</p>
                     @endif
-                    <p class="mt-4 line-clamp-3 max-w-lg leading-7 text-ink-muted">{{ $game->description }}</p>
+                    <p class="mt-4 line-clamp-2 max-w-lg leading-7 text-ink-muted">{{ $game->description }}</p>
                     <div class="mt-7 flex flex-wrap gap-3">
                         <x-button :href="route('games.show', $game)" size="lg">
                             <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 3v10m0 0 4-4m-4 4-4-4M4 16h12" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -55,7 +55,7 @@
                         <x-button :href="route('games.show', $game)" variant="ghost" size="lg">Detay</x-button>
                     </div>
                 </div>
-                <x-cover :game="$game" :width="176" :height="235" sizes="176px" :lazy="$i > 0" class="hidden w-44 rotate-2 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition duration-500 hover:rotate-0 lg:block {{ $adult ? '' : 'blur-lg' }}" style="aspect-ratio:3/4" />
+                <x-cover :game="$game" :width="176" :height="235" sizes="176px" :lazy="$i > 0" class="hidden h-56 w-auto max-w-full shrink-0 justify-self-end self-center rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 min-[900px]:block {{ $adult ? '' : 'blur-lg' }}" />
             </div>
         </div>
     @empty
