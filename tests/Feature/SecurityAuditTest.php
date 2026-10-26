@@ -112,6 +112,7 @@ class SecurityAuditTest extends TestCase
         $url = URL::temporarySignedRoute('downloads.signed', now()->addMinutes(5), [
             'file' => $file,
             'uye' => $member->id,
+            'ip' => hash('sha256', '127.0.0.1'),
         ]);
 
         $this->get($url)->assertForbidden();
@@ -120,6 +121,7 @@ class SecurityAuditTest extends TestCase
         $stolen = URL::temporarySignedRoute('downloads.signed', now()->addMinutes(5), [
             'file' => $file,
             'uye' => $stranger->id,
+            'ip' => hash('sha256', '127.0.0.1'),
         ]);
         $this->get($stolen)->assertForbidden();
 

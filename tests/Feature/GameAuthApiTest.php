@@ -57,6 +57,22 @@ class GameAuthApiTest extends TestCase
         $this->assertSame(1000, $body['coin_balance']);
     }
 
+    public function test_a_new_login_replaces_the_old_token(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'uye@site.test',
+            'password' => 'gizli-parola',
+        ]);
+        $user->createToken('oyun');
+
+        $this->postJson('/api/v1/login', [
+            'email' => 'uye@site.test',
+            'password' => 'gizli-parola',
+        ])->assertOk();
+
+        $this->assertSame(1, $user->tokens()->count());
+    }
+
     public function test_login_rejects_a_wrong_password_with_the_same_shape(): void
     {
         User::factory()->create([

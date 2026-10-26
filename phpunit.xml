@@ -52,6 +52,7 @@
         <env name="AUTH_PASSWORD_TIMEOUT" value="10800"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="BIND_DOWNLOAD_IP" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
     </php>
 </phpunit>

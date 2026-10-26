@@ -16,10 +16,8 @@ class SignedDownloadController extends Controller
         $game = $file->game;
         abort_unless($game instanceof Game && $game->is_published, 403);
 
-        if (config('membership.bind_download_ip')) {
-            $bound = $request->query('ip');
-            abort_unless(is_string($bound) && hash_equals($bound, hash('sha256', (string) $request->ip())), 403);
-        }
+        $bound = $request->query('ip');
+        abort_unless(is_string($bound) && hash_equals($bound, hash('sha256', (string) $request->ip())), 403);
 
         $userId = $request->query('uye');
         $locked = ! $game->isFree();

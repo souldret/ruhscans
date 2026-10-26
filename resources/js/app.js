@@ -119,15 +119,30 @@ Alpine.data('rowScroller', () => ({
 }));
 
 Alpine.data('lightbox', () => ({
- open: false,
- src: '',
- show(src) {
- this.src = src;
- this.open = true;
- },
- close() {
- this.open = false;
- },
+    open: false,
+    shots: [],
+    index: 0,
+    show(shots, index) {
+        this.shots = shots;
+        this.index = index;
+        this.open = true;
+    },
+    get src() {
+        return this.shots[this.index] || '';
+    },
+    next() {
+        if (this.shots.length > 1) {
+            this.index = (this.index + 1) % this.shots.length;
+        }
+    },
+    previous() {
+        if (this.shots.length > 1) {
+            this.index = (this.index - 1 + this.shots.length) % this.shots.length;
+        }
+    },
+    close() {
+        this.open = false;
+    },
 }));
 
 Alpine.data('faq', () => ({

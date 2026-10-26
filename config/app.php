@@ -39,7 +39,7 @@ return [
     |
     */
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    'debug' => env('APP_ENV') === 'local' && (bool) env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------

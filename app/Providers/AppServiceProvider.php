@@ -49,6 +49,12 @@ class AppServiceProvider extends ServiceProvider
                 $parameters['uye'] = (int) $userId;
             }
 
+
+        $ip = $options['ip'] ?? null;
+
+        if (is_string($ip) && $ip !== '') {
+            $parameters['ip'] = $ip;
+        }
             return URL::temporarySignedRoute('downloads.signed', $expiration, $parameters);
         });
     }

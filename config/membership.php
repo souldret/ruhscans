@@ -27,7 +27,7 @@ return [
 
     'max_sessions' => (int) env('MAX_SESSIONS', 2),
 
-    'bind_download_ip' => (bool) env('BIND_DOWNLOAD_IP', false),
+    'bind_download_ip' => (bool) env('BIND_DOWNLOAD_IP', true),
 
     'anomaly_minutes' => (int) env('DOWNLOAD_ANOMALY_MINUTES', 30),
 

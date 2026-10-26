@@ -81,9 +81,6 @@ class DownloadController extends Controller
 
         if ($user instanceof User) {
             $parameters['uye'] = $user->id;
-        }
-
-        if (config('membership.bind_download_ip')) {
             $parameters['ip'] = hash('sha256', (string) request()->ip());
         }
 

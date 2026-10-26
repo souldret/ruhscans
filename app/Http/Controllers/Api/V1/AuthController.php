@@ -24,6 +24,7 @@ class AuthController extends Controller
             ]);
         }
 
+        $user->tokens()->delete();
         $token = $user->createToken('oyun')->plainTextToken;
 
         return response()->json($this->payload($user, $token));

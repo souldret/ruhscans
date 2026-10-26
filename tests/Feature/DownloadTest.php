@@ -46,6 +46,7 @@ class DownloadTest extends TestCase
             ->assertRedirect(URL::temporarySignedRoute('downloads.signed', now()->addMinutes(5), [
                 'file' => $file,
                 'uye' => $user->id,
+                'ip' => hash('sha256', '127.0.0.1'),
             ]));
 
         $this->assertSame(1, $file->game->fresh()->download_count);
@@ -116,9 +117,11 @@ class DownloadTest extends TestCase
         Storage::disk('local')->put($file->storage_path, 'yama');
 
         $member = User::factory()->create();
+        $ip = hash('sha256', '127.0.0.1');
         $url = URL::temporarySignedRoute('downloads.signed', now()->subMinute(), [
             'file' => $file,
             'uye' => $member->id,
+            'ip' => $ip,
         ]);
 
         $this->get($url)->assertForbidden();
@@ -126,6 +129,7 @@ class DownloadTest extends TestCase
         $fresh = URL::temporarySignedRoute('downloads.signed', now()->addMinutes(5), [
             'file' => $file,
             'uye' => $member->id,
+            'ip' => $ip,
         ]);
         $this->get($fresh)->assertOk();
     }
@@ -138,9 +142,11 @@ class DownloadTest extends TestCase
         Storage::disk('local')->put($hidden->storage_path, 'yama');
 
         $member = User::factory()->create();
+        $ip = hash('sha256', '127.0.0.1');
         $this->get(URL::temporarySignedRoute('downloads.signed', now()->addMinute(), [
             'file' => $hidden,
             'uye' => $member->id,
+            'ip' => $ip,
         ]))->assertForbidden();
 
         $vipFile = $this->file(paid: true);
@@ -148,6 +154,7 @@ class DownloadTest extends TestCase
         $url = URL::temporarySignedRoute('downloads.signed', now()->addMinute(), [
             'file' => $vipFile,
             'uye' => $member->id,
+            'ip' => $ip,
         ]);
 
         $this->get($url)->assertForbidden();
@@ -157,6 +164,7 @@ class DownloadTest extends TestCase
         $this->get(URL::temporarySignedRoute('downloads.signed', now()->addMinute(), [
             'file' => $vipFile,
             'uye' => $owner->id,
+            'ip' => $ip,
         ]))->assertOk();
     }
 
