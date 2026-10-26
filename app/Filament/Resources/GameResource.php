@@ -7,6 +7,7 @@ use App\Enums\TranslationStatus;
 use App\Filament\Resources\GameResource\Pages;
 use App\Models\Game;
 use App\Support\Slug;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -119,12 +120,34 @@ class GameResource extends Resource
                             ->label('Platform')
                             ->options(collect(Platform::cases())->mapWithKeys(fn ($p) => [$p->value => $p->label()]))
                             ->required(),
-                        Forms\Components\TextInput::make('storage_path')
-                            ->label('Dosya yolu')
-                            ->helperText('Seçili indirme diskindeki yol. .. içeremez. Disk .env içindeki GAMES_DISK ile değişir.')
-                            ->required()
-                            ->maxLength(255)
-                            ->regex('/^(?!.*\.\.)[A-Za-z0-9_\-\/\.]+$/'),
+ Forms\Components\TextInput::make('storage_path')
+ ->label('Dosya yolu veya bağlantı')
+ ->helperText('Diskteki yol ya da https bağlantısı. Drive, Mega ve doğrudan dosya adresi yazılabilir. .. içeremez.')
+ ->required()
+ ->maxLength(2048)
+ ->rule(function () {
+ return function (string $attribute, mixed $value, Closure $fail): void {
+ $path = trim((string) $value);
+
+ if (str_contains($path, '..')) {
+ $fail('Yol .. içeremez.');
+
+ return;
+ }
+
+ if (preg_match('#^https://#i', $path) === 1) {
+ if (filter_var($path, FILTER_VALIDATE_URL) === false) {
+ $fail('Bağlantı geçerli bir https adresi olmalı.');
+ }
+
+ return;
+ }
+
+ if (preg_match('#^[A-Za-z0-9_\-/.]+$#', $path) !== 1) {
+ $fail('Disk yolu yalnızca harf, rakam, tire, alt çizgi, nokta ve / içerebilir.');
+ }
+ };
+ }),
                         Forms\Components\TextInput::make('size_bytes')->label('Boyut (bayt)')->numeric()->minValue(0)->required(),
                         Forms\Components\TextInput::make('version')->label('Sürüm')->maxLength(50),
                     ])

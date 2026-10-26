@@ -134,6 +134,23 @@ class DownloadTest extends TestCase
         $this->get($fresh)->assertOk();
     }
 
+ public function test_an_https_file_link_redirects_instead_of_reading_the_disk(): void
+ {
+ $file = $this->file();
+ $file->forceFill([
+ 'storage_path' => 'https://drive.google.com/file/d/17-NWe811gGxsDkT4HUjbcnVq8aCZFTRV/view?usp=sharing',
+ ])->save();
+ $member = User::factory()->create();
+
+ $url = URL::temporarySignedRoute('downloads.signed', now()->addMinutes(5), [
+ 'file' => $file,
+ 'uye' => $member->id,
+ 'ip' => hash('sha256', '127.0.0.1'),
+ ]);
+
+ $this->get($url)->assertRedirect($file->storage_path);
+ }
+
     public function test_an_unpublished_file_and_a_vip_file_follow_the_policy(): void
     {
         config(['membership.games_disk' => 'local']);

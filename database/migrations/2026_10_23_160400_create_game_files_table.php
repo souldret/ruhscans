@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('game_id')->constrained()->cascadeOnDelete();
             $table->string('label');
             $table->string('platform');
-            $table->string('storage_path');
+            $table->string('storage_path', 2048);
             $table->unsignedBigInteger('size_bytes')->default(0);
             $table->string('version')->nullable();
             $table->timestamps();

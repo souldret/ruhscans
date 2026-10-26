@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\GameFile;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SignedDownloadController extends Controller
 {
-    public function __invoke(Request $request, GameFile $file): StreamedResponse
+    public function __invoke(Request $request, GameFile $file): StreamedResponse|RedirectResponse
     {
         $game = $file->game;
         abort_unless($game instanceof Game && $game->is_published, 403);
@@ -32,8 +33,15 @@ class SignedDownloadController extends Controller
             abort_unless(! $locked || $user->isAdmin() || $user->unlocks()->where('game_id', $game->id)->exists(), 403);
         }
 
-        $path = $file->storage_path;
-        abort_unless($path !== '' && ! str_contains($path, '..'), 404);
+ $path = trim($file->storage_path);
+ abort_unless($path !== '' && ! str_contains($path, '..'), 404);
+
+ if (preg_match('#^https://#i', $path) === 1) {
+ abort_unless(filter_var($path, FILTER_VALIDATE_URL) !== false, 404);
+
+ return redirect()->away($path);
+ }
+
 
         $diskName = (string) config('membership.games_disk', 'local');
 
