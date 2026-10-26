@@ -93,11 +93,11 @@
                 'Açılan oyunlar kalıcı mı?' => 'Evet. Bir oyunu açtığında o oyunun sonraki dosyaları ve yamaları da ek ücret olmadan sana açık kalır.',
             ] as $question => $answer)
                 <div>
-                    <button type="button" class="flex min-h-12 w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold" @click="toggle({{ $loop->index }})" :aria-expanded="showing({{ $loop->index }})">
+                    <button type="button" data-faq-index="{{ $loop->index }}" class="flex min-h-12 w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold" @click="toggle({{ $loop->index }})" aria-expanded="false">
                         {{ $question }}
-                        <svg viewBox="0 0 20 20" class="h-4 w-4 shrink-0 transition" :class="chevron({{ $loop->index }})" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 8 5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg viewBox="0 0 20 20" class="h-4 w-4 shrink-0 transition" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 8 5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
-                    <p x-show="showing({{ $loop->index }})" x-cloak class="px-5 pb-5 text-sm leading-6 text-ink-muted">{{ $answer }}</p>
+                    <p data-faq-panel="{{ $loop->index }}" hidden class="px-5 pb-5 text-sm leading-6 text-ink-muted">{{ $answer }}</p>
                 </div>
             @endforeach
         </div>

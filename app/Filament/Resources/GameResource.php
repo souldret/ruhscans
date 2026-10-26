@@ -66,9 +66,12 @@ class GameResource extends Resource
                     ->directory('games/banners'),
                 Forms\Components\FileUpload::make('screenshots')
                     ->label('Ekran görüntüleri')
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->helperText('JPG, PNG, WEBP, GIF veya MP4, WEBM, MOV. Her dosya en fazla 64 MB.')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime'])
+                    ->maxSize(65536)
                     ->multiple()
                     ->reorderable()
+                    ->appendFiles()
                     ->disk('public')
                     ->directory('games/screenshots')
                     ->columnSpanFull(),

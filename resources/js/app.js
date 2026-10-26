@@ -46,53 +46,6 @@ Alpine.data('searchBox', () => ({
  },
 }));
 
-Alpine.data('heroSlider', (total) => ({
- index: 0,
- total,
- timer: null,
- paused: false,
- reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
- start() {
- this.stop();
-
- if (this.total < 2 || this.reduced) {
- return;
- }
-
- this.paused = false;
- this.timer = setInterval(() => this.next(), 6000);
- },
- stop() {
- clearInterval(this.timer);
- this.paused = true;
- },
- go(i) {
- this.index = (i + this.total) % this.total;
- this.start();
- },
- next() {
- this.index = (this.index + 1) % this.total;
- },
- previous() {
- this.go(this.index - 1);
- },
- forward() {
- this.go(this.index + 1);
- },
- showing(i) {
- return Number(this.index) === Number(i);
- },
- dotClass(i) {
- return Number(this.index) === Number(i) ? 'w-10' : 'w-4 hover:bg-white/40';
- },
- slideClass(i) {
- return 'absolute inset-0';
- },
- progressClass() {
- return !this.paused && !this.reduced ? 'animate-progress' : '';
- },
-}));
-
 Alpine.data('rowScroller', () => ({
  start: true,
  end: false,
@@ -119,16 +72,20 @@ Alpine.data('rowScroller', () => ({
 }));
 
 Alpine.data('faq', () => ({
- open: null,
- toggle(index) {
- this.open = this.open === index ? null : index;
- },
- showing(index) {
- return this.open === index;
- },
- chevron(index) {
- return this.open === index ? 'rotate-180' : '';
- },
+    open: null,
+    toggle(index) {
+        this.open = this.open === index ? null : index;
+        document.querySelectorAll('[data-faq-index]').forEach((button) => {
+            const i = Number(button.dataset.faqIndex);
+            const on = i === this.open;
+            button.setAttribute('aria-expanded', on ? 'true' : 'false');
+            button.querySelector('svg')?.classList.toggle('rotate-180', on);
+            const panel = document.querySelector(`[data-faq-panel="${i}"]`);
+            if (panel) {
+                panel.hidden = !on;
+            }
+        });
+    },
 }));
 
 Alpine.data('downloadPanel', (config) => ({
@@ -314,6 +271,106 @@ Alpine.data('dialog', (name, visible, focusable) => ({
 Alpine.start();
 
 (() => {
+    const root = document.querySelector('[data-hero]');
+    if (!root) {
+        return;
+    }
+
+    const slides = [...root.querySelectorAll('[data-slide]')];
+    const dots = [...root.querySelectorAll('[data-hero-dot]')];
+    if (slides.length < 2) {
+        return;
+    }
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let index = 0;
+    let timer = null;
+
+    const show = (next) => {
+        index = (next + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+            const on = i === index;
+            slide.hidden = !on;
+            slide.setAttribute('aria-hidden', on ? 'false' : 'true');
+        });
+        dots.forEach((dot, i) => {
+            const on = i === index;
+            dot.classList.toggle('w-10', on);
+            dot.classList.toggle('w-4', !on);
+            dot.setAttribute('aria-selected', on ? 'true' : 'false');
+            const bar = dot.querySelector('[data-hero-progress]');
+            if (!bar) {
+                return;
+            }
+            bar.classList.toggle('hidden', !on);
+            bar.classList.remove('animate-progress');
+            if (on && !reduced && timer) {
+                void bar.offsetWidth;
+                bar.classList.add('animate-progress');
+            }
+        });
+    };
+
+    const start = () => {
+        clearInterval(timer);
+        timer = null;
+        if (reduced) {
+            return;
+        }
+        timer = setInterval(() => show(index + 1), 6000);
+        const bar = dots[index]?.querySelector('[data-hero-progress]');
+        if (bar && !bar.classList.contains('hidden')) {
+            bar.classList.remove('animate-progress');
+            void bar.offsetWidth;
+            bar.classList.add('animate-progress');
+        }
+    };
+
+    const stop = () => {
+        clearInterval(timer);
+        timer = null;
+        dots.forEach((dot) => dot.querySelector('[data-hero-progress]')?.classList.remove('animate-progress'));
+    };
+
+    dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+            show(Number(dot.dataset.index));
+            start();
+        });
+    });
+    root.querySelector('[data-hero-next]')?.addEventListener('click', () => {
+        show(index + 1);
+        start();
+    });
+    root.querySelector('[data-hero-prev]')?.addEventListener('click', () => {
+        show(index - 1);
+        start();
+    });
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', (event) => {
+        if (!root.contains(event.relatedTarget)) {
+            start();
+        }
+    });
+    root.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') {
+            show(index + 1);
+            start();
+        } else if (event.key === 'ArrowLeft') {
+            show(index - 1);
+            start();
+        }
+    });
+
+    show(0);
+    start();
+})();
+
+
+
+(() => {
  const gallery = document.getElementById('shot-gallery');
  const viewer = document.getElementById('shot-viewer');
 
@@ -321,12 +378,28 @@ Alpine.start();
  return;
  }
 
- const shots = JSON.parse(gallery.dataset.shots || '[]');
+ const shots = JSON.parse(gallery.dataset.shots || '[]').map((shot) => (
+ typeof shot === 'string' ? { url: shot, kind: 'image' } : shot
+ ));
  const full = viewer.querySelector('[data-shot-full]');
+ const video = viewer.querySelector('[data-shot-video]');
  let index = 0;
 
  const paint = () => {
- full.src = shots[index] || '';
+ const shot = shots[index] || { url: '', kind: 'image' };
+ const isVideo = shot.kind === 'video';
+ full.hidden = isVideo;
+ video.hidden = !isVideo;
+ full.removeAttribute('src');
+ video.pause();
+ video.removeAttribute('src');
+ video.load();
+ if (isVideo) {
+ video.src = shot.url;
+ video.play().catch(() => {});
+ } else {
+ full.src = shot.url;
+ }
  };
 
  const open = (next) => {
@@ -343,6 +416,9 @@ Alpine.start();
  viewer.classList.add('hidden');
  viewer.classList.remove('grid');
  full.removeAttribute('src');
+ video.pause();
+ video.removeAttribute('src');
+ video.load();
  document.body.classList.remove('overflow-y-hidden');
  };
 

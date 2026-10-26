@@ -3,14 +3,9 @@
 @php $total = $games->count(); @endphp
 
 <section
-    x-data="heroSlider({{ $total }})"
- x-init="start()"
- @mouseenter="stop()"
- @mouseleave="start()"
- @focusin="stop()"
- @keydown.arrow-right="forward()"
- @keydown.arrow-left="previous()"
- class="relative isolate h-[24rem] overflow-hidden rounded-[2rem] border border-ink-line bg-ink-surface shadow-card sm:h-[28rem]"
+    data-hero
+    tabindex="0"
+    class="relative isolate h-[24rem] overflow-hidden rounded-[2rem] border border-ink-line bg-ink-surface shadow-card outline-none sm:h-[28rem]"
     aria-roledescription="slayt gösterisi"
     aria-label="Öne çıkan oyunlar"
 >
@@ -20,18 +15,12 @@
             $banner = $game->banner_path ? asset('storage/'.$game->banner_path) : null;
         @endphp
         <div
-            x-show="showing({{ $i }})"
-            @if ($i > 0) x-cloak @endif
-            x-transition:enter="transition duration-700 ease-out"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
- x-transition:leave="transition duration-500 ease-in"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
- class="absolute inset-0"
- :class="slideClass({{ $i }})"
+            data-slide
+            @if ($i > 0) hidden @endif
+            class="absolute inset-0"
             role="group"
             aria-roledescription="slayt"
+            aria-hidden="{{ $i === 0 ? 'false' : 'true' }}"
             aria-label="{{ $i + 1 }} / {{ $total }}"
         >
             @if ($banner)
@@ -47,7 +36,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <x-badge tone="patch">Türkçe Yama</x-badge>
                         @if (! $game->isFree())
- <x-badge tone="vip">{{ $game->effectivePrice() }} coin</x-badge>
+                            <x-badge tone="vip">{{ $game->effectivePrice() }} coin</x-badge>
                         @endif
                         @if ($game->translation_percent)
                             <x-badge tone="muted">%{{ (int) $game->translation_percent }} çevrildi</x-badge>
@@ -83,21 +72,19 @@
         <div class="absolute bottom-5 left-6 right-6 z-10 flex items-center justify-between gap-4 sm:left-10 sm:right-10">
             <div class="flex gap-2" role="tablist" aria-label="Slayt seç">
                 @foreach ($games as $i => $game)
-                    <button type="button" role="tab"
-                        class="relative h-1.5 overflow-hidden rounded-full bg-white/20 transition-all duration-500"
-                        :class="dotClass({{ $i }})"
-                        :aria-selected="showing({{ $i }})"
-                        @click="go({{ $i }})"
-                        aria-label="{{ $game->title }}">
-                        <span x-show="showing({{ $i }})" class="absolute inset-0 origin-left rounded-full bg-white" :class="progressClass()"></span>
+                    <button type="button" role="tab" data-hero-dot data-index="{{ $i }}"
+                            class="relative h-1.5 overflow-hidden rounded-full bg-white/20 transition-all duration-500 {{ $i === 0 ? 'w-10' : 'w-4' }}"
+                            aria-selected="{{ $i === 0 ? 'true' : 'false' }}"
+                            aria-label="{{ $game->title }}">
+                        <span data-hero-progress class="absolute inset-0 origin-left rounded-full bg-white {{ $i === 0 ? 'animate-progress' : 'hidden' }}"></span>
                     </button>
                 @endforeach
             </div>
             <div class="hidden gap-1.5 sm:flex">
-                <button type="button" @click="previous()" class="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 backdrop-blur transition hover:bg-black/50" aria-label="Önceki slayt">
+                <button type="button" data-hero-prev class="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 backdrop-blur transition hover:bg-black/50" aria-label="Önceki slayt">
                     <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12.5 15 7.5 10l5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
-                <button type="button" @click="forward()" class="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 backdrop-blur transition hover:bg-black/50" aria-label="Sonraki slayt">
+                <button type="button" data-hero-next class="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 backdrop-blur transition hover:bg-black/50" aria-label="Sonraki slayt">
                     <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m7.5 15 5-5-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
             </div>

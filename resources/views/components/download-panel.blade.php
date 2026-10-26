@@ -23,7 +23,7 @@
  balance: {{ (int) $balance }},
  price: {{ (int) $price }},
  url: '{{ route('games.unlock', $game) }}',
- })"">
+ })">
     <div class="flex items-center justify-between gap-2 border-b border-ink-line pb-4">
         <div>
             <p class="eyebrow">İndirme</p>

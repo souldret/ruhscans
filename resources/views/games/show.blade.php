@@ -22,7 +22,12 @@
 @section('content')
     @php
         $cover = $game->cover_path ? asset('storage/'.$game->cover_path) : asset('images/poster.svg');
-        $shots = collect($game->screenshots ?: [])->map(fn ($path) => asset('storage/'.$path));
+        $shots = collect($game->screenshots ?: [])->map(function ($path) {
+ $url = asset('storage/'.$path);
+ $kind = preg_match('/\.(mp4|webm|mov)$/i', $path) ? 'video' : 'image';
+
+ return ['url' => $url, 'kind' => $kind];
+ });
         $totalReviews = $game->reviews->count();
         $positive = $game->reviews->where('positive', true)->count();
         $negative = $totalReviews - $positive;
@@ -141,12 +146,17 @@
  <section class="card mt-10 p-6 sm:p-8" id="shot-gallery" data-shots='@json($shots->values())'>
  <div class="flex items-center justify-between">
  <h2 class="font-display text-2xl font-bold tracking-tight">Ekran görüntüleri</h2>
- <span class="text-xs text-ink-faint">{{ $shots->count() }} görsel</span>
+ <span class="text-xs text-ink-faint">{{ $shots->count() }} medya</span>
  </div>
  <div class="no-scrollbar mt-5 flex gap-4 overflow-x-auto pb-2">
  @foreach ($shots as $shot)
  <button type="button" data-shot="{{ $loop->index }}" class="group relative shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
- <img src="{{ $shot }}" alt="{{ $game->title }} ekran görüntüsü" width="320" height="180" loading="lazy" class="pointer-events-none h-36 w-64 object-cover transition duration-300 group-hover:scale-105 sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9">
+ @if ($shot['kind'] === 'video')
+ <video src="{{ $shot['url'] }}" muted playsinline preload="metadata" class="pointer-events-none h-36 w-64 object-cover sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9"></video>
+ <span class="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Video</span>
+ @else
+ <img src="{{ $shot['url'] }}" alt="{{ $game->title }} ekran görüntüsü" width="320" height="180" loading="lazy" class="pointer-events-none h-36 w-64 object-cover transition duration-300 group-hover:scale-105 sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9">
+ @endif
  <div class="pointer-events-none absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
  <span class="pointer-events-none absolute bottom-2 right-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur">
  <svg viewBox="0 0 20 20" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8V4h4m4 0h4v4m0 4v4h-4m-4 0H4v-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -154,16 +164,16 @@
  </button>
  @endforeach
  </div>
-
  </section>
  @endif
 
  <div id="shot-viewer" hidden class="fixed inset-0 z-[90] hidden place-items-center bg-black/90 p-4 backdrop-blur-md">
  <div class="relative max-h-[90vh] max-w-5xl">
- <button type="button" data-shot-prev @if ($shots->count() < 2) hidden @endif class="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Önceki">‹</button>
- <img data-shot-full alt="" class="max-h-[85vh] w-auto rounded-2xl shadow-2xl ring-1 ring-white/10">
- <button type="button" data-shot-next @if ($shots->count() < 2) hidden @endif class="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Sonraki">›</button>
- <button type="button" data-shot-close class="absolute -right-3 -top-3 grid h-9 w-9 place-items-center rounded-full bg-ink-surface text-ink-text shadow-lg ring-1 ring-white/20 transition hover:bg-white hover:text-ink" aria-label="Kapat">
+ <button type="button" data-shot-prev @if ($shots->count() < 2) hidden @endif class="absolute left-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Önceki">‹</button>
+ <img data-shot-full alt="" hidden class="max-h-[85vh] w-auto rounded-2xl shadow-2xl ring-1 ring-white/10">
+ <video data-shot-video hidden controls playsinline class="max-h-[85vh] w-auto rounded-2xl shadow-2xl ring-1 ring-white/10"></video>
+ <button type="button" data-shot-next @if ($shots->count() < 2) hidden @endif class="absolute right-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink-surface text-2xl text-ink-text shadow-lg ring-1 ring-white/20" aria-label="Sonraki">›</button>
+ <button type="button" data-shot-close class="absolute -right-3 -top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-ink-surface text-ink-text shadow-lg ring-1 ring-white/20 transition hover:bg-white hover:text-ink" aria-label="Kapat">
  <svg viewBox="0 0 20 20" class="pointer-events-none h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
  </button>
  </div>
