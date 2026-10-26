@@ -118,48 +118,6 @@ Alpine.data('rowScroller', () => ({
  },
 }));
 
-Alpine.data('lightbox', () => ({
- open: false,
- shots: [],
- index: 0,
- src: '',
- init() {
- this.shots = JSON.parse(this.$root.dataset.shots || '[]');
- document.body.classList.remove('overflow-y-hidden');
- },
- show(index) {
- if (this.shots.length === 0) {
- this.shots = JSON.parse(this.$root.dataset.shots || '[]');
- }
- this.index = Number(index);
- this.paint();
- this.open = true;
- document.body.classList.add('overflow-y-hidden');
- },
- paint() {
- this.src = this.shots[this.index] || '';
- },
- next() {
- if (this.shots.length > 1) {
- this.index = (this.index + 1) % this.shots.length;
- this.paint();
- }
- },
- previous() {
- if (this.shots.length > 1) {
- this.index = (this.index - 1 + this.shots.length) % this.shots.length;
- this.paint();
- }
- },
- close() {
- this.open = false;
- document.body.classList.remove('overflow-y-hidden');
- },
- several() {
- return this.shots.length > 1;
- },
-}));
-
 Alpine.data('faq', () => ({
  open: null,
  toggle(index) {
@@ -354,6 +312,88 @@ Alpine.data('dialog', (name, visible, focusable) => ({
 }));
 
 Alpine.start();
+
+(() => {
+ const gallery = document.getElementById('shot-gallery');
+ const viewer = document.getElementById('shot-viewer');
+
+ if (!gallery || !viewer) {
+ return;
+ }
+
+ const shots = JSON.parse(gallery.dataset.shots || '[]');
+ const full = viewer.querySelector('[data-shot-full]');
+ let index = 0;
+
+ const paint = () => {
+ full.src = shots[index] || '';
+ };
+
+ const open = (next) => {
+ index = next;
+ paint();
+ viewer.hidden = false;
+ viewer.classList.remove('hidden');
+ viewer.classList.add('grid');
+ document.body.classList.add('overflow-y-hidden');
+ };
+
+ const close = () => {
+ viewer.hidden = true;
+ viewer.classList.add('hidden');
+ viewer.classList.remove('grid');
+ full.removeAttribute('src');
+ document.body.classList.remove('overflow-y-hidden');
+ };
+
+ gallery.addEventListener('click', (event) => {
+ const button = event.target.closest('[data-shot]');
+
+ if (button && gallery.contains(button)) {
+ open(Number(button.dataset.shot));
+ }
+ });
+
+ viewer.addEventListener('click', (event) => {
+ if (event.target === viewer) {
+ close();
+ return;
+ }
+
+ if (event.target.closest('[data-shot-close]')) {
+ close();
+ return;
+ }
+
+ if (event.target.closest('[data-shot-next]')) {
+ index = (index + 1) % shots.length;
+ paint();
+ return;
+ }
+
+ if (event.target.closest('[data-shot-prev]')) {
+ index = (index - 1 + shots.length) % shots.length;
+ paint();
+ }
+ });
+
+ document.addEventListener('keydown', (event) => {
+ if (viewer.hidden) {
+ return;
+ }
+
+ if (event.key === 'Escape') {
+ close();
+ } else if (event.key === 'ArrowRight' && shots.length > 1) {
+ index = (index + 1) % shots.length;
+ paint();
+ } else if (event.key === 'ArrowLeft' && shots.length > 1) {
+ index = (index - 1 + shots.length) % shots.length;
+ paint();
+ }
+ });
+})();
+
 
 document.addEventListener('submit', (event) => {
  const form = event.target;
