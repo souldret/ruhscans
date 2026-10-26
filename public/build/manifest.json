@@ -1,0 +1,57 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-D-c3U8JE.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/fonts/plus-jakarta-sans-400.woff2": {
+    "file": "assets/plus-jakarta-sans-400-Dhut76fR.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-400.woff2"
+  },
+  "resources/fonts/plus-jakarta-sans-500.woff2": {
+    "file": "assets/plus-jakarta-sans-500-Bf-nb4oT.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-500.woff2"
+  },
+  "resources/fonts/plus-jakarta-sans-600.woff2": {
+    "file": "assets/plus-jakarta-sans-600-DLTa1BUW.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-600.woff2"
+  },
+  "resources/fonts/plus-jakarta-sans-ext-400.woff2": {
+    "file": "assets/plus-jakarta-sans-ext-400-D127hM_v.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-ext-400.woff2"
+  },
+  "resources/fonts/plus-jakarta-sans-ext-500.woff2": {
+    "file": "assets/plus-jakarta-sans-ext-500-9VZagAe1.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-ext-500.woff2"
+  },
+  "resources/fonts/plus-jakarta-sans-ext-600.woff2": {
+    "file": "assets/plus-jakarta-sans-ext-600-DQgPU_Cg.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-ext-600.woff2"
+  },
+  "resources/fonts/sora-600.woff2": {
+    "file": "assets/sora-600-Cdg4DaK0.woff2",
+    "src": "resources/fonts/sora-600.woff2"
+  },
+  "resources/fonts/sora-700.woff2": {
+    "file": "assets/sora-700-9waGdLWo.woff2",
+    "src": "resources/fonts/sora-700.woff2"
+  },
+  "resources/fonts/sora-ext-600.woff2": {
+    "file": "assets/sora-ext-600-Cue1zdhl.woff2",
+    "src": "resources/fonts/sora-ext-600.woff2"
+  },
+  "resources/fonts/sora-ext-700.woff2": {
+    "file": "assets/sora-ext-700-DM0oy5s8.woff2",
+    "src": "resources/fonts/sora-ext-700.woff2"
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-Cbp3bmZB.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}

@@ -122,22 +122,31 @@ Alpine.data('lightbox', () => ({
     open: false,
     shots: [],
     index: 0,
-    show(shots, index) {
-        this.shots = shots;
-        this.index = index;
+    src: '',
+    init() {
+        this.shots = JSON.parse(this.$root.dataset.shots || '[]');
+    },
+    show(index) {
+        if (this.shots.length === 0) {
+            this.shots = JSON.parse(this.$root.dataset.shots || '[]');
+        }
+        this.index = Number(index);
+        this.paint();
         this.open = true;
     },
-    get src() {
-        return this.shots[this.index] || '';
+    paint() {
+        this.src = this.shots[this.index] || '';
     },
     next() {
         if (this.shots.length > 1) {
             this.index = (this.index + 1) % this.shots.length;
+            this.paint();
         }
     },
     previous() {
         if (this.shots.length > 1) {
             this.index = (this.index - 1 + this.shots.length) % this.shots.length;
+            this.paint();
         }
     },
     close() {

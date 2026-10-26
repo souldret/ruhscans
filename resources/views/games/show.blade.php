@@ -127,14 +127,14 @@
 
     {{-- Ekran Görüntüleri Galerisi --}}
     @if ($shots->isNotEmpty())
-        <section class="card mt-10 p-6 sm:p-8" x-data="lightbox">
+        <section class="card mt-10 p-6 sm:p-8" x-data="lightbox" data-shots="{{ e(json_encode($shots->values())) }}">
             <div class="flex items-center justify-between">
                 <h2 class="font-display text-2xl font-bold tracking-tight">Ekran görüntüleri</h2>
                 <span class="text-xs text-ink-faint">{{ $shots->count() }} görsel</span>
             </div>
             <div class="no-scrollbar mt-5 flex gap-4 overflow-x-auto pb-2">
                 @foreach ($shots as $shot)
-                    <button type="button" @click="show(@js($shots->values()), {{ $loop->index }})" class="group relative shrink-0 overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
+                    <button type="button" @click="show({{ $loop->index }})" class="group relative shrink-0 overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
                         <img src="{{ $shot }}" alt="{{ $game->title }} ekran görüntüsü" width="320" height="180" loading="lazy" class="h-36 w-64 object-cover transition duration-300 group-hover:scale-105 sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9">
                         <div class="pointer-events-none absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
                         <span class="pointer-events-none absolute bottom-2 right-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur">
