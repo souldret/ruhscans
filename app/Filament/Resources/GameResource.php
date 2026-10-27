@@ -27,6 +27,31 @@ class GameResource extends Resource
 
     protected static ?string $navigationLabel = 'Oyunlar';
 
+    /**
+     * Tarayıcının ve sunucudaki fileinfo'nun bildirebileceği görsel türleri.
+     * SVG bilerek yok: public diskte betik çalıştırabilir.
+     *
+     * @var list<string>
+     */
+    public const IMAGE_TYPES = [
+        'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/x-png',
+        'image/webp', 'image/gif', 'image/avif', 'image/bmp', 'image/x-ms-bmp',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    public const VIDEO_TYPES = [
+        'video/mp4', 'video/x-m4v', 'video/webm', 'video/quicktime', 'video/ogg',
+        'application/mp4',
+    ];
+
+    /** Görsel başına üst sınır (KB). */
+    public const IMAGE_MAX_KB = 51200;
+
+    /** Medya başına üst sınır (KB). config/livewire.php ile aynı olmalı. */
+    public const MEDIA_MAX_KB = 262144;
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -56,19 +81,24 @@ class GameResource extends Resource
             Forms\Components\Section::make('Görseller')->schema([
                 Forms\Components\FileUpload::make('cover_path')
                     ->label('Kapak')
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->helperText('JPG, PNG, WEBP, GIF, AVIF veya BMP. En fazla 50 MB.')
+                    ->acceptedFileTypes(self::IMAGE_TYPES)
+                    ->maxSize(self::IMAGE_MAX_KB)
                     ->disk('public')
                     ->directory('games/covers'),
                 Forms\Components\FileUpload::make('banner_path')
                     ->label('Banner')
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->helperText('JPG, PNG, WEBP, GIF, AVIF veya BMP. En fazla 50 MB.')
+                    ->acceptedFileTypes(self::IMAGE_TYPES)
+                    ->maxSize(self::IMAGE_MAX_KB)
                     ->disk('public')
                     ->directory('games/banners'),
                 Forms\Components\FileUpload::make('screenshots')
-                    ->label('Ekran görüntüleri')
-                    ->helperText('JPG, PNG, WEBP, GIF veya MP4, WEBM, MOV. Her dosya en fazla 64 MB.')
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime'])
-                    ->maxSize(65536)
+                    ->label('Ekran görüntüleri ve videolar')
+                    ->helperText('Görsel: JPG, PNG, WEBP, GIF, AVIF. Video: MP4, M4V, WEBM, MOV, OGG. Her dosya en fazla 256 MB.')
+                    ->acceptedFileTypes([...self::IMAGE_TYPES, ...self::VIDEO_TYPES])
+                    ->maxSize(self::MEDIA_MAX_KB)
+                    ->maxParallelUploads(3)
                     ->multiple()
                     ->reorderable()
                     ->appendFiles()

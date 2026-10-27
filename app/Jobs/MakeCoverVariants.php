@@ -5,7 +5,9 @@ namespace App\Jobs;
 use App\Models\Game;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class MakeCoverVariants implements ShouldQueue
 {
@@ -15,6 +17,22 @@ class MakeCoverVariants implements ShouldQueue
 
     public function handle(): void
     {
+        try {
+            $this->build();
+        } catch (Throwable $e) {
+            // Varyant üretilemezse orijinal kapak kullanılır; yüklemeyi bozmasın.
+            Log::warning('Kapak varyantı üretilemedi.', ['game_id' => $this->gameId, 'error' => $e->getMessage()]);
+        }
+    }
+
+    private function build(): void
+    {
+        if (! function_exists('imagecreatefromstring')) {
+            return;
+        }
+
+        @ini_set('memory_limit', '512M');
+
         $game = Game::query()->find($this->gameId);
 
         if ($game === null || ! is_string($game->cover_path) || $game->cover_path === '') {

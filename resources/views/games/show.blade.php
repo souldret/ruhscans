@@ -24,7 +24,7 @@
         $cover = $game->cover_path ? asset('storage/'.$game->cover_path) : asset('images/poster.svg');
         $shots = collect($game->screenshots ?: [])->map(function ($path) {
  $url = asset('storage/'.$path);
- $kind = preg_match('/\.(mp4|webm|mov)$/i', $path) ? 'video' : 'image';
+ $kind = preg_match('/\.(mp4|m4v|webm|mov|ogg|ogv)$/i', $path) ? 'video' : 'image';
 
  return ['url' => $url, 'kind' => $kind];
  });
