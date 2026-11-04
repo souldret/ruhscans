@@ -30,7 +30,10 @@ class TurnstileSettings extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->form->fill([
+        $form = $this->getForm('form');
+        abort_unless($form instanceof Form, 500);
+
+        $form->fill([
             'site_key' => app(Turnstile::class)->siteKey(),
             'secret' => '',
         ]);
@@ -56,11 +59,13 @@ class TurnstileSettings extends Page implements HasForms
 
     public function save(): void
     {
-        $data = $this->form->getState();
+        $form = $this->getForm('form');
+        abort_unless($form instanceof Form, 500);
+
+        $data = $form->getState();
         $site = trim((string) ($data['site_key'] ?? ''));
         $secret = trim((string) ($data['secret'] ?? ''));
-        $current = app(Turnstile::class)->secret();
-        $kept = is_string($current) ? $current : '';
+        $kept = app(Turnstile::class)->secret();
 
         if ($secret === '') {
             $secret = $kept;

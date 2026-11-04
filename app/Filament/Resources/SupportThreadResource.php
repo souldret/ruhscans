@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\SupportThreadStatus;
 use App\Filament\Resources\SupportThreadResource\Pages;
+use App\Models\SupportMessage;
 use App\Models\SupportThread;
 use App\Models\User;
 use Filament\Forms;
@@ -65,7 +66,11 @@ class SupportThreadResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('author')
                             ->label('Yazan')
-                            ->state(fn ($record) => $record->is_staff ? 'Yönetici' : ($record->user?->name ?? 'Üye')),
+                            ->state(function (SupportMessage $record): string {
+                                $user = $record->user;
+
+                                return $record->is_staff ? 'Yönetici' : ($user instanceof User ? $user->name : 'Üye');
+                            }),
                         Infolists\Components\TextEntry::make('created_at')->label('Zaman')->dateTime('d.m.Y H:i'),
                         Infolists\Components\TextEntry::make('body')->label('Mesaj')->columnSpanFull(),
                     ])

@@ -18,7 +18,10 @@ class SignedDownloadController extends Controller
         abort_unless($game instanceof Game && $game->is_published, 403);
 
         $bound = $request->query('ip');
-        abort_unless(is_string($bound) && hash_equals($bound, hash('sha256', (string) $request->ip())), 403);
+
+        if (is_string($bound) && $bound !== '') {
+            abort_unless(hash_equals($bound, hash('sha256', (string) $request->ip())), 403);
+        }
 
         $userId = $request->query('uye');
         $locked = ! $game->isFree();
@@ -33,15 +36,14 @@ class SignedDownloadController extends Controller
             abort_unless(! $locked || $user->isAdmin() || $user->unlocks()->where('game_id', $game->id)->exists(), 403);
         }
 
- $path = trim($file->storage_path);
- abort_unless($path !== '' && ! str_contains($path, '..'), 404);
+        $path = trim($file->storage_path);
+        abort_unless($path !== '' && ! str_contains($path, '..'), 404);
 
- if (preg_match('#^https://#i', $path) === 1) {
- abort_unless(filter_var($path, FILTER_VALIDATE_URL) !== false, 404);
+        if (preg_match('#^https://#i', $path) === 1) {
+            abort_unless(filter_var($path, FILTER_VALIDATE_URL) !== false, 404);
 
- return redirect()->away($path);
- }
-
+            return redirect()->away($path);
+        }
 
         $diskName = (string) config('membership.games_disk', 'local');
 

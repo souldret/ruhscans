@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\GameResource\Pages;
 
 use App\Filament\Resources\GameResource;
+use App\Models\Game;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -50,7 +51,13 @@ class CreateGame extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $this->record->forceFill([
+        $record = $this->getRecord();
+
+        if (! $record instanceof Game) {
+            return;
+        }
+
+        $record->forceFill([
             'uploaded_by' => auth()->id(),
             'archive_disk' => (string) config('membership.games_disk', 'local'),
             'engine' => 'renpy',
