@@ -43,7 +43,29 @@ class GameResource extends Resource
      */
     public const VIDEO_TYPES = [
         'video/mp4', 'video/x-m4v', 'video/webm', 'video/quicktime', 'video/ogg',
-        'application/mp4',
+        'application/mp4', 'application/octet-stream',
+    ];
+
+    /**
+     * FilePond dosya uzantısından tür üretir. WEBP/AVIF/MOV bu harita olmadan
+     * tarayıcıda reddediliyor.
+     *
+     * @return array<string, string>
+     */
+    public const MIME_MAP = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        'avif' => 'image/avif',
+        'bmp' => 'image/bmp',
+        'mp4' => 'video/mp4',
+        'm4v' => 'video/x-m4v',
+        'webm' => 'video/webm',
+        'mov' => 'video/quicktime',
+        'ogg' => 'video/ogg',
+        'ogv' => 'video/ogg',
     ];
 
     /** Görsel başına üst sınır (KB). */
@@ -80,31 +102,39 @@ class GameResource extends Resource
 
             Forms\Components\Section::make('Görseller')->schema([
                 Forms\Components\FileUpload::make('cover_path')
-                    ->label('Kapak')
-                    ->helperText('JPG, PNG, WEBP, GIF, AVIF veya BMP. En fazla 50 MB.')
-                    ->acceptedFileTypes(self::IMAGE_TYPES)
-                    ->maxSize(self::IMAGE_MAX_KB)
-                    ->disk('public')
-                    ->directory('games/covers'),
-                Forms\Components\FileUpload::make('banner_path')
-                    ->label('Banner')
-                    ->helperText('JPG, PNG, WEBP, GIF, AVIF veya BMP. En fazla 50 MB.')
-                    ->acceptedFileTypes(self::IMAGE_TYPES)
-                    ->maxSize(self::IMAGE_MAX_KB)
-                    ->disk('public')
-                    ->directory('games/banners'),
-                Forms\Components\FileUpload::make('screenshots')
-                    ->label('Ekran görüntüleri ve videolar')
-                    ->helperText('Görsel: JPG, PNG, WEBP, GIF, AVIF. Video: MP4, M4V, WEBM, MOV, OGG. Her dosya en fazla 256 MB.')
-                    ->acceptedFileTypes([...self::IMAGE_TYPES, ...self::VIDEO_TYPES])
-                    ->maxSize(self::MEDIA_MAX_KB)
-                    ->maxParallelUploads(3)
-                    ->multiple()
-                    ->reorderable()
-                    ->appendFiles()
-                    ->disk('public')
-                    ->directory('games/screenshots')
-                    ->columnSpanFull(),
+                ->label('Kapak')
+                ->helperText('JPG, PNG, WEBP, GIF, AVIF veya BMP. En fazla 50 MB.')
+                ->acceptedFileTypes(self::IMAGE_TYPES)
+                ->mimeTypeMap(self::MIME_MAP)
+                ->imagePreviewHeight('160')
+                ->maxSize(self::IMAGE_MAX_KB)
+                ->disk('public')
+                ->visibility('public')
+                ->directory('games/covers'),
+            Forms\Components\FileUpload::make('banner_path')
+                ->label('Banner')
+                ->helperText('JPG, PNG, WEBP, GIF, AVIF veya BMP. En fazla 50 MB.')
+                ->acceptedFileTypes(self::IMAGE_TYPES)
+                ->mimeTypeMap(self::MIME_MAP)
+                ->maxSize(self::IMAGE_MAX_KB)
+                ->disk('public')
+                ->visibility('public')
+                ->directory('games/banners'),
+            Forms\Components\FileUpload::make('screenshots')
+                ->label('Ekran görüntüleri ve videolar')
+                ->helperText('Görsel: JPG, PNG, WEBP, GIF, AVIF. Video: MP4, M4V, WEBM, MOV, OGG. Her dosya en fazla 256 MB.')
+                ->acceptedFileTypes([...self::IMAGE_TYPES, ...self::VIDEO_TYPES])
+                ->mimeTypeMap(self::MIME_MAP)
+                ->maxSize(self::MEDIA_MAX_KB)
+                ->maxParallelUploads(3)
+                ->multiple()
+                ->reorderable()
+                ->appendFiles()
+                ->panelLayout('grid')
+                ->disk('public')
+                ->visibility('public')
+                ->directory('games/screenshots')
+                ->columnSpanFull(),
             ])->columns(2),
 
             Forms\Components\Section::make('Çeviri ve erişim')->schema([

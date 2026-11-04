@@ -386,21 +386,23 @@ Alpine.start();
  let index = 0;
 
  const paint = () => {
- const shot = shots[index] || { url: '', kind: 'image' };
- const isVideo = shot.kind === 'video';
- full.hidden = isVideo;
- video.hidden = !isVideo;
- full.removeAttribute('src');
- video.pause();
- video.removeAttribute('src');
- video.load();
- if (isVideo) {
- video.src = shot.url;
- video.play().catch(() => {});
- } else {
- full.src = shot.url;
- }
- };
+        const shot = shots[index] || { url: '', kind: 'image' };
+        const isVideo = shot.kind === 'video';
+
+        full.hidden = isVideo;
+        video.hidden = !isVideo;
+        full.removeAttribute('src');
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+
+        if (isVideo) {
+            video.src = shot.url;
+            video.play().catch(() => {});
+        } else {
+            full.src = shot.url;
+        }
+    };
 
  const open = (next) => {
  index = next;
@@ -423,12 +425,14 @@ Alpine.start();
  };
 
  gallery.addEventListener('click', (event) => {
- const button = event.target.closest('[data-shot]');
+        const button = event.target.closest('[data-shot]');
 
- if (button && gallery.contains(button)) {
- open(Number(button.dataset.shot));
- }
- });
+        if (button && gallery.contains(button)) {
+            event.preventDefault();
+            event.stopPropagation();
+            open(Number(button.dataset.shot));
+        }
+    });
 
  viewer.addEventListener('click', (event) => {
  if (event.target === viewer) {

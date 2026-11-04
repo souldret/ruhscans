@@ -45,6 +45,13 @@ class MakeCoverVariants implements ShouldQueue
             return;
         }
 
+        $extension = strtolower(pathinfo($game->cover_path, PATHINFO_EXTENSION));
+
+        // GIF animasyonu ve AVIF, GD ile açılınca ilk kareye düşer veya boş döner.
+        if (in_array($extension, ['gif', 'avif'], true)) {
+            return;
+        }
+
         $binary = $disk->get($game->cover_path);
         $source = is_string($binary) ? @imagecreatefromstring($binary) : false;
 

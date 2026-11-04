@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-B_kh2sXe.css",
+    "file": "assets/app-DPvqRHXi.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -49,13 +49,13 @@
     "src": "resources/fonts/sora-ext-700.woff2"
   },
   "resources/js/admin-upload.js": {
-    "file": "assets/admin-upload-rTSFzsw9.js",
+    "file": "assets/admin-upload-T-lunTO-.js",
     "name": "admin-upload",
     "src": "resources/js/admin-upload.js",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-C_aytQfH.js",
+    "file": "assets/app-HYws1vwo.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
