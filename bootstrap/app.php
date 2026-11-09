@@ -44,7 +44,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
             $message = collect($exception->errors())->flatten()->first() ?: 'Girdi geçersiz.';
 
-            return response()->json(['message' => $message], 422);
+        return response()->json([
+            'message' => $message,
+            'errors' => $exception->errors(),
+        ], 422);
         });
 
         $exceptions->render(function (AuthenticationException $exception, Request $request) {

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\LoginRequest;
+use App\Models\LauncherLoginLog;
 use App\Models\User;
+use App\Services\Launcher\LoginThrottle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -14,18 +16,51 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, LoginThrottle $throttle): JsonResponse
     {
-        $user = User::query()->where('email', $request->string('email')->toString())->first();
+        $email = $request->string('email')->toString();
+        $user = User::withTrashed()->where('email', $email)->first();
+        $ip = $request->ip();
 
-        if ($user === null || ! Hash::check($request->string('password')->toString(), $user->password)) {
+        if ($throttle->tooMany($ip ?? '', $user)) {
+            $this->logLogin($user, $request, 'rate_limited', 'too_many');
+
+            return response()->json([
+                'message' => 'Çok fazla giriş denemesi. Bir dakika sonra tekrar dene.',
+            ], 429);
+        }
+
+        $locked = $throttle->blocked($user, $ip ?? '');
+
+        if ($locked !== null) {
+            $this->logLogin($user, $request, 'locked', 'temporary_lock');
+
             throw ValidationException::withMessages([
-                'email' => 'E-posta veya şifre hatalı.',
+                'email' => $locked,
             ]);
         }
 
+        if ($user === null || ! Hash::check($request->string('password')->toString(), $user->password)) {
+            $lock = $throttle->recordFailure($user, $ip ?? '');
+            $this->logLogin($user, $request, $lock !== null ? 'locked' : 'denied', $lock !== null ? 'temporary_lock' : 'bad_credentials');
+
+            throw ValidationException::withMessages([
+                'email' => $lock ?? 'E-posta veya şifre hatalı.',
+            ]);
+        }
+
+        if (($user->getAttributes()['deleted_at'] ?? null) !== null) {
+            $this->logLogin($user, $request, 'denied', 'banned');
+
+            throw ValidationException::withMessages([
+                'email' => 'Bu hesap kapatıldı. Giriş yapılamaz.',
+            ]);
+        }
+
+        $throttle->clear($user, $ip ?? '');
         $user->tokens()->delete();
         $token = $user->createToken('oyun')->plainTextToken;
+        $this->logLogin($user, $request, 'allowed', 'ok');
 
         return response()->json($this->payload($user, $token));
     }
@@ -49,6 +84,10 @@ class AuthController extends Controller
 
         $owner = $token->tokenable;
 
+        if ($owner instanceof User && ($owner->getAttributes()['deleted_at'] ?? null) !== null) {
+            return response()->json(['message' => 'Bu hesap kapatıldı. Giriş yapılamaz.'], 403);
+        }
+
         return response()->json($this->session($owner instanceof User ? $owner : null, true));
     }
 
@@ -70,6 +109,20 @@ class AuthController extends Controller
         $token = PersonalAccessToken::findToken($plain);
 
         return $token instanceof PersonalAccessToken ? $token : null;
+    }
+
+    private function logLogin(?User $user, Request $request, string $result, string $reason): void
+    {
+        $ip = $request->ip();
+
+        LauncherLoginLog::query()->create([
+            'user_id' => $user?->id,
+            'game_id' => null,
+            'device_id' => $request->string('device_id')->toString() ?: null,
+            'ip_hash' => is_string($ip) && $ip !== '' ? hash('sha256', $ip.'|'.(string) config('app.key')) : null,
+            'result' => $result,
+            'reason' => $reason,
+        ]);
     }
 
     /**

@@ -171,6 +171,21 @@ class GameResource extends Resource
                 Forms\Components\DateTimePicker::make('published_at')->label('Yayın tarihi')->native(false),
             ])->columns(2),
 
+            Forms\Components\Section::make('Başlatıcı')->schema([
+                Forms\Components\Toggle::make('launcher_enabled')
+                    ->label('Modül açık')
+                    ->helperText('Kapalıyken handshake reddedilir (kill switch).'),
+                Forms\Components\TextInput::make('launcher_min_version')
+                    ->label('Minimum launcher sürümü')
+                    ->maxLength(32)
+                    ->placeholder('1.2.0'),
+                Forms\Components\Textarea::make('launcher_message')
+                    ->label('Kullanıcı mesajı')
+                    ->rows(3)
+                    ->maxLength(500)
+                    ->helperText('Kill switch veya eski sürümde oyuncuya gösterilir. Yeni sürüme yönlendirebilir.'),
+            ])->columns(2),
+
             Forms\Components\Section::make('Dosyalar')->schema([
                 Forms\Components\Repeater::make('files')
                     ->label('Oyun dosyaları')

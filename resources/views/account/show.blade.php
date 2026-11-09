@@ -199,6 +199,30 @@
             @endif
         </section>
 
+        <section class="card p-6">
+            <h2 class="font-display text-lg font-bold tracking-tight">Başlatıcı cihazları</h2>
+            <p class="mt-1 text-sm text-ink-muted">Aynı oyunu yeniden kurduysan eski cihazı kaldır. Kota son 30 günde görülen cihazlara bakar.</p>
+            @if (($launcherDevices ?? collect())->isEmpty())
+                <p class="mt-4 rounded-2xl border border-ink-line bg-white/[0.02] p-5 text-center text-sm text-ink-muted">Kayıtlı cihaz yok.</p>
+            @else
+                <ul class="mt-4 divide-y divide-ink-line overflow-hidden rounded-2xl border border-ink-line bg-ink-deep/30">
+                    @foreach ($launcherDevices as $device)
+                        <li class="flex items-center justify-between gap-3 p-3.5 text-xs sm:text-sm">
+                            <span class="min-w-0">
+                                <span class="block truncate text-ink-text">{{ $device->game?->title ?? 'Silinmiş oyun' }}</span>
+                                <span class="font-mono text-ink-faint">{{ $device->device_id }} · {{ $device->last_launcher_version }} · {{ $device->last_seen_at?->timezone(config('app.display_timezone'))->translatedFormat('d M Y H:i') }}</span>
+                            </span>
+                            <form method="POST" action="{{ route('account.devices.destroy', $device) }}">
+                                @csrf
+                                @method('DELETE')
+                                <x-button type="submit" variant="ghost" size="sm">Kaldır</x-button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+
         {{-- İndirme Geçmişi --}}
         <section class="card p-6">
             <h2 class="font-display text-lg font-bold tracking-tight">İndirme geçmişi</h2>

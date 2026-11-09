@@ -49,6 +49,9 @@ class Game extends Model
         'sale_price',
         'sale_ends_at',
         'is_published',
+        'launcher_enabled',
+        'launcher_min_version',
+        'launcher_message',
         'published_at',
         'view_count',
         'download_count',
@@ -72,6 +75,7 @@ class Game extends Model
             'sale_price' => 'integer',
             'sale_ends_at' => 'datetime',
             'is_published' => 'boolean',
+            'launcher_enabled' => 'boolean',
             'published_at' => 'datetime',
             'view_count' => 'integer',
             'download_count' => 'integer',
@@ -106,6 +110,22 @@ class Game extends Model
     public function unlocks(): HasMany
     {
         return $this->hasMany(GameUnlock::class);
+    }
+
+    /**
+     * @return HasMany<LauncherDevice, $this>
+     */
+    public function launcherDevices(): HasMany
+    {
+        return $this->hasMany(LauncherDevice::class);
+    }
+
+    /**
+     * @return HasMany<LauncherLoginLog, $this>
+     */
+    public function launcherLoginLogs(): HasMany
+    {
+        return $this->hasMany(LauncherLoginLog::class);
     }
 
     protected static function booted(): void

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Auth\Concerns\ResolvesAuthenticatedUser;
 use App\Http\Requests\RedeemCoinCodeRequest;
 use App\Models\GameUnlock;
+use App\Models\LauncherDevice;
 use App\Services\CoinCodeRedeemer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,11 @@ class AccountController extends Controller
             'unlocks' => GameUnlock::query()->where('user_id', $user->id)->with('game')->latest('unlocked_at')->get(),
             'codeCount' => $user->redeemedCodes()->count(),
             'downloadCount' => $user->downloads()->count(),
+            'launcherDevices' => LauncherDevice::query()
+                ->where('user_id', $user->id)
+                ->with('game')
+                ->latest('last_seen_at')
+                ->get(),
         ]);
     }
 

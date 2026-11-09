@@ -124,6 +124,15 @@ class GameAuthApiTest extends TestCase
 
     public function test_the_eleventh_login_in_a_minute_is_refused(): void
     {
+        config([
+            'launcher.login.account_per_minute' => 10,
+            'launcher.login.ip_per_minute' => 10,
+            'launcher.login.lock_after' => 100,
+            'launcher.login.alert_after' => 100,
+            'launcher.login.delay_step_ms' => 0,
+            'launcher.login.max_delay_ms' => 0,
+        ]);
+
         User::factory()->create([
             'email' => 'uye@site.test',
             'password' => 'gizli-parola',
@@ -141,7 +150,7 @@ class GameAuthApiTest extends TestCase
             'password' => 'gizli-parola',
         ])
             ->assertStatus(429)
-            ->assertJson(['message' => 'Çok fazla deneme. Bir dakika bekle.']);
+            ->assertJson(['message' => 'Çok fazla giriş denemesi. Bir dakika sonra tekrar dene.']);
     }
 
     public function test_logout_then_login_then_verify_keeps_one_token(): void

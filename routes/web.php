@@ -10,6 +10,7 @@ use App\Http\Controllers\GameReviewController;
 use App\Http\Controllers\GameUnlockController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LauncherDeviceController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RobotsController;
@@ -58,6 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/destek/{thread}', [SupportController::class, 'reply'])->middleware('throttle:20,1')->name('support.reply');
     Route::post('/destek/{thread}/kapat', [SupportController::class, 'close'])->name('support.close');
     Route::get('/hesap', [AccountController::class, 'show'])->name('account.show');
+    Route::delete('/hesap/cihaz/{device}', [LauncherDeviceController::class, 'destroy'])->name('account.devices.destroy');
     Route::post('/hesap/kod-kullan', [AccountController::class, 'redeem'])->middleware('throttle:5,1')->name('account.redeem');
     Route::post('/oyun/{game:slug}/ac', [GameUnlockController::class, 'store'])->middleware('throttle:10,1')->name('games.unlock');
     Route::post('/oyun/{game:slug}/yorum', [GameReviewController::class, 'store'])->name('games.reviews.store');

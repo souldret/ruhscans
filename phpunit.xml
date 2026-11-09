@@ -22,7 +22,12 @@
             <file>app/Http/Controllers/SignedDownloadController.php</file>
             <file>app/Policies/GameFilePolicy.php</file>
             <file>app/Http/Controllers/Api/V1/AuthController.php</file>
-            <file>app/Http/Requests/Api/V1/LoginRequest.php</file>
+                <file>app/Http/Controllers/Api/V1/HandshakeController.php</file>
+                <file>app/Http/Requests/Api/V1/LoginRequest.php</file>
+                <file>app/Http/Requests/Api/V1/HandshakeRequest.php</file>
+                <file>app/Services/Launcher/LauncherHandshake.php</file>
+                <file>app/Services/Launcher/LauncherSigner.php</file>
+                <file>app/Services/Launcher/LoginThrottle.php</file>
             <file>app/Http/Controllers/Auth/AuthenticatedSessionController.php</file>
             <file>app/Http/Controllers/Auth/RegisteredUserController.php</file>
             <file>app/Http/Requests/Auth/LoginRequest.php</file>
@@ -46,6 +51,8 @@
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <env name="LAUNCHER_LOGIN_DELAY_STEP_MS" value="0"/>
+        <env name="LAUNCHER_LOGIN_MAX_DELAY_MS" value="0"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="SESSION_SECURE_COOKIE" value="false"/>
