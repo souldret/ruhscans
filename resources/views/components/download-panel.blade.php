@@ -84,7 +84,7 @@
  @if ($ownUnlock && $ownUnlock->coins_paid > 0)
  @php
  $refundMinutes = (int) config('coins.refund_window_minutes', 30);
- $refundOpen = $ownUnlock->unlocked_at !== null && $ownUnlock->unlocked_at->gte(now()->subMinutes($refundMinutes));
+ $refundOpen = $ownUnlock->unlocked_at !== null && $ownUnlock->unlocked_at->copy()->addMinutes($refundMinutes)->gte(now());
  $alreadyDownloaded = \App\Models\Download::query()
  ->where('user_id', $user->id)
  ->whereHas('gameFile', fn ($query) => $query->where('game_id', $game->id))

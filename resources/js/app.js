@@ -451,19 +451,22 @@ Alpine.start();
  }
  };
 
- const reveal = (button) => {
+ const reveal = (button, persist = true) => {
  button.removeAttribute('data-censored');
  button.querySelector('[data-shot-media]')?.classList.remove('blur-xl', 'scale-110');
  button.querySelector('[data-reveal-shot]')?.remove();
  button.querySelector('[data-shot-expand]')?.classList.remove('hidden');
+
+ if (persist) {
  remember(Number(button.dataset.shot));
+ }
  };
 
  revealed().forEach((shot) => {
  const button = gallery.querySelector('[data-shot="' + shot + '"]');
 
- if (button) {
- reveal(button);
+ if (button && button.hasAttribute('data-censored')) {
+ reveal(button, false);
  }
  });
 

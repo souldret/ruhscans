@@ -89,7 +89,7 @@ class GameUnlocker
 
         $minutes = (int) config('coins.refund_window_minutes', 30);
 
-        if ($unlock->unlocked_at === null || $unlock->unlocked_at->lt(now()->subMinutes($minutes))) {
+        if ($unlock->unlocked_at === null || $unlock->unlocked_at->copy()->addMinutes($minutes)->lt(now())) {
             throw new RuntimeException('İade süresi doldu.');
         }
 

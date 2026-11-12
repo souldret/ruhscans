@@ -166,7 +166,30 @@ class LibraryFeaturesTest extends TestCase
             ->assertSessionHas('refund_error');
 
         $this->assertDatabaseHas('game_unlocks', ['id' => $lateUnlock->id]);
-    }
+ $this->travelBack();
+
+ $spring = now()->setDate(2026, 3, 29)->setTime(2, 45);
+ $this->travelTo($spring);
+ $dstUser = User::factory()->create();
+ app(CoinService::class)->credit($dstUser, 100, CoinTransactionType::Bonus);
+ $dstUnlock = app(GameUnlocker::class)->unlock($dstUser, $game);
+ $this->travel(30)->minutes();
+
+ $this->flushSession();
+
+ $this->actingAs($dstUser)
+ ->get(route('games.show', $game))
+ ->assertOk()
+ ->assertSee('Yanlış oyunsa iade et');
+
+ $this->actingAs($dstUser)
+ ->post(route('games.refund', $game))
+ ->assertRedirect()
+ ->assertSessionHas('refund');
+
+ $this->assertDatabaseMissing('game_unlocks', ['id' => $dstUnlock->id]);
+ $this->travelBack();
+ }
 
     public function test_related_games_fall_back_to_the_same_price_band(): void
     {
