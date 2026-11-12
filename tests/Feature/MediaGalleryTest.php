@@ -39,5 +39,26 @@ class MediaGalleryTest extends TestCase
         $this->assertStringContainsString('klip.mp4', $page);
         $this->assertStringContainsString('data-shot-video', $page);
         $this->assertStringContainsString('"kind":"video"', $page);
+        $this->assertStringContainsString('data-censored="1"', $page);
+        $this->assertStringContainsString('data-reveal-shot', $page);
+        $this->assertStringContainsString('scale-110 blur-xl', $page);
+        $this->assertStringNotContainsString('klip.mp4" muted playsinline preload="metadata" data-shot-media class="pointer-events-none h-36 w-64 bg-black object-cover sm:h-44 sm:w-80 scale-110 blur-xl"', $page);
+    }
+
+    public function test_screenshot_blur_can_be_turned_off_per_game(): void
+    {
+        $game = Game::factory()->create([
+            'is_published' => true,
+            'published_at' => now(),
+            'blur_screenshots' => false,
+            'screenshots' => ['games/screenshots/kare.jpg'],
+        ]);
+
+        $page = $this->get(route('games.show', $game))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('data-censored', $page);
+        $this->assertStringNotContainsString('data-reveal-shot', $page);
+        $this->assertStringNotContainsString('scale-110 blur-xl', $page);
+        $this->assertStringContainsString('kare.jpg', $page);
     }
 }

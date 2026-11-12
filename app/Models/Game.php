@@ -38,6 +38,7 @@ class Game extends Model
         'cover_path',
         'banner_path',
         'screenshots',
+        'blur_screenshots',
         'game_version',
         'translation_version',
         'translation_status',
@@ -65,6 +66,7 @@ class Game extends Model
     {
         return [
             'screenshots' => 'array',
+            'blur_screenshots' => 'boolean',
             'translation_status' => TranslationStatus::class,
             'translation_percent' => 'integer',
             'size_mb' => 'integer',

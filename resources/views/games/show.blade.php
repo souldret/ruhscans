@@ -153,18 +153,25 @@
  </div>
  <div class="mt-5 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 @foreach ($shots as $shot)
-                    <button type="button" data-shot="{{ $loop->index }}" class="group relative z-10 shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
-                        @if ($shot['kind'] === 'video')
-                            <video src="{{ $shot['url'] }}#t=0.1" muted playsinline preload="metadata" class="pointer-events-none h-36 w-64 bg-black object-cover sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9"></video>
-                            <span class="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Video</span>
-                        @else
-                            <img src="{{ $shot['url'] }}" alt="{{ $game->title }} ekran görüntüsü" width="320" height="180" loading="lazy" class="pointer-events-none h-36 w-64 object-cover transition duration-300 group-hover:scale-105 sm:h-44 sm:w-80 {{ $adult ? '' : 'blur-md' }}" style="aspect-ratio:16/9">
-                        @endif
-                        <div class="pointer-events-none absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
-                        <span class="pointer-events-none absolute bottom-2 right-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur">
-                            <svg viewBox="0 0 20 20" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8V4h4m4 0h4v4m0 4v4h-4m-4 0H4v-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <button type="button" data-shot="{{ $loop->index }}" @if ($game->blur_screenshots && $shot['kind'] !== 'video') data-censored="1" @endif class="group relative z-10 shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-ink-line transition hover:border-brand-pink/50">
+                    @if ($shot['kind'] === 'video')
+                        <video src="{{ $shot['url'] }}#t=0.1" muted playsinline preload="metadata" data-shot-media class="pointer-events-none h-36 w-64 bg-black object-cover sm:h-44 sm:w-80" style="aspect-ratio:16/9"></video>
+                        <span class="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Video</span>
+                    @else
+                        <img src="{{ $shot['url'] }}" alt="{{ $game->title }} ekran görüntüsü" width="320" height="180" loading="lazy" data-shot-media class="pointer-events-none h-36 w-64 object-cover transition duration-300 group-hover:scale-105 sm:h-44 sm:w-80 {{ $game->blur_screenshots ? 'scale-110 blur-xl' : '' }}" style="aspect-ratio:16/9">
+                    @endif
+                    <div class="pointer-events-none absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
+                    @if ($game->blur_screenshots && $shot['kind'] !== 'video')
+                        <span data-reveal-shot role="button" tabindex="0" class="absolute inset-0 grid place-items-center" aria-label="Görseli göster">
+                            <span class="grid h-12 w-12 place-items-center rounded-full bg-black/65 text-white shadow-lg ring-1 ring-white/30 backdrop-blur">
+                                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 17.9 17.5 12 17.5 2.5 12 2.5 12Z" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6"/></svg>
+                            </span>
                         </span>
-                    </button>
+                    @endif
+                    <span data-shot-expand class="pointer-events-none absolute bottom-2 right-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur {{ $game->blur_screenshots && $shot['kind'] !== 'video' ? 'hidden' : '' }}">
+                        <svg viewBox="0 0 20 20" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8V4h4m4 0h4v4m0 4v4h-4m-4 0H4v-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                </button>
                 @endforeach
             </div>
  </section>

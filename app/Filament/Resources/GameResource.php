@@ -135,6 +135,11 @@ class GameResource extends Resource
                 ->visibility('public')
                 ->directory('games/screenshots')
                 ->columnSpanFull(),
+            Forms\Components\Toggle::make('blur_screenshots')
+                ->label('Ekran görüntülerini bulanık göster')
+                ->helperText('Açıkken detay sayfasında görseller bulanık durur. Ziyaretçi göz simgesine basınca net görür.')
+                ->default(true)
+                ->columnSpanFull(),
             ])->columns(2),
 
             Forms\Components\Section::make('Çeviri ve erişim')->schema([

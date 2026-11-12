@@ -424,13 +424,57 @@ Alpine.start();
  document.body.classList.remove('overflow-y-hidden');
  };
 
- gallery.addEventListener('click', (event) => {
+ const reveal = (button) => {
+        button.removeAttribute('data-censored');
+        button.querySelector('[data-shot-media]')?.classList.remove('blur-xl', 'scale-110');
+        button.querySelector('[data-reveal-shot]')?.remove();
+        button.querySelector('[data-shot-expand]')?.classList.remove('hidden');
+    };
+
+    gallery.addEventListener('click', (event) => {
+        const eye = event.target.closest('[data-reveal-shot]');
+
+        if (eye && gallery.contains(eye)) {
+            event.preventDefault();
+            event.stopPropagation();
+            const censored = eye.closest('[data-shot]');
+
+            if (censored) {
+                reveal(censored);
+            }
+
+            return;
+        }
+
         const button = event.target.closest('[data-shot]');
 
         if (button && gallery.contains(button)) {
+            if (button.hasAttribute('data-censored')) {
+                return;
+            }
+
             event.preventDefault();
             event.stopPropagation();
             open(Number(button.dataset.shot));
+        }
+    });
+
+    gallery.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+
+        const eye = event.target.closest('[data-reveal-shot]');
+
+        if (!eye || !gallery.contains(eye)) {
+            return;
+        }
+
+        event.preventDefault();
+        const censored = eye.closest('[data-shot]');
+
+        if (censored) {
+            reveal(censored);
         }
     });
 
