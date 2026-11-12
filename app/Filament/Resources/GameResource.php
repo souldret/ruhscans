@@ -6,6 +6,7 @@ use App\Enums\Platform;
 use App\Enums\TranslationStatus;
 use App\Filament\Resources\GameResource\Pages;
 use App\Models\Game;
+use App\Models\Tag;
 use App\Support\Slug;
 use Closure;
 use Filament\Forms;
@@ -290,6 +291,60 @@ class GameResource extends Resource
                                 }
 
                                 $record->update(['coin_price' => (int) $data['coin_price']]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\BulkAction::make('attachTags')
+                        ->label('Etiket ekle')
+                        ->icon('heroicon-o-tag')
+                        ->form([
+                            Forms\Components\Select::make('tags')
+                                ->label('Eklenecek etiketler')
+                                ->helperText('Seçilen oyunlardaki mevcut etiketler durur, bunlar eklenir.')
+                                ->options(fn () => Tag::query()->orderBy('name')->pluck('name', 'id'))
+                                ->multiple()
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $ids = array_map('intval', $data['tags'] ?? []);
+
+                            foreach ($records as $record) {
+                                if (! $record instanceof Game || $ids === []) {
+                                    continue;
+                                }
+
+                                $record->tags()->syncWithoutDetaching($ids);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\BulkAction::make('setSale')
+                        ->label('İndirim tarihi')
+                        ->icon('heroicon-o-receipt-percent')
+                        ->form([
+                            Forms\Components\TextInput::make('sale_price')
+                                ->label('İndirimli fiyat')
+                                ->helperText('Boş bırakırsan indirim kalkar.')
+                                ->numeric()
+                                ->minValue(0)
+                                ->integer(),
+                            Forms\Components\DateTimePicker::make('sale_ends_at')
+                                ->label('İndirim bitişi')
+                                ->native(false),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $price = $data['sale_price'];
+
+                            foreach ($records as $record) {
+                                if (! $record instanceof Game) {
+                                    continue;
+                                }
+
+                                $record->update([
+                                    'sale_price' => $price === null || $price === '' ? null : (int) $price,
+                                    'sale_ends_at' => $data['sale_ends_at'] ?: null,
+                                ]);
                             }
                         })
                         ->deselectRecordsAfterCompletion(),

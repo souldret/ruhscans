@@ -3,6 +3,7 @@
 namespace App\Services\Launcher;
 
 use App\Models\Game;
+use App\Models\GameUnlock;
 use App\Models\LauncherDevice;
 use App\Models\LauncherLoginLog;
 use App\Models\User;
@@ -56,6 +57,7 @@ class LauncherHandshake
             'game_slug' => $input['game_slug'],
             'user_id' => $user->id,
             'removable_device_ids' => $decision['removable_device_ids'],
+            'update_notice' => $this->updateNotice($user, $game),
         ];
 
         $flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
@@ -127,6 +129,36 @@ class LauncherHandshake
             'message' => filled($game->launcher_message) ? (string) $game->launcher_message : 'Giriş onaylandı.',
             'min_launcher_version' => $min,
             'removable_device_ids' => [],
+        ];
+    }
+
+    /**
+     * @return array{game_version: ?string, translation_version: ?string, seen_game_version: ?string, seen_translation_version: ?string}|null
+     */
+    private function updateNotice(User $user, ?Game $game): ?array
+    {
+        if (! $game instanceof Game) {
+            return null;
+        }
+
+        $unlock = GameUnlock::query()
+            ->where('user_id', $user->id)
+            ->where('game_id', $game->id)
+            ->first();
+
+        if (! $unlock instanceof GameUnlock) {
+            return null;
+        }
+
+        if (! $game->hasUpdateSince($unlock->seen_game_version, $unlock->seen_translation_version)) {
+            return null;
+        }
+
+        return [
+            'game_version' => $game->game_version,
+            'translation_version' => $game->translation_version,
+            'seen_game_version' => $unlock->seen_game_version,
+            'seen_translation_version' => $unlock->seen_translation_version,
         ];
     }
 

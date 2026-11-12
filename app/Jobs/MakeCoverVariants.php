@@ -61,7 +61,7 @@ class MakeCoverVariants implements ShouldQueue
 
         $base = pathinfo($game->cover_path, PATHINFO_DIRNAME).'/'.pathinfo($game->cover_path, PATHINFO_FILENAME);
 
-        foreach ([240, 480] as $width) {
+        foreach ([240, 480, 960] as $width) {
             $height = (int) round(imagesy($source) * ($width / max(1, imagesx($source))));
             $frame = imagescale($source, $width, $height);
 

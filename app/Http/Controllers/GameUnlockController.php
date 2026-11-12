@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\InsufficientCoinsException;
 use App\Models\Game;
+use App\Models\GameUnlock;
 use App\Models\User;
 use App\Services\GameUnlocker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 class GameUnlockController extends Controller
 {
@@ -51,5 +53,24 @@ class GameUnlockController extends Controller
             'paid' => $unlock->coins_paid,
             'balance' => $fresh instanceof User ? $fresh->coin_balance : 0,
         ]);
+    }
+
+    public function refund(Request $request, Game $game, GameUnlocker $unlocker): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
+
+        $unlock = GameUnlock::query()
+            ->where('user_id', $user->id)
+            ->where('game_id', $game->id)
+            ->firstOrFail();
+
+        try {
+            $unlocker->refundByOwner($user, $unlock);
+        } catch (RuntimeException $exception) {
+            return back()->with('refund_error', $exception->getMessage());
+        }
+
+        return back()->with('refund', 'Coin bakiyene iade edildi.');
     }
 }

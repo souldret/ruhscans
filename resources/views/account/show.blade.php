@@ -164,21 +164,61 @@
  @endif
  </section>
  <section class="card p-6">
- <h2 class="font-display text-lg font-bold tracking-tight">Satın aldığın oyunlar</h2>
+ <h2 class="font-display text-lg font-bold tracking-tight">Kütüphanem</h2>
  @if ($unlocks->isEmpty())
  <p class="mt-4 rounded-2xl border border-ink-line bg-white/[0.02] p-5 text-center text-sm text-ink-muted">Henüz oyun açmadın.</p>
  @else
- <ul class="mt-4 divide-y divide-ink-line overflow-hidden rounded-2xl border border-ink-line bg-ink-deep/30">
+ <ul class="mt-4 space-y-3">
  @foreach ($unlocks as $unlock)
- <li class="flex items-center justify-between gap-3 p-3.5 text-xs sm:text-sm">
- <a href="{{ $unlock->game ? route('games.show', $unlock->game) : '#' }}" class="min-w-0 truncate text-ink-text hover:text-white">{{ $unlock->game?->title ?? 'Silinmiş oyun' }}</a>
- <span class="shrink-0 text-ink-muted">{{ $unlock->coins_paid }} coin</span>
+ @php
+ $libraryGame = $unlock->game;
+ $updated = $libraryGame?->hasUpdateSince($unlock->seen_game_version, $unlock->seen_translation_version);
+ @endphp
+ <li class="flex items-center gap-3 rounded-2xl border border-ink-line bg-ink-deep/30 p-3">
+ @if ($libraryGame)
+ <a href="{{ route('games.show', $libraryGame) }}" class="h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-ink-raised">
+ <x-cover :game="$libraryGame" width="48" height="64" sizes="48px" class="{{ $adult ? '' : 'blur' }}" />
+ </a>
+ @endif
+ <div class="min-w-0 flex-1">
+ @if ($libraryGame)
+ <a href="{{ route('games.show', $libraryGame) }}" class="block truncate text-sm font-semibold text-ink-text hover:text-white">{{ $libraryGame->title }}</a>
+ @else
+ <span class="block truncate text-sm text-ink-muted">Silinmiş oyun</span>
+ @endif
+ <p class="mt-0.5 text-xs text-ink-faint">{{ $unlock->coins_paid }} coin · {{ $unlock->unlocked_at?->timezone(config('app.display_timezone'))->translatedFormat('d M Y') }}</p>
+ @if ($updated && $libraryGame)
+ <p class="mt-1 text-xs font-medium text-brand-gold">Yeni sürüm: v{{ $libraryGame->game_version ?: '—' }} · yama {{ $libraryGame->translation_version ?: '—' }}</p>
+ <form method="POST" action="{{ route('account.acknowledge', $libraryGame) }}" class="mt-2">
+ @csrf
+ <x-button type="submit" variant="ghost" size="sm">Güncellemeyi gördüm</x-button>
+ </form>
+ @endif
+ </div>
  </li>
  @endforeach
  </ul>
  @endif
  </section>
  </div>
+
+ <section class="card mt-8 p-6">
+ <h2 class="font-display text-lg font-bold tracking-tight">Favoriler</h2>
+ @if (($favorites ?? collect())->isEmpty())
+ <p class="mt-4 rounded-2xl border border-ink-line bg-white/[0.02] p-5 text-center text-sm text-ink-muted">Henüz favori yok. Oyun sayfasındaki kalbe bas.</p>
+ @else
+ <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+ @foreach ($favorites as $favorite)
+ <a href="{{ route('games.show', $favorite) }}" class="group overflow-hidden rounded-2xl border border-ink-line bg-ink-deep/30">
+ <span class="block aspect-[3/4] overflow-hidden bg-ink-raised">
+ <x-cover :game="$favorite" width="160" height="213" sizes="180px" class="transition duration-300 group-hover:scale-105 {{ $adult ? '' : 'blur-lg' }}" />
+ </span>
+ <span class="block truncate px-3 py-2 text-sm font-semibold text-ink-text group-hover:text-white">{{ $favorite->title }}</span>
+ </a>
+ @endforeach
+ </div>
+ @endif
+ </section>
 
     {{-- Geçmiş Listeleri --}}
     <div class="mt-8 grid gap-6 lg:grid-cols-2">

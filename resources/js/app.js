@@ -424,12 +424,48 @@ Alpine.start();
  document.body.classList.remove('overflow-y-hidden');
  };
 
+ const slug = (location.pathname.split('/').filter(Boolean).pop() || 'oyun');
+ const memoryKey = 'shot-reveal:' + slug;
+
+ const revealed = () => {
+ try {
+ return JSON.parse(sessionStorage.getItem(memoryKey) || '[]');
+ } catch (error) {
+ return [];
+ }
+ };
+
+ const remember = (shot) => {
+ const list = revealed();
+
+ if (list.includes(shot)) {
+ return;
+ }
+
+ list.push(shot);
+
+ try {
+ sessionStorage.setItem(memoryKey, JSON.stringify(list));
+ } catch (error) {
+ // Depolama kapalıysa bu oturumda blur açık kalır.
+ }
+ };
+
  const reveal = (button) => {
-        button.removeAttribute('data-censored');
-        button.querySelector('[data-shot-media]')?.classList.remove('blur-xl', 'scale-110');
-        button.querySelector('[data-reveal-shot]')?.remove();
-        button.querySelector('[data-shot-expand]')?.classList.remove('hidden');
-    };
+ button.removeAttribute('data-censored');
+ button.querySelector('[data-shot-media]')?.classList.remove('blur-xl', 'scale-110');
+ button.querySelector('[data-reveal-shot]')?.remove();
+ button.querySelector('[data-shot-expand]')?.classList.remove('hidden');
+ remember(Number(button.dataset.shot));
+ };
+
+ revealed().forEach((shot) => {
+ const button = gallery.querySelector('[data-shot="' + shot + '"]');
+
+ if (button) {
+ reveal(button);
+ }
+ });
 
     gallery.addEventListener('click', (event) => {
         const eye = event.target.closest('[data-reveal-shot]');

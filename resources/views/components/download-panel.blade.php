@@ -1,9 +1,10 @@
 @props(['game'])
 
 @php
-    $user = auth()->user();
-    $unlocked = $user && ($user->isAdmin() || $user->unlocks()->where('game_id', $game->id)->exists());
-    $price = $game->effectivePrice();
+ $user = auth()->user();
+ $ownUnlock = $user?->unlocks()->where('game_id', $game->id)->first();
+ $unlocked = $user && ($user->isAdmin() || $ownUnlock !== null);
+ $price = $game->effectivePrice();
     $onSale = $game->sale_price !== null && ($game->sale_ends_at === null || $game->sale_ends_at->isFuture()) && $game->sale_price < $game->coin_price;
     $balance = $user?->coin_balance ?? 0;
     $files = $game->files->groupBy(fn ($file) => $file->platform->value);
@@ -77,6 +78,29 @@
     </div>
 
     @if ($unlocked || $game->isFree())
-        @include('components.partials.download-files', ['tabs' => $tabs, 'files' => $files])
-    @endif
+ @include('components.partials.download-files', ['tabs' => $tabs, 'files' => $files])
+ @endif
+
+ @if ($ownUnlock && $ownUnlock->coins_paid > 0)
+ @php
+ $refundMinutes = (int) config('coins.refund_window_minutes', 30);
+ $refundOpen = $ownUnlock->unlocked_at !== null && $ownUnlock->unlocked_at->gte(now()->subMinutes($refundMinutes));
+ $alreadyDownloaded = \App\Models\Download::query()
+ ->where('user_id', $user->id)
+ ->whereHas('gameFile', fn ($query) => $query->where('game_id', $game->id))
+ ->exists();
+ @endphp
+ @if (session('refund'))
+ <p class="alert-ok mt-4" role="status">{{ session('refund') }}</p>
+ @endif
+ @if (session('refund_error'))
+ <p class="alert-gold mt-4" role="status">{{ session('refund_error') }}</p>
+ @endif
+ @if ($refundOpen && ! $alreadyDownloaded)
+ <form method="POST" action="{{ route('games.refund', $game) }}" class="mt-4" onsubmit="return confirm('{{ $ownUnlock->coins_paid }} coin bakiyene döner. Devam edilsin mi?')">
+ @csrf
+ <button type="submit" class="text-xs font-semibold text-ink-muted underline-offset-2 hover:text-ink-text hover:underline">Yanlış oyunsa iade et ({{ $refundMinutes }} dk)</button>
+ </form>
+ @endif
+ @endif
 </aside>

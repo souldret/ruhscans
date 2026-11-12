@@ -35,18 +35,20 @@ class Cover extends Component
         }
 
         $base = pathinfo($path, PATHINFO_DIRNAME).'/'.pathinfo($path, PATHINFO_FILENAME);
-        $small = $base.'-240.webp';
-        $large = $base.'-480.webp';
-        $smallExists = self::onDisk($small);
-        $originalExists = $smallExists || self::onDisk($path);
+ $small = $base.'-240.webp';
+ $medium = $base.'-480.webp';
+ $large = $base.'-960.webp';
+ $smallExists = self::onDisk($small);
+ $originalExists = $smallExists || self::onDisk($path);
 
-        $this->src = $smallExists
-            ? asset('storage/'.$small)
-            : ($originalExists ? asset('storage/'.$path) : $fallback);
-        $this->srcset = collect([
-            $small => '240w',
-            $large => '480w',
-        ])->filter(fn ($width, $file) => self::onDisk((string) $file))
+ $this->src = $smallExists
+ ? asset('storage/'.$small)
+ : ($originalExists ? asset('storage/'.$path) : $fallback);
+ $this->srcset = collect([
+ $small => '240w',
+ $medium => '480w',
+ $large => '960w',
+ ])->filter(fn ($width, $file) => self::onDisk((string) $file))
             ->map(fn ($width, $file) => asset('storage/'.$file).' '.$width)
             ->implode(', ');
     }

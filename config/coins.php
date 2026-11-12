@@ -30,6 +30,9 @@ return [
     // Kod yüklenince ve oyun açılınca kısa bir fiş gönder.
     'receipts' => (bool) env('COIN_RECEIPTS', false),
 
+    // Yanlış oyunu açan üye, indirmeden bu süre içinde bir kez iade alır.
+    'refund_window_minutes' => (int) env('COIN_REFUND_WINDOW_MINUTES', 30),
+
     /*
     | Satış iadesinde bakiye yetmezse: review (işaretle, coin alma) veya
     | negative (bakiyeyi eksiye düşür ve üyeyi incelemeye al).

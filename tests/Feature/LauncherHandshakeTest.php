@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Mail\SuspiciousLoginMail;
+use App\Enums\CoinTransactionType;
 use App\Models\Game;
 use App\Models\LauncherDevice;
 use App\Models\User;
+use App\Services\CoinService;
+use App\Services\GameUnlocker;
 use App\Services\Launcher\LauncherSigner;
 use App\Support\SecretRedactor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,12 +67,47 @@ class LauncherHandshakeTest extends TestCase
         $this->assertSame($user->id, $decoded['user_id']);
         $this->assertSame($game->slug, $decoded['game_slug']);
         $this->assertSame('dev-1', $decoded['device_id']);
+ $this->assertArrayHasKey('update_notice', $decoded);
+ $this->assertNull($decoded['update_notice']);
 
-        $again = json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+ $again = json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $this->assertSame($payload, $again);
     }
 
-    public function test_invalid_token_is_rejected(): void
+    public function test_update_notice_appears_after_the_game_version_changes(): void
+ {
+ $user = User::factory()->create();
+ $game = Game::factory()->create([
+ 'launcher_enabled' => true,
+ 'game_version' => '1.0',
+ 'translation_version' => '1.0',
+ 'coin_price' => 10,
+ ]);
+ app(CoinService::class)->credit($user, 50, CoinTransactionType::Bonus);
+ app(GameUnlocker::class)->unlock($user, $game);
+ Sanctum::actingAs($user);
+
+ $fresh = json_decode(
+ $this->postJson('/api/v1/launcher/handshake', $this->body($game, 'nonce-update-000001'))->assertOk()->json('payload'),
+ true,
+ 512,
+ JSON_THROW_ON_ERROR,
+ );
+ $this->assertNull($fresh['update_notice']);
+
+ $game->update(['game_version' => '2.0']);
+
+ $changed = json_decode(
+ $this->postJson('/api/v1/launcher/handshake', $this->body($game, 'nonce-update-000002'))->assertOk()->json('payload'),
+ true,
+ 512,
+ JSON_THROW_ON_ERROR,
+ );
+ $this->assertSame('2.0', $changed['update_notice']['game_version']);
+ $this->assertSame('1.0', $changed['update_notice']['seen_game_version']);
+ }
+
+ public function test_invalid_token_is_rejected(): void
     {
         $game = Game::factory()->create(['launcher_enabled' => true]);
 

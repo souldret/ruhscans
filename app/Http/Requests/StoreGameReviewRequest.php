@@ -19,6 +19,7 @@ class StoreGameReviewRequest extends FormRequest
         return [
             'positive' => ['required', 'boolean'],
             'body' => ['required', 'string', 'min:8', 'max:1000'],
+            'spoiler' => ['sometimes', 'boolean'],
         ];
     }
 

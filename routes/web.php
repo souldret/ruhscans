@@ -6,7 +6,9 @@ use App\Http\Controllers\CoinCodeBatchExportController;
 use App\Http\Controllers\CoinPackageController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\GameFavoriteController;
 use App\Http\Controllers\GameReviewController;
+use App\Http\Controllers\GameReviewVoteController;
 use App\Http\Controllers\GameUnlockController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
@@ -62,8 +64,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/hesap/cihaz/{device}', [LauncherDeviceController::class, 'destroy'])->name('account.devices.destroy');
     Route::post('/hesap/kod-kullan', [AccountController::class, 'redeem'])->middleware('throttle:5,1')->name('account.redeem');
     Route::post('/oyun/{game:slug}/ac', [GameUnlockController::class, 'store'])->middleware('throttle:10,1')->name('games.unlock');
-    Route::post('/oyun/{game:slug}/yorum', [GameReviewController::class, 'store'])->name('games.reviews.store');
-    Route::delete('/yorum/{review}', [GameReviewController::class, 'destroy'])->name('games.reviews.destroy');
+ Route::post('/oyun/{game:slug}/iade', [GameUnlockController::class, 'refund'])->middleware('throttle:10,1')->name('games.refund');
+ Route::post('/oyun/{game:slug}/favori', [GameFavoriteController::class, 'store'])->middleware('throttle:30,1')->name('games.favorite');
+ Route::post('/hesap/guncelleme/{game:slug}', [AccountController::class, 'acknowledge'])->name('account.acknowledge');
+ Route::post('/oyun/{game:slug}/yorum', [GameReviewController::class, 'store'])->name('games.reviews.store');
+ Route::delete('/yorum/{review}', [GameReviewController::class, 'destroy'])->name('games.reviews.destroy');
+ Route::post('/yorum/{review}/faydali', [GameReviewVoteController::class, 'store'])->middleware('throttle:30,1')->name('games.reviews.vote');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

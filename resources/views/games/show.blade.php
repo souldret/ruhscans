@@ -48,6 +48,7 @@
  };
  $sizeLabel = collect([$size($pcMb, 'PC'), $size($apkMb, 'APK')])->filter()->implode(' · ') ?: '—';
  $viewer = auth()->user();
+ $favorited = $viewer instanceof \App\Models\User && $game->favoritedBy()->where('user_id', $viewer->id)->exists();
 
 
         $rows = [
@@ -75,11 +76,11 @@
         <div class="card overflow-hidden p-6 sm:p-8">
             <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
                 <div class="relative mx-auto w-40 shrink-0 overflow-hidden rounded-2xl bg-ink-raised shadow-xl ring-1 ring-white/10 sm:mx-0 sm:w-48" style="aspect-ratio:3/4">
-                    <img src="{{ $cover }}" alt="{{ $game->title }} afişi" width="200" height="266" class="h-full w-full object-cover {{ $adult ? '' : 'blur-lg' }}">
-                    @unless ($adult)
-                        <span class="pointer-events-none absolute inset-x-2 bottom-2 rounded-full bg-black/70 px-2 py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-white">18+</span>
-                    @endunless
-                </div>
+ <x-cover :game="$game" :lazy="false" width="200" height="266" sizes="(min-width: 640px) 192px, 160px" class="{{ $adult ? '' : 'blur-lg' }}" />
+ @unless ($adult)
+ <span class="pointer-events-none absolute inset-x-2 bottom-2 rounded-full bg-black/70 px-2 py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-white">18+</span>
+ @endunless
+ </div>
                 <div class="min-w-0 flex-1 py-1">
                     <div class="flex flex-wrap items-center gap-2">
                         <x-badge tone="patch">Türkçe Yama</x-badge>
@@ -99,6 +100,21 @@
                     @if ($game->developer)
                         <p class="mt-1 text-xs text-ink-faint">Geliştirici: <span class="text-ink-text">{{ $game->developer }}</span></p>
                     @endif
+
+                    @auth
+                        @if ($game->is_published)
+                            <form method="POST" action="{{ route('games.favorite', $game) }}" class="mt-4">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition {{ $favorited ? 'border-brand-pink/50 bg-brand-pink/15 text-brand-pink' : 'border-ink-line text-ink-muted hover:text-ink-text' }}" aria-pressed="{{ $favorited ? 'true' : 'false' }}">
+                                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="{{ $favorited ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4.6-7 9-7 9Z" stroke-linejoin="round"/></svg>
+                                    {{ $favorited ? 'Favorilerde' : 'Favorilere ekle' }}
+                                </button>
+                            </form>
+                            @if (session('favorite'))
+                                <p class="mt-2 text-xs text-ink-muted" role="status">{{ session('favorite') }}</p>
+                            @endif
+                        @endif
+                    @endauth
 
                     @if ($totalReviews > 0)
                         <div class="mt-4 flex items-center gap-3 text-xs">
@@ -234,6 +250,10 @@
                         <p class="field-error">{{ $message }}</p>
                     @enderror
                 </div>
+                <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-ink-muted">
+                    <input type="checkbox" name="spoiler" value="1" @checked(old('spoiler')) class="rounded border-ink-line text-brand-pink focus:ring-brand-pink">
+                    Spoiler içeriyor
+                </label>
                 <x-button type="submit">Yorumu kaydet</x-button>
             </form>
         @else
@@ -259,16 +279,31 @@
                             {{ $review->positive ? 'Olumlu' : 'Olumsuz' }}
                         </span>
                     </div>
-                    <p class="mt-3 whitespace-pre-line text-sm leading-6 text-ink-muted">{{ $review->body }}</p>
-                    @if ($viewer instanceof \App\Models\User && ($viewer->isAdmin() || $viewer->is($review->user)))
-                        <div class="mt-3 flex justify-end">
+                    @if ($review->spoiler)
+ <details class="mt-3">
+ <summary class="cursor-pointer text-xs font-semibold text-brand-gold">Spoiler — göstermek için tıkla</summary>
+ <p class="mt-2 whitespace-pre-line text-sm leading-6 text-ink-muted">{{ $review->body }}</p>
+ </details>
+ @else
+ <p class="mt-3 whitespace-pre-line text-sm leading-6 text-ink-muted">{{ $review->body }}</p>
+ @endif
+ <div class="mt-3 flex items-center justify-between gap-3">
+ @if ($viewer instanceof \App\Models\User && $viewer->isNot($review->user))
+ <form method="POST" action="{{ route('games.reviews.vote', $review) }}">
+ @csrf
+ <button type="submit" class="text-xs font-semibold text-ink-muted transition hover:text-ink-text">Faydalı ({{ $review->votes_count }})</button>
+ </form>
+ @else
+ <span class="text-xs text-ink-faint">Faydalı ({{ $review->votes_count }})</span>
+ @endif
+ @if ($viewer instanceof \App\Models\User && ($viewer->isAdmin() || $viewer->is($review->user)))
                             <form method="POST" action="{{ route('games.reviews.destroy', $review) }}">
                                 @csrf
                                 @method('delete')
                                 <button type="submit" class="text-xs text-danger opacity-70 transition hover:opacity-100 hover:underline">Sil</button>
                             </form>
-                        </div>
                     @endif
+ </div>
                 </li>
             @empty
                 <li class="rounded-2xl border border-ink-line bg-white/[0.02] px-5 py-8 text-center text-sm text-ink-muted">

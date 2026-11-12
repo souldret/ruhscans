@@ -6,7 +6,7 @@ use App\Http\Requests\FilterGamesRequest;
 use App\Models\Game;
 use App\Models\User;
 use App\Services\CatalogCache;
-use App\Support\Slug;
+use App\Support\GameSearch;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -26,8 +26,8 @@ class GameController extends Controller
                 'unlocks as owned' => fn ($unlocks) => $unlocks->where('user_id', $viewerId),
             ]))
             ->when(filled($filters['q'] ?? null), function ($query) use ($filters) {
-                $query->where('search_text', 'like', '%'.Slug::fold((string) $filters['q']).'%');
-            })
+            GameSearch::apply($query, (string) $filters['q']);
+        })
             ->when($tags !== [], fn ($query) => $query->whereHas(
                 'tags',
                 fn ($tagQuery) => $tagQuery->whereIn('slug', $tags),
@@ -59,7 +59,12 @@ class GameController extends Controller
     public function show(Request $request, Game $game): View
     {
         if (! $game->is_published) {
-            abort(404);
+            $admin = $request->user();
+            $preview = $admin instanceof User
+                && $admin->isAdmin()
+                && $request->hasValidSignature();
+
+            abort_unless($preview, 404);
         }
 
         $this->authorize('view', $game);
@@ -67,23 +72,52 @@ class GameController extends Controller
         $game->load([
             'tags',
             'files',
-            'reviews' => fn ($query) => $query->with('user')->latest(),
+            'reviews' => fn ($query) => $query->with('user')->withCount('votes')->latest(),
         ]);
         $viewer = $request->user();
         $viewerId = $viewer instanceof User ? $viewer->id : 0;
         $game->recordView($viewer instanceof User ? $viewerId : null, $request->ip());
 
-        $related = Game::query()
+        $relatedQuery = Game::query()
             ->published()
             ->whereKeyNot($game->id)
             ->with('tags')
             ->when($viewer instanceof User, fn ($query) => $query->withExists([
                 'unlocks as owned' => fn ($unlocks) => $unlocks->where('user_id', $viewerId),
-            ]))
-            ->whereHas('tags', fn ($query) => $query->whereIn('tags.id', $game->tags->pluck('id')))
-            ->latest('published_at')
-            ->limit(8)
-            ->get();
+            ]));
+
+        $tagIds = $game->tags->pluck('id');
+        $related = $tagIds->isEmpty()
+            ? collect()
+            : (clone $relatedQuery)
+                ->whereHas(
+                    'tags',
+                    fn ($query) => $query->whereIn('tags.id', $tagIds),
+                )
+                ->latest('published_at')
+                ->limit(8)
+                ->get();
+
+        if ($related->isEmpty()) {
+            $price = $game->effectivePrice();
+            $band = max(50, (int) round($price * 0.5));
+            $low = max(0, $price - $band);
+            $high = $price + $band;
+            $related = (clone $relatedQuery)
+                ->when($price > 0, function ($query) use ($low, $high) {
+                    $query->whereRaw(
+                        'CASE WHEN sale_price IS NOT NULL AND (sale_ends_at IS NULL OR sale_ends_at > ?) THEN sale_price ELSE coin_price END BETWEEN ? AND ?',
+                        [now(), $low, $high],
+                    );
+                })
+                ->latest('updated_at')
+                ->limit(8)
+                ->get();
+        }
+
+        if ($related->isEmpty()) {
+            $related = (clone $relatedQuery)->latest('updated_at')->limit(8)->get();
+        }
 
         return view('games.show', [
             'game' => $game,

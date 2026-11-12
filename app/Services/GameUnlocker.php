@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Enums\CoinTransactionType;
 use App\Mail\CoinReceiptMail;
+use App\Models\Download;
 use App\Models\Game;
 use App\Models\GameUnlock;
 use App\Models\User;
+use RuntimeException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -39,6 +41,8 @@ class GameUnlocker
                     'user_id' => $user->id,
                     'game_id' => $game->id,
                     'coins_paid' => $price,
+                    'seen_game_version' => $game->game_version,
+                    'seen_translation_version' => $game->translation_version,
                 ]);
             } catch (UniqueConstraintViolationException) {
                 return GameUnlock::query()
@@ -71,6 +75,34 @@ class GameUnlocker
 
             return $unlock;
         });
+    }
+
+    public function refundByOwner(User $user, GameUnlock $unlock): void
+    {
+        if ($unlock->user_id !== $user->id) {
+            throw new RuntimeException('Bu açılış sana ait değil.');
+        }
+
+        if ($unlock->coins_paid <= 0) {
+            throw new RuntimeException('Ücretsiz açılış iade edilmez.');
+        }
+
+        $minutes = (int) config('coins.refund_window_minutes', 30);
+
+        if ($unlock->unlocked_at === null || $unlock->unlocked_at->lt(now()->subMinutes($minutes))) {
+            throw new RuntimeException('İade süresi doldu.');
+        }
+
+        $downloaded = Download::query()
+            ->where('user_id', $user->id)
+            ->whereHas('gameFile', fn ($query) => $query->where('game_id', $unlock->game_id))
+            ->exists();
+
+        if ($downloaded) {
+            throw new RuntimeException('Dosya indirildikten sonra iade yapılamaz.');
+        }
+
+        $this->refund($user, $unlock, 'Yanlış oyun iadesi');
     }
 
     public function refund(User $actor, GameUnlock $unlock, string $reason): void

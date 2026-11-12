@@ -15,6 +15,8 @@ class GameUnlock extends Model
         'user_id',
         'game_id',
         'coins_paid',
+        'seen_game_version',
+        'seen_translation_version',
     ];
 
     protected function casts(): array

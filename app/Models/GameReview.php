@@ -6,6 +6,7 @@ use Database\Factories\GameReviewFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GameReview extends Model
 {
@@ -20,6 +21,7 @@ class GameReview extends Model
         'user_id',
         'positive',
         'body',
+        'spoiler',
     ];
 
     /**
@@ -29,7 +31,16 @@ class GameReview extends Model
     {
         return [
             'positive' => 'boolean',
+            'spoiler' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<GameReviewVote, $this>
+     */
+    public function votes(): HasMany
+    {
+        return $this->hasMany(GameReviewVote::class);
     }
 
     /**

@@ -22,9 +22,10 @@ class GameReviewController extends Controller
             $game->reviews()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'positive' => $request->boolean('positive'),
-                    'body' => $request->string('body')->toString(),
-                ],
+                        'positive' => $request->boolean('positive'),
+                        'body' => $request->string('body')->toString(),
+                        'spoiler' => $request->boolean('spoiler'),
+                    ],
             );
         });
 

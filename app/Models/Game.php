@@ -115,6 +115,24 @@ class Game extends Model
     }
 
     /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'game_favorites')->withTimestamps();
+    }
+
+    public function hasUpdateSince(?string $gameVersion, ?string $translationVersion): bool
+    {
+        $gameChanged = filled($this->game_version)
+            && (string) $this->game_version !== (string) $gameVersion;
+        $translationChanged = filled($this->translation_version)
+            && (string) $this->translation_version !== (string) $translationVersion;
+
+        return $gameChanged || $translationChanged;
+    }
+
+    /**
      * @return HasMany<LauncherDevice, $this>
      */
     public function launcherDevices(): HasMany
