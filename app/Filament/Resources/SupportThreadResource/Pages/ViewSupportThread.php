@@ -16,15 +16,21 @@ class ViewSupportThread extends ViewRecord
     protected static string $resource = SupportThreadResource::class;
 
     public function mount(int|string $record): void
-    {
-        parent::mount($record);
+ {
+ parent::mount($record);
 
-        $actor = auth()->user();
+ if (! $this->record instanceof SupportThread) {
+ return;
+ }
 
-        if ($actor instanceof User && $this->record instanceof SupportThread) {
-            $this->record->markReadFor($actor);
-        }
-    }
+ $this->record->load(['user', 'messages.user']);
+
+ $actor = auth()->user();
+
+ if ($actor instanceof User) {
+ $this->record->markReadFor($actor);
+ }
+ }
 
     protected function getHeaderActions(): array
     {

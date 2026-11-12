@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\SupportThreadStatus;
+use App\Filament\Resources\SupportThreadResource\Pages\ViewSupportThread;
 use App\Models\SupportMessage;
 use App\Models\SupportThread;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SupportThreadTest extends TestCase
@@ -136,7 +139,36 @@ class SupportThreadTest extends TestCase
         $message = $thread->messages()->firstOrFail();
 
         $this->assertFalse($message->is_staff);
-        $this->assertTrue($thread->unread_by_admin);
-        $this->assertSame(SupportThreadStatus::Open, $thread->status);
-    }
+ $this->assertTrue($thread->unread_by_admin);
+ $this->assertSame(SupportThreadStatus::Open, $thread->status);
+ }
+
+ public function test_an_admin_can_open_a_thread_without_lazy_loading_the_author(): void
+ {
+ Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+ $admin = User::factory()->admin()->create(['name' => 'Masa']);
+ $member = User::factory()->create(['name' => 'Deniz']);
+ $this->actingAs($admin);
+
+ $thread = SupportThread::query()->create([
+ 'user_id' => $member->id,
+ 'subject' => 'Kod gelmedi',
+ 'status' => SupportThreadStatus::Open,
+ 'unread_by_admin' => true,
+ 'unread_by_user' => false,
+ ]);
+ $thread->post($member, 'Odedim ama kod yok.');
+ $thread->post($admin, 'Kodunu yeniden gonderiyorum.');
+
+ Livewire::test(ViewSupportThread::class, ['record' => $thread->getKey()])
+ ->assertOk()
+ ->assertSee('Kod gelmedi')
+ ->assertSee('Deniz')
+ ->assertSee('Odedim ama kod yok.')
+ ->assertSee('Kodunu yeniden gonderiyorum.');
+
+ $thread->refresh();
+ $this->assertFalse($thread->unread_by_admin);
+ }
 }
