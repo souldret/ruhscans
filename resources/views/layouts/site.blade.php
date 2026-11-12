@@ -70,7 +70,7 @@
  @php $active = request()->routeIs($item['match']); @endphp
  <a href="{{ route($item['route']) }}"
  @if ($active) aria-current="page" @endif
- class="relative rounded-full px-3.5 py-2 transition {{ $active ? 'bg-white/[0.07] text-white' : 'text-ink-muted hover:bg-white/[0.04] hover:text-ink-text' }} {{ $item['route'] === 'vip' && ! $active ? 'hover:text-brand-gold' : '' }}">
+ class="relative rounded-full px-3.5 py-2 transition {{ $active ? 'bg-white/[0.07] text-white' : 'text-ink-muted hover:bg-white/[0.04] hover:text-ink-text' }}">
  {{ $item['label'] }}
  </a>
  @endforeach

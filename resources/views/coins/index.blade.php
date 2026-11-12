@@ -112,6 +112,5 @@
             <p class="mt-1 text-sm leading-6 text-ink-muted">Kod gelmedi, ödeme düştü ya da coin bakiyene yansımadıysa yöneticiye yaz.</p>
         </div>
         <x-button :href="route('support.index')" variant="ghost" class="min-h-12">Destek için buraya</x-button>
-        </div>
-    </section>
+ </section>
 @endsection

@@ -211,8 +211,16 @@
     }
 
     .peer:checked + .chip {
-        @apply border-brand-pink/50 bg-brand-pink/15 text-white shadow-[0_0_0_1px_rgba(255,77,141,0.25)];
-    }
+ @apply border-brand-pink/50 bg-brand-pink/15 text-white shadow-[0_0_0_1px_rgba(255,77,141,0.25)];
+ }
+
+ .chip-check {
+ display: none;
+ }
+
+ .peer:checked + .chip .chip-check {
+ display: inline-block;
+ }
 
     .peer:focus-visible + .chip {
         outline: 2px solid #ff4d8d;

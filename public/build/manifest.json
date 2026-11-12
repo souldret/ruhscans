@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DPvqRHXi.css",
+    "file": "assets/app-BM3GLpXR.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -49,7 +49,7 @@
     "src": "resources/fonts/sora-ext-700.woff2"
   },
   "resources/js/admin-upload.js": {
-    "file": "assets/admin-upload-T-lunTO-.js",
+    "file": "assets/admin-upload-l0sNRNKZ.js",
     "name": "admin-upload",
     "src": "resources/js/admin-upload.js",
     "isEntry": true

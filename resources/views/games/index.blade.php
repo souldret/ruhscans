@@ -80,7 +80,7 @@
                         <label class="relative">
                             <input type="checkbox" name="etiket[]" value="{{ $tag->slug }}" @checked(in_array($tag->slug, $selected, true)) class="peer sr-only">
                             <span class="chip">
-                                <svg viewBox="0 0 16 16" class="hidden h-3 w-3 peer-checked:inline" aria-hidden="true"></svg>
+                                <svg viewBox="0 0 16 16" class="chip-check h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3.5 8.5 3 3 6-6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 {{ $tag->name }}
                             </span>
                         </label>

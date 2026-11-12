@@ -5,7 +5,7 @@
        $version = $game->translation_version ?: $game->game_version;
    @endphp
 
-<a href="{{ route('games.show', $game) }}" {{ $attributes->merge(['class' => 'group block w-36 rounded-2xl focus-visible:outline sm:w-40']) }}>
+<a href="{{ route('games.show', $game) }}" {{ $attributes->merge(['class' => 'group block w-36 min-w-0 rounded-2xl focus-visible:outline sm:w-40']) }}>
     <article>
         <div class="relative overflow-hidden rounded-2xl bg-ink-raised ring-1 ring-inset ring-white/5 transition duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-glow" style="aspect-ratio:3/4">
             <x-cover :game="$game" class="transition duration-500 ease-out group-hover:scale-105 {{ $adult ? '' : 'blur-md' }}" />

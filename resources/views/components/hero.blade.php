@@ -31,7 +31,7 @@
             <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/10"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
 
-            <div class="relative grid h-full min-h-0 items-center gap-6 overflow-hidden px-6 py-8 pb-16 sm:px-10 min-[900px]:grid-cols-[minmax(0,1fr)_11rem]">
+            <div class="relative grid h-full min-h-0 items-center gap-6 overflow-hidden px-6 py-8 pb-20 sm:px-10 sm:pb-16 min-[900px]:grid-cols-[minmax(0,1fr)_11rem]">
                 <div class="min-w-0 max-w-xl motion-safe:animate-fade-up">
                     <div class="flex flex-wrap items-center gap-2">
                         <x-badge tone="patch">Türkçe Yama</x-badge>
