@@ -34,5 +34,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+ <env name="CODE_HMAC_KEY" value="test-hmac-key"/>
+ <env name="SONTEKLIF_URL" value="https://www.sonteklif.com"/>
     </php>
 </phpunit>

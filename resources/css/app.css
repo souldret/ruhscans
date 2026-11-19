@@ -138,9 +138,25 @@
     }
 
     .stone {
-        filter: drop-shadow(0 0 6px rgba(255, 46, 136, 0.8));
-        animation: pulse-stone 2.8s ease-in-out infinite;
-    }
+ filter: drop-shadow(0 0 6px rgba(255, 46, 136, 0.8));
+ animation: pulse-stone 2.8s ease-in-out infinite;
+ }
+
+ .stone-burst {
+ opacity: 0;
+ background:
+ radial-gradient(circle at 18% 40%, rgba(255, 46, 136, 0.0), transparent 42%),
+ radial-gradient(circle at 70% 30%, rgba(232, 194, 106, 0.0), transparent 36%);
+ }
+
+ .stone-burst.is-on {
+ animation: stone-burst 1.6s ease-out;
+ }
+
+ .stone-burst.is-on ~ p .stone,
+ .stone-burst.is-on + p .stone {
+ animation: stone-flare 1.6s ease-out;
+ }
 
     .strip {
         scroll-snap-type: x mandatory;
@@ -170,19 +186,46 @@
 }
 
 @keyframes pulse-stone {
-    0%, 100% {
-        filter: drop-shadow(0 0 4px rgba(255, 46, 136, 0.45));
-    }
-    50% {
-        filter: drop-shadow(0 0 12px rgba(255, 46, 136, 0.95));
-    }
+ 0%, 100% {
+ filter: drop-shadow(0 0 4px rgba(255, 46, 136, 0.45));
+ }
+ 50% {
+ filter: drop-shadow(0 0 12px rgba(255, 46, 136, 0.95));
+ }
+ }
+
+@keyframes stone-burst {
+ 0% {
+ opacity: 0;
+ background:
+ radial-gradient(circle at 22% 55%, rgba(255, 46, 136, 0), transparent 8%),
+ radial-gradient(circle at 68% 35%, rgba(232, 194, 106, 0), transparent 8%);
+ }
+ 35% {
+ opacity: 1;
+ background:
+ radial-gradient(circle at 22% 55%, rgba(255, 46, 136, 0.85), transparent 28%),
+ radial-gradient(circle at 68% 35%, rgba(232, 194, 106, 0.7), transparent 22%);
+ }
+ 100% {
+ opacity: 0;
+ background:
+ radial-gradient(circle at 22% 55%, rgba(255, 46, 136, 0), transparent 46%),
+ radial-gradient(circle at 68% 35%, rgba(232, 194, 106, 0), transparent 40%);
+ }
 }
+
+@keyframes stone-flare {
+ 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(255, 46, 136, 0.8)); }
+ 40% { transform: scale(1.35); filter: drop-shadow(0 0 22px rgba(232, 194, 106, 1)); }
+ }
 
 @media (prefers-reduced-motion: reduce) {
     .cover-tilt,
-    .stone,
-    .cover-sheen {
-        animation: none !important;
-        transition: none !important;
-    }
+ .stone,
+ .cover-sheen,
+ .stone-burst {
+ animation: none !important;
+ transition: none !important;
+ }
 }

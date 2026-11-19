@@ -5,6 +5,7 @@
             <a class="hover:text-magenta" href="{{ route('discover') }}">Keşfet</a>
             @auth
                 <a class="hover:text-magenta" href="{{ route('library') }}">Kütüphane</a>
+ <a class="hover:text-magenta" href="{{ route('wallet.show') }}">Cüzdan</a>
                     <a class="hover:text-magenta" href="{{ route('reader.history') }}">Geçmiş</a>
                 <a class="hover:text-magenta" href="{{ route('preferences') }}">Profil</a>
             @else
@@ -21,5 +22,5 @@
     <a class="rounded-xl py-2 hover:text-magenta" href="{{ route('discover') }}">Keşfet</a>
     <a class="rounded-xl py-2 hover:text-magenta" href="{{ auth()->check() ? route('reader.history') : route('login') }}">Geçmiş</a>
     <a class="rounded-xl py-2 hover:text-magenta" href="{{ route('discover') }}?odak=ara">Ara</a>
-    <a class="rounded-xl py-2 hover:text-magenta" href="{{ auth()->check() ? route('preferences') : route('login') }}">Profil</a>
+    <a class="rounded-xl py-2 hover:text-magenta" href="{{ auth()->check() ? route('wallet.show') : route('login') }}">Cüzdan</a>
 </nav>

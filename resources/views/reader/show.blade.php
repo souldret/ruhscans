@@ -50,14 +50,31 @@
                 @else
                     <p class="mt-4 text-sm text-mist/75">Bu bölüm henüz herkese açık değil.</p>
                 @endif
-                @if ($gate['vip_free'])
-                    <p class="mt-2 text-sm">VIP ile ücretsiz.</p>
-                @endif
+                @if ($gate['vip_free'] || $gate['reason'] === 'early')
+ <p class="mt-2 text-sm">VIP ile ücretsiz.</p>
+ @elseif ($gate['reason'] === 'price')
+ <p class="mt-2 text-sm text-mist/60">VIP seçeneği ruh taşı koduyla açılır.</p>
+ @endif
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
-                    <a class="btn-magenta" href="{{ auth()->check() ? route('preferences') : route('login') }}">VIP seçeneği</a>
-                    <button type="button" class="btn-ghost" disabled title="Ekonomi fazında açılacak">Kod kullan</button>
-                </div>
-                <p class="mt-4 text-xs text-mist/50">Ruh taşı ve kod kullanımı bir sonraki fazda bağlanacak.</p>
+ @auth
+ @if ($gate['reason'] === 'price')
+ <form method="POST" action="{{ route('reader.unlock', [$series, $chapter->number]) }}">
+ @csrf
+ <button type="submit" class="btn-magenta">{{ $gate['price'] }} ruh taşıyla aç</button>
+ </form>
+ @endif
+ <a class="btn-ghost" href="{{ route('wallet.show') }}">Kod kullan</a>
+ @else
+ <a class="btn-magenta" href="{{ route('login') }}">Giriş yap</a>
+ <a class="btn-ghost" href="{{ route('login') }}">Kod kullan</a>
+ @endauth
+ </div>
+ @error('unlock')
+ <p class="mt-4 text-sm text-magenta">{{ $message }}</p>
+ @enderror
+ @auth
+ <p class="mt-4 text-xs text-mist/50">Bakiyen: {{ auth()->user()->ruh_tasi_bakiye }} ruh taşı. @if (auth()->user()->isVip())<span class="badge-vip">VIP</span>@endif</p>
+ @endauth
             </section>
         @else
             <div x-show="mode === 'webtoon'" class="space-y-1 px-0 sm:px-4">

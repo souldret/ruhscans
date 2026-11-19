@@ -20,11 +20,12 @@ class ChapterAccess
         }
 
         $early = $chapter->erken_erisim_bitis !== null && $chapter->erken_erisim_bitis->isFuture();
-        $priced = (int) $chapter->ruh_tasi_fiyat > 0;
+ $earlyEnded = $chapter->erken_erisim_bitis !== null && ! $chapter->erken_erisim_bitis->isFuture();
+ $priced = (int) $chapter->ruh_tasi_fiyat > 0;
 
-        if (! $early && ! $priced) {
-            return null;
-        }
+ if ($earlyEnded || (! $early && ! $priced)) {
+ return null;
+ }
 
         if ($user?->isVip() && ($chapter->vip_ucretsiz || $early)) {
             return null;

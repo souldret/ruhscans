@@ -53,7 +53,7 @@ test('yetkisiz istek kilitli bölümde görsel adresi dönmez', function () {
         ->assertSee('Kilitli bölüm')
         ->assertSee('18 ruh taşı')
         ->assertSee('Kod kullan')
-        ->assertSee('VIP seçeneği');
+ ->assertSee('VIP seçeneği');
 
     expect($html->getContent())->not->toContain($path);
 

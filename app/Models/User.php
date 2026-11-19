@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
@@ -26,6 +27,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public const ROLE_UYE = 'uye';
 
+ public static bool $balanceWriteAllowed = false;
+
     /**
      * @var list<string>
      */
@@ -33,7 +36,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'name',
         'email',
         'password',
-        'ruh_tasi_bakiye',
         'vip_bitis',
         'gizli_mod',
         'kapak_blur',
@@ -80,9 +82,27 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     public function libraryEntries(): HasMany
-    {
-        return $this->hasMany(LibraryEntry::class);
-    }
+ {
+ return $this->hasMany(LibraryEntry::class);
+ }
+
+ public function walletTransactions(): HasMany
+ {
+ return $this->hasMany(WalletTransaction::class);
+ }
+
+ protected static function booted(): void
+ {
+ static::updating(function (User $user): void {
+ if (! $user->isDirty('ruh_tasi_bakiye')) {
+ return;
+ }
+
+ if (! self::$balanceWriteAllowed) {
+ throw new \RuntimeException('Ruh taşı bakiyesi yalnızca WalletService ile güncellenir.');
+ }
+ });
+ }
 
     public function isVip(): bool
     {
