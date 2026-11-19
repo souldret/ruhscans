@@ -7,6 +7,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
@@ -38,6 +39,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'etiket_karaliste',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'translator_group_id',
     ];
 
     /**
@@ -65,6 +67,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function translatorGroup(): BelongsTo
+    {
+        return $this->belongsTo(TranslatorGroup::class);
     }
 
     public function canAccessPanel(Panel $panel): bool
