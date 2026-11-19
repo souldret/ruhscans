@@ -33,7 +33,7 @@
 6. Güvenlik — bitti
 7. SEO ve cila — bitti
 
-Tüm fazlar tamam. Canlıya hazır.
+Tüm fazlar tamam. Admin paneli denetimi (2026-11-22) sonrası içerik, ekonomi, üye ve sistem ekranları dolduruldu.
 
 ## Biten
 
@@ -85,6 +85,23 @@ Tüm fazlar tamam. Canlıya hazır.
 - Yönetici özeti (günlük okuma, yeni üye, kod, bekleyen şikayet), site ayarları (panik, Sonteklif, duyuru) ve bakım modu.
 - 404, 403, 500, 503 gece temasında ve aynı 18+ uyarıyla.
 - `php artisan optimize` config dosyalarında çapraz `config()` çağrısı olmadan çalışır.
+- Admin paneli: süper admin kapısı, çeviri ekibi sınırı, seri/bölüm/sayfa, toplu ZIP, tek seferlik kod CSV, üye, şikayet, site ayarları, sistem durumu.
+
+## Admin denetimi (2026-11-22)
+
+Canlı panel boş görünüyordu. Kodda seri, bölüm, tek ZIP, kod partisi, cüzdan servisi, şikayet ve site ayarları vardı. Ayrı üye, rol, kod, cüzdan kaynakları, sistem durumu, toplu ZIP, sayfa sıralama ve kalıcı tek seferlik CSV yoktu. Admin TOTP onaylamadan `canAccessPanel` false döner; bu yüzden panel boş veya erişilemez görünür.
+
+| Özellik | Kod | Filament | Durum |
+| --- | --- | --- | --- |
+| Seri / bölüm / sayfa | vardı | vardı, form eksik | tam form, kapak, filtre, toplu işlem |
+| ZIP yükleme | tek ZIP vardı | form zayıftı | kuyruk, rozet, yeniden dene, toplu klasör ZIP |
+| Kod üretimi | servis vardı | parti listesi | Kod Üret, tek seferlik CSV, 10.000+ kuyruk |
+| Cüzdan | servis vardı | yok | salt okunur işlem listesi, üye detayı |
+| Kullanıcı yönetimi | model vardı | yok | üye, rol, gerekçeli taş/VIP, engel |
+| Şikayet kuyruğu | vardı | kısmi | içeriği aç, gizle, incelendi |
+| Ayarlar | tablo vardı | dağınık sayfalar | tek Site Ayarları, cache |
+
+Yetki: `Gate::before` admin rolüne her yetenekte true döner. `ceviri_ekibi` yalnızca kendi grubunun içeriğini görür; ekonomi, kullanıcı ve sistem menüleri `AdminAccess::admin()` ile kapalıdır.
 
 ## Kararlar
 
@@ -102,6 +119,11 @@ Tüm fazlar tamam. Canlıya hazır.
 - Ödeme geçidi yok. Kodlar Sonteklif'te satılır. Cüzdan linki admin `site_settings.sonteklif_url`, yoksa `SONTEKLIF_URL`.
 - Okuma hız anahtarı girişliyse `u:{id}`, değilse `ip:{CF-Connecting-IP}`. Referer yoksa hotlink engeli uygulanmaz (doğrudan açılış).
 - Filigran piksele gömülmez. Açıkken okuyucu JSON’unda ve `alt` metninde `ruhscans #{id}` görünür.
+- Admin süper kullanıcıdır (`Gate::before`). Çeviri ekibi ekonomi, üye ve sistem kaynaklarına giremez.
+- Düz kod yalnızca `code_exports` dosyasında, indirme veya süre dolunca silinir. DB’de düz kod yoktur. 10.000 ve üzeri `GenerateCodeBatch` kuyruğundadır.
+- Manuel taş ve VIP yalnızca `MemberAdmin` üzerinden, zorunlu gerekçeyle, ledger ve aktivite günlüğüne yazılır.
+- Şikayet “çözüldü” ayrı bir enum değildir; `ReportStatus::Incelendi` kullanılır.
+- `ContentSeeder` yalnızca `local` ortamda çağrılır.
 
 ## Ortam değişkenleri
 
@@ -118,6 +140,10 @@ Tüm fazlar tamam. Canlıya hazır.
 - `read_blocked_until` için ayrı admin formu yok; blok önbellek ve kolon üzerinden uygulanır.
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
 - R2 boşken sayfa yüklemesi `CONTENT_IMAGE_DISK=local` ile yerel diske düşürülebilir.
+- `ReportStatus` içinde ayrı “çözüldü” değeri yok; kuyruk `Incelendi` yazar.
+- Cloudflare istek gövdesi yaklaşık 100 MB. `CONTENT_MAX_ZIP_KB` daha yüksek olsa da form bu sınırı uyarır.
+- Sayfa küçük resmi local diskte geçici URL üretemez; R2/S3 `temporaryUrl` ister.
+- Horizon menüsü `/horizon` bağlantısıdır. Windows geliştirmede `pcntl` yoktur.
 
 ## Canlıya almadan önce
 
@@ -133,4 +159,4 @@ Tüm fazlar tamam. Canlıya hazır.
 
 ## Sonraki adım
 
-Canlı dağıtım. Uygulama fazı kalmadı.
+Canlıda `php artisan migrate --force`, ardından `php artisan optimize` ve kuyruk işçisini yeniden başlat. Admin TOTP onaylamadan panele giremez.
