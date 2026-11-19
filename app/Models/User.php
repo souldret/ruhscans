@@ -44,6 +44,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'okuma_modu',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'two_factor_recovery_codes',
         'translator_group_id',
  'blocked_at',
  ];
@@ -55,6 +56,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'password',
         'remember_token',
         'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -75,6 +77,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'ruh_tasi_bakiye' => 'integer',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
+            'two_factor_recovery_codes' => 'encrypted:array',
  'blocked_at' => 'datetime',
  ];
  }
@@ -142,8 +145,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
  }
 
  if ($this->hasRole(self::ROLE_ADMIN) && ! $this->hasConfirmedTwoFactor()) {
- return false;
- }
+            return false;
+        }
 
  return true;
  }
@@ -151,6 +154,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function hasConfirmedTwoFactor(): bool
     {
         return filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function requiresTwoFactorSetup(): bool
+    {
+        return $this->hasRole(self::ROLE_ADMIN) && ! $this->hasConfirmedTwoFactor();
     }
 
     public function getActivitylogOptions(): LogOptions

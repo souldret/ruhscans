@@ -2,7 +2,9 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
+use App\Filament\Auth\Login;
+use App\Http\Middleware\AuthenticateAdminPanel;
+use App\Http\Middleware\EnsureAdminTwoFactor;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -36,11 +38,15 @@ class AdminPanelProvider extends PanelProvider
                 {
                     $user = $request->user();
 
-                    if ($user !== null && $user->hasRole('admin') && ! $user->hasConfirmedTwoFactor()) {
-                        return redirect()->route('admin.two-factor');
-                    }
+                    if ($user !== null && $user->hasRole('admin')) {
+            $route = $user->hasConfirmedTwoFactor()
+                ? 'admin.two-factor.challenge'
+                : 'admin.two-factor';
 
-                    return redirect()->intended(filament()->getUrl());
+            return redirect()->route($route);
+        }
+
+        return redirect()->intended(filament()->getUrl());
                 }
             };
         });
@@ -52,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->brandName('ruhscans')
             ->brandLogo(asset('images/ruhscans-mark.svg'))
             ->brandLogoHeight('2rem')
@@ -102,7 +108,8 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
-            ]);
+            AuthenticateAdminPanel::class,
+            EnsureAdminTwoFactor::class,
+        ]);
     }
 }

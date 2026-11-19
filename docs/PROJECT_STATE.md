@@ -41,7 +41,7 @@ Tüm fazlar tamam. Admin paneli denetimi (2026-11-22) sonrası içerik, ekonomi,
 - PostgreSQL ve Redis varsayılanları, `docker-compose.dev.yml`
 - Roller: `admin`, `ceviri_ekibi`, `uye`
 - Filament yalnızca admin ve çeviri ekibine açık
-- Admin için zorunlu TOTP; ilk admin seeder'ı `.env` değerlerini okur
+- Admin için zorunlu TOTP. Kurulum Filament dışında `/guvenlik/iki-adim`; QR tarayıcıda üretilir, gizli anahtar üçüncü tarafa gitmez. Kurtarma kodları hash’lenir. Kayıp cihaz: `php artisan user:reset-2fa {email}`
 - Kayıt, giriş, e-posta doğrulama, parola sıfırlama, profil
 - Türkçe dil dosyaları, `Europe/Istanbul`
 - 18+ yaş kapısı, 30 günlük çerez, yasal sayfa muafiyetleri
@@ -86,6 +86,7 @@ Tüm fazlar tamam. Admin paneli denetimi (2026-11-22) sonrası içerik, ekonomi,
 - 404, 403, 500, 503 gece temasında ve aynı 18+ uyarıyla.
 - `php artisan optimize` config dosyalarında çapraz `config()` çağrısı olmadan çalışır.
 - Admin paneli: süper admin kapısı, çeviri ekibi sınırı, seri/bölüm/sayfa, toplu ZIP, tek seferlik kod CSV, üye, şikayet, site ayarları, sistem durumu.
+- 2FA’sız admin panele 403 almaz; `/guvenlik/iki-adim` kurulumuna gider. Onaydan sonra panel açılır. Sonraki girişte TOTP veya tek kullanımlık kurtarma kodu istenir.
 
 ## Admin denetimi (2026-11-22)
 
@@ -135,7 +136,7 @@ Yetki: `Gate::before` admin rolüne her yetenekte true döner. `ceviri_ekibi` ya
 - Yasal metinler taslak; hukuk incelemesi yok. Şikayet ve DMCA formları çalışır.
 - Windows'ta Horizon `pcntl` / `posix` olmadan çalışmaz. Üretim Linux olmalı.
 - R2 anahtarları boşken dosya yüklenemez.
-- İlk admin, `.env` doldurulmadan seed edilmez ve 2FA onaylamadan panele giremez.
+- İlk admin, `.env` doldurulmadan seed edilmez. 2FA onaylamadan panele giremez; giriş onu kurulum sayfasına bırakır. Çeviri ekibine 2FA zorunlu değildir.
 - Giriş, kayıt ve profil formları hâlâ Breeze düzeninde; gece temasına alınmadı.
 - `read_blocked_until` için ayrı admin formu yok; blok önbellek ve kolon üzerinden uygulanır.
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
@@ -151,7 +152,7 @@ Yetki: `Gate::before` admin rolüne her yetenekte true döner. `ceviri_ekibi` ya
 - `APP_DEBUG=false`, `APP_ENV=production`, `APP_URL=https://ruhscans.com`.
 - PostgreSQL 16'da `php artisan migrate --force`. `pg_trgm` ve GIN arama indeksi bu migration ile kurulur; bu geliştirme makinesinde Postgres çalıştırılmadı.
 - Redis ayakta. `CACHE_STORE=redis`, `SESSION_DRIVER=redis`, `QUEUE_CONNECTION=redis`. Horizon yalnızca Linux'ta.
-- İlk admin seed edilir ve TOTP onaylanır. Filament `/admin` robots ile kapalıdır.
+- `php artisan migrate --force` (`users.two_factor_recovery_codes`). İlk admin girişte `/guvenlik/iki-adim` üzerinden TOTP kurar. Filament `/admin` robots ile kapalıdır.
 - Yasal metinler (kullanım, gizlilik, DMCA, 18+ uyarı) hukuk incelemesinden geçer. Şu an taslaktır.
 - Cloudflare: HSTS, gerçek IP (`TRUSTED_PROXIES`), R2 bucket ve `HOTLINK_HOSTS`.
 - `php artisan optimize` sonrası `php artisan up`. Bakım sayfası `errors.503`.
@@ -159,4 +160,4 @@ Yetki: `Gate::before` admin rolüne her yetenekte true döner. `ceviri_ekibi` ya
 
 ## Sonraki adım
 
-Canlıda `php artisan migrate --force`, ardından `php artisan optimize` ve kuyruk işçisini yeniden başlat. Admin TOTP onaylamadan panele giremez.
+Canlıda `php artisan migrate --force`, ardından `php artisan optimize` ve kuyruk işçisini yeniden başlat. 2FA’sız admin `/admin` yerine `/guvenlik/iki-adim` kurulumuna gider. Kayıp cihazda `php artisan user:reset-2fa {email}`.
