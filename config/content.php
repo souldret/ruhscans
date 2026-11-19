@@ -7,5 +7,5 @@ return [
     'max_image_kilobytes' => (int) env('CONTENT_MAX_IMAGE_KB', 20480),
     'max_page_height' => (int) env('CONTENT_MAX_PAGE_HEIGHT', 16000),
     'search_similarity' => (float) env('CONTENT_SEARCH_SIMILARITY', 0.2),
-    'page_url_ttl' => (int) env('CONTENT_PAGE_URL_TTL', 15),
+    'page_url_ttl' => (int) env('CONTENT_PAGE_URL_TTL', 5),
 ];

@@ -70,6 +70,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'etiket_karaliste' => 'array',
             'panik_url' => 'string',
             'okuma_modu' => 'string',
+            'read_blocked_until' => 'datetime',
             'ruh_tasi_bakiye' => 'integer',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',

@@ -7,8 +7,11 @@ use App\Enums\ReadingMode;
 use App\Models\Chapter;
 use App\Models\LibraryEntry;
 use App\Models\Series;
+use App\Models\Page;
 use App\Services\Reader\ChapterAccess;
 use App\Services\Reader\PageUrlFactory;
+use App\Services\Security\PageWatermark;
+use App\Services\Security\ReadRateGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -45,12 +48,22 @@ class ReaderController extends Controller
         ]);
     }
 
-    public function pages(Series $series, string $number, ChapterAccess $access, PageUrlFactory $urls): JsonResponse
+    public function pages(Series $series, string $number, ChapterAccess $access, PageUrlFactory $urls, PageWatermark $watermark, ReadRateGuard $rates): JsonResponse
     {
         abort_if($series->hidden, 404);
 
+        $user = auth()->user();
+
+        if ($user && $user->read_blocked_until?->isFuture()) {
+            $rates->block(request(), 'hesap');
+
+            return response()->json([
+                'message' => 'Okuma geçici olarak durduruldu.',
+            ], 429);
+        }
+
         $chapter = $this->chapter($series, $number);
-        $gate = $access->gate($chapter, auth()->user());
+        $gate = $access->gate($chapter, $user);
 
         if ($gate['locked']) {
             return response()->json([
@@ -65,6 +78,7 @@ class ReaderController extends Controller
 
         return response()->json([
             'locked' => false,
+            'watermark' => $watermark->text($user),
             'pages' => $pages->map(fn ($page) => [
                 'order' => $page->order,
                 'url' => $urls->temporary($page),
@@ -72,6 +86,18 @@ class ReaderController extends Controller
                 'height' => $page->height,
             ])->values(),
         ]);
+    }
+
+    public function media(Request $request, Page $page, ChapterAccess $access, PageUrlFactory $urls)
+    {
+        abort_unless($request->hasValidSignature(), 403);
+
+        $page->loadMissing('chapter.series');
+        $chapter = $page->chapter;
+        abort_if($chapter === null || $chapter->series === null || $chapter->series->hidden, 404);
+        abort_if($access->isLocked($chapter, $request->user()), 403);
+
+        return $urls->stream($page);
     }
 
     public function progress(Request $request, Series $series, string $number, ChapterAccess $access, RecordReadingProgress $record): JsonResponse

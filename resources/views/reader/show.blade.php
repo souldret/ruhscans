@@ -81,8 +81,8 @@
                 <template x-for="page in pages" :key="page.order">
                     <figure class="reader-page" :data-order="page.order" x-intersect.once="seen(page.order)">
                         <img
-                            :src="page.url"
-                            :alt="'Sayfa ' + page.order"
+                        :src="page.url"
+                        :alt="(watermark ? watermark + ' · ' : '') + 'Sayfa ' + page.order"
                             :width="page.width || 800"
                             :height="page.height || 1200"
                             loading="lazy"

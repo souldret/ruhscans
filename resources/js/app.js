@@ -59,6 +59,7 @@ document.addEventListener('alpine:init', () => {
         stealth: !!boot.stealth,
         locked: !!boot.locked,
         pages: [],
+        watermark: null,
         index: 0,
         focus: false,
         atEnd: false,
@@ -106,6 +107,8 @@ document.addEventListener('alpine:init', () => {
 
                 return [];
             }
+
+            this.watermark = body.watermark || null;
 
             return body.pages || [];
         },

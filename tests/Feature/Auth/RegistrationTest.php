@@ -16,8 +16,8 @@ test('new users can register', function () {
     $component = Volt::test('pages.auth.register')
         ->set('name', 'Test User')
         ->set('email', 'test@example.com')
-        ->set('password', 'password')
-        ->set('password_confirmation', 'password');
+        ->set('password', 'Guclu-Sifre-12!')
+        ->set('password_confirmation', 'Guclu-Sifre-12!');
 
     $component->call('register');
 

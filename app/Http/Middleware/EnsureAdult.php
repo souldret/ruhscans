@@ -22,6 +22,7 @@ class EnsureAdult
         'dmca',
         '18-uyari',
         'sikayet',
+        'bildirim',
         'up',
         'admin',
         'admin/*',

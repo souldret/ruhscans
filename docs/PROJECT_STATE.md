@@ -30,7 +30,7 @@
 3. Tasarım ve ön yüz — bitti
 4. Okuyucu — bitti
 5. Ekonomi ve kodlar — bitti
-6. Güvenlik
+6. Güvenlik — bitti
 7. SEO ve cila
 
 ## Biten
@@ -70,6 +70,13 @@
 - Kodlar: `RUH-XXXX-XXXX-XXXX-XXXX`, Crockford base32, HMAC-SHA256. Düz kod DB'de yok; üretim anında tek seferlik CSV. Filament parti, iptal, hash arama. Kullanımda dakika sınırı, 10 hatada 1 saat kilit, maskeli log.
 - Cüzdan: bakiye, VIP, işlem geçmişi, kod formu, Sonteklif linki (`site_settings`).
 - Pest: eşzamanlı kod, süresi dolmuş, iptal, hız sınırı, VIP uzatma, yetersiz bakiye, çift açılış, idempotency
+- Sayfa adresi yetkiden sonra en fazla 5 dakika. R2/S3 `temporaryUrl`; diğer disklerde imzalı `reader.media` ve ikinci yetki kontrolü.
+- Hotlink: boş Referer/Origin serbest; yabancı host 403. Okuma hızı kullanıcı veya IP başına dakika ve patlama penceresi; aşımda 15 dk önbellek bloğu. `read_blocked_until` fillable değil.
+- Filigran Filament güvenlik sayfasından (`watermark_enabled`) veya `CONTENT_WATERMARK`. Metin JSON ve görsel alt metninde.
+- Güvenlik başlıkları: CSP, HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy. Şifre en az 12, büyük-küçük, rakam, sembol.
+- Cloudflare `CF-Connecting-IP` gerçek istemci IP’si; `trustProxies` ve hız sınırı bu adrese bağlı.
+- `/sikayet` ve `/dmca` formları, honeypot `website`, `throttle:5,10`. Admin işlem günlüğü salt okunur.
+- Pest: yetkisiz presigned yok, süre dolunca 403, hız sınırı, başlıklar, yabancı referer, honeypot
 
 ## Kararlar
 
@@ -82,26 +89,28 @@
 - Okuma ilerlemesi ayrı tablo değil, `library_entries.last_page_order` ve `completed` alanlarıdır. Misafir ilerlemesi yalnızca tarayıcıda kalır.
 - Kilit nedenleri: yayımlanmamış, erken erişim, fiyat. VIP, `vip_ucretsiz` veya erken erişimde geçer. Ücretli bölüm `ChapterUnlocker` ile açılır: kullanıcı satırı kilitlenir, tek `chapter_unlocks` kaydı ve `unlock:{user}:{chapter}` borç anahtarı yazılır.
 - Erken erişim süresi dolunca fiyat da kalkar; bölüm herkese açıktır. Erken erişim sürerken unlock kaydı kilidi açmaz.
-- Görsel adresi `Storage::temporaryUrl` ile üretilir (`CONTENT_PAGE_URL_TTL`, varsayılan 15 dakika). İmzalama yoksa düz `url()` düşer. Presigned sertleştirme faz 6'da yapılacak.
+- Görsel adresi yetkiden sonra en fazla 5 dakika (`CONTENT_PAGE_URL_TTL`). Yalnızca S3/R2 adaptörü `temporaryUrl` üretir. Yerel disk düz URL vermez; imzalı `reader.media` ile dosyayı özel olarak basar.
 - Kodlar düz saklanmaz. Normalize (boşluk, tire, küçük harf, 0/O 1/I L/I) sonrası HMAC-SHA256 (`CODE_HMAC_KEY`). Son 4 hane arama içindir. Hatalı, süresi dolmuş ve iptal kod aynı "Kod kullanılamadı." der.
 - Ödeme geçidi yok. Kodlar Sonteklif'te satılır. Cüzdan linki admin `site_settings.sonteklif_url`, yoksa `SONTEKLIF_URL`.
+- Okuma hız anahtarı girişliyse `u:{id}`, değilse `ip:{CF-Connecting-IP}`. Referer yoksa hotlink engeli uygulanmaz (doğrudan açılış).
+- Filigran piksele gömülmez. Açıkken okuyucu JSON’unda ve `alt` metninde `ruhscans #{id}` görünür.
 
 ## Ortam değişkenleri
 
-`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`, `CODE_HMAC_KEY`, `SONTEKLIF_URL`.
+`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`, `CONTENT_WATERMARK`, `READ_RATE_PER_MINUTE`, `READ_BURST_WINDOW`, `READ_BURST_MAX`, `READ_BLOCK_MINUTES`, `HOTLINK_HOSTS`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `CODE_HMAC_KEY`, `SONTEKLIF_URL`.
 
 ## Bilinen eksikler
 
 - `CODE_HMAC_KEY` boşsa kod üretimi ve kullanımı reddedilir. Anahtar yalnızca `.env` içindedir.
-- Yasal metinler taslak; hukuk incelemesi ve şikayet formu yok.
+- Yasal metinler taslak; hukuk incelemesi yok. Şikayet ve DMCA formları çalışır.
 - Windows'ta Horizon `pcntl` / `posix` olmadan çalışmaz. Üretim Linux olmalı.
 - R2 anahtarları boşken dosya yüklenemez.
 - İlk admin, `.env` doldurulmadan seed edilmez ve 2FA onaylamadan panele giremez.
 - Giriş, kayıt ve profil formları hâlâ Breeze düzeninde; gece temasına alınmadı.
-- Şikayet oluşturma henüz admin formunda. Ziyaretçi şikayet sayfası yok.
+- `read_blocked_until` için ayrı admin formu yok; blok önbellek ve kolon üzerinden uygulanır.
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
 - R2 boşken sayfa yüklemesi `CONTENT_IMAGE_DISK=local` ile yerel diske düşürülebilir.
 
 ## Sonraki adım
 
-Faz 6: kısa ömürlü presigned URL sertleştirmesi ve güvenlik.
+Faz 7: SEO ve cila.

@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\AgeGateController;
 use App\Http\Controllers\ChapterUnlockController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegalNoticeController;
 use App\Http\Controllers\LegalPageController;
+use App\Http\Middleware\ThrottlePageReads;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\RedeemCodeController;
@@ -20,7 +22,11 @@ Route::get('/kesfet', DiscoverCatalog::class)->name('discover');
 Route::get('/etiket/{tag:slug}', [TagController::class, 'show'])->name('tags.show');
 Route::get('/seri/{series:slug}', [SeriesController::class, 'show'])->name('series.show');
 Route::get('/seri/{series:slug}/bolum/{number}', [ReaderController::class, 'show'])->name('reader.show');
-Route::get('/seri/{series:slug}/bolum/{number}/sayfalar', [ReaderController::class, 'pages'])->name('reader.pages');
+Route::get('/seri/{series:slug}/bolum/{number}/sayfalar', [ReaderController::class, 'pages'])
+    ->middleware(ThrottlePageReads::class)
+    ->name('reader.pages');
+Route::get('/sayfa/{page}', [ReaderController::class, 'media'])
+    ->name('reader.media');
 
 Route::middleware('auth')->group(function () {
  Route::get('/cuzdan', [WalletController::class, 'show'])->name('wallet.show');
@@ -38,9 +44,12 @@ Route::post('/18-onay', [AgeGateController::class, 'confirm'])->name('age-gate.c
 
 Route::get('/kullanim-sartlari', [LegalPageController::class, 'terms'])->name('legal.terms');
 Route::get('/gizlilik', [LegalPageController::class, 'privacy'])->name('legal.privacy');
-Route::get('/dmca', [LegalPageController::class, 'dmca'])->name('legal.dmca');
+Route::get('/dmca', [LegalNoticeController::class, 'dmcaForm'])->name('legal.dmca');
 Route::get('/18-uyari', [LegalPageController::class, 'age'])->name('legal.age');
-Route::get('/sikayet', [LegalPageController::class, 'report'])->name('legal.report');
+Route::get('/sikayet', [LegalNoticeController::class, 'reportForm'])->name('legal.report');
+Route::post('/bildirim', [LegalNoticeController::class, 'store'])
+    ->middleware('throttle:5,10')
+    ->name('legal.notice.store');
 
 Route::view('/robots.txt', 'seo.robots')->name('robots');
 Route::view('/sitemap.xml', 'seo.sitemap')->name('sitemap');

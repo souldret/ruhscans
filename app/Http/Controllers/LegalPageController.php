@@ -64,19 +64,9 @@ class LegalPageController extends Controller
         return $this->show('gizlilik');
     }
 
-    public function dmca(): View
-    {
-        return $this->show('dmca');
-    }
-
     public function age(): View
     {
         return $this->show('age');
-    }
-
-    public function report(): View
-    {
-        return $this->show('sikayet');
     }
 
     private function show(string $page): View
