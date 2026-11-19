@@ -56,6 +56,11 @@ class Chapter extends Model
         return $this->hasMany(ChapterUpload::class);
     }
 
+    public function latestUpload(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ChapterUpload::class)->latestOfMany();
+    }
+
     public function reports(): MorphMany
     {
         return $this->morphMany(Report::class, 'reportable');

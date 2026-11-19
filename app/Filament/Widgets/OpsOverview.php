@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\User;
+use App\Filament\Support\AdminAccess;
 use App\Services\Ops\AdminDigest;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -13,7 +13,7 @@ class OpsOverview extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->hasRole(User::ROLE_ADMIN) ?? false;
+        return AdminAccess::admin();
     }
 
     protected function getStats(): array
@@ -26,9 +26,15 @@ class OpsOverview extends StatsOverviewWidget
             Stat::make('Yeni üye', (string) $digest['members'])
                 ->description('Bugün açılan hesap'),
             Stat::make('Kod kullanımı', (string) $digest['codes'])
-                ->description('Bugün kullanılan kod'),
-            Stat::make('Şikayet kuyruğu', (string) $digest['reports'])
-                ->description('Bekleyen bildirim'),
-        ];
+ ->description('Bugün kullanılan kod'),
+ Stat::make('Aktif VIP', (string) $digest['vip'])
+ ->description('Süresi dolmamış üyelik'),
+ Stat::make('Kuyruk', (string) $digest['queue'])
+ ->description('Bekleyen iş'),
+ Stat::make('Hatalı iş', (string) $digest['failed'])
+ ->description('Başarısız kuyruk'),
+ Stat::make('Şikayet kuyruğu', (string) $digest['reports'])
+ ->description('Bekleyen bildirim'),
+ ];
     }
 }

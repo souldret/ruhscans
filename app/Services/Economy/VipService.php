@@ -21,5 +21,26 @@ class VipService
         $user->forceFill(['vip_bitis' => $until])->save();
 
         return $until;
-    }
+ }
+
+ public function shorten(User $user, int $days): ?Carbon
+ {
+ if ($days < 1) {
+ throw new \InvalidArgumentException('VIP gün sayısı en az 1 olmalı.');
+ }
+
+ if ($user->vip_bitis === null) {
+ return null;
+ }
+
+ $until = $user->vip_bitis->copy()->subDays($days);
+
+ if ($until->isPast()) {
+ $until = now();
+ }
+
+ $user->forceFill(['vip_bitis' => $until])->save();
+
+ return $until;
+ }
 }

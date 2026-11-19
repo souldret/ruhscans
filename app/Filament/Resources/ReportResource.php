@@ -4,11 +4,13 @@ namespace App\Filament\Resources;
 
 use App\Actions\Content\HideReportedContent;
 use App\Enums\ReportStatus;
+use App\Filament\Resources\ChapterResource;
 use App\Filament\Resources\ReportResource\Pages;
+use App\Filament\Resources\SeriesResource;
+use App\Filament\Support\AdminAccess;
 use App\Models\Chapter;
 use App\Models\Report;
 use App\Models\Series;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -29,10 +31,12 @@ class ReportResource extends Resource
 
     protected static ?string $navigationGroup = 'İçerik';
 
+ protected static ?int $navigationSort = 5;
+
     public static function canViewAny(): bool
-    {
-        return auth()->user()?->hasRole(User::ROLE_ADMIN) ?? false;
-    }
+ {
+ return AdminAccess::admin();
+ }
 
     public static function form(Form $form): Form
     {
@@ -60,7 +64,8 @@ class ReportResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+ ->defaultSort('created_at', 'desc')
+ ->modifyQueryUsing(fn ($query) => $query->with(['user', 'reportable']))
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Tarih')->dateTime('d.m.Y H:i')->sortable(),
                 Tables\Columns\TextColumn::make('user.email')->label('Bildiren'),
@@ -75,6 +80,23 @@ class ReportResource extends Resource
                     ->default(ReportStatus::Bekliyor->value),
             ])
             ->actions([
+                Tables\Actions\Action::make('ac')
+                    ->label('İçeriği aç')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(function (Report $record) {
+                        $target = $record->reportable;
+
+                        if ($target instanceof Series) {
+                            return SeriesResource::getUrl('edit', ['record' => $target]);
+                        }
+
+                        if ($target instanceof Chapter) {
+                            return ChapterResource::getUrl('edit', ['record' => $target]);
+                        }
+
+                        return null;
+                    })
+                    ->visible(fn (Report $record) => $record->reportable instanceof Series || $record->reportable instanceof Chapter),
                 Tables\Actions\Action::make('gizle')
                     ->label('Gizle')
                     ->icon('heroicon-o-eye-slash')
@@ -82,6 +104,15 @@ class ReportResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn (Report $record) => $record->status === ReportStatus::Bekliyor)
                     ->action(fn (Report $record) => app(HideReportedContent::class)($record, auth()->user())),
+                Tables\Actions\Action::make('cozuldu')
+                    ->label('Çözüldü')
+                    ->icon('heroicon-o-check')
+                    ->visible(fn (Report $record) => $record->status === ReportStatus::Bekliyor)
+                    ->action(fn (Report $record) => $record->update([
+                        'status' => ReportStatus::Incelendi,
+                        'reviewed_by' => auth()->id(),
+                        'reviewed_at' => now(),
+                    ])),
                 Tables\Actions\EditAction::make(),
             ]);
     }

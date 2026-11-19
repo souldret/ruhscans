@@ -25,6 +25,8 @@ class TagResource extends Resource
 
     protected static ?string $navigationGroup = 'İçerik';
 
+ protected static ?int $navigationSort = 3;
+
     public static function form(Form $form): Form
     {
         return $form->schema([

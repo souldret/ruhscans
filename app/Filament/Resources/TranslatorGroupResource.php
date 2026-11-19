@@ -18,13 +18,15 @@ class TranslatorGroupResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationLabel = 'Çeviri ekipleri';
+    protected static ?string $navigationLabel = 'Çeviri Grupları';
 
     protected static ?string $modelLabel = 'Çeviri ekibi';
 
     protected static ?string $pluralModelLabel = 'Çeviri ekipleri';
 
     protected static ?string $navigationGroup = 'İçerik';
+
+ protected static ?int $navigationSort = 4;
 
     public static function canViewAny(): bool
     {

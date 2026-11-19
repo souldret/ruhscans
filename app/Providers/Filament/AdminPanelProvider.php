@@ -7,10 +7,12 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -18,6 +20,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -50,19 +53,43 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('ruhscans')
+            ->brandLogo(asset('images/ruhscans-mark.svg'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.svg'))
+            ->darkMode(true, true)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#FF2E88'),
+            ])
+            ->navigationGroups([
+                'İçerik',
+                'Ekonomi',
+                'Kullanıcılar',
+                'Sistem',
+            ])
+            ->navigationItems([
+                NavigationItem::make('Horizon')
+                    ->url('/horizon', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-queue-list')
+                    ->group('Sistem')
+                    ->sort(90)
+                    ->visible(fn (): bool => auth()->user()?->hasRole('admin') ?? false),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
-            ])
+            Pages\Dashboard::class,
+        ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render(<<<'HTML'
+                <style>
+                    :root { color-scheme: dark; }
+                    .fi-body { background: #120910; }
+                </style>
+            HTML))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -8,10 +8,15 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
+        $seeders = [
             RoleSeeder::class,
             AdminSeeder::class,
-            ContentSeeder::class,
-        ]);
+        ];
+
+        if (app()->environment('local')) {
+            $seeders[] = ContentSeeder::class;
+        }
+
+        $this->call($seeders);
     }
 }

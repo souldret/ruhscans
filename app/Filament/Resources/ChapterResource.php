@@ -3,13 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChapterResource\Pages;
+use App\Filament\Resources\ChapterResource\RelationManagers\PagesRelationManager;
+use App\Filament\Resources\SeriesResource\RelationManagers\ChaptersRelationManager;
 use App\Models\Chapter;
-use App\Models\Series;
 use App\Models\User;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -27,49 +26,31 @@ class ChapterResource extends Resource
 
     protected static ?string $navigationGroup = 'İçerik';
 
+    protected static ?int $navigationSort = 2;
+
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\Select::make('series_id')
-                ->label('Seri')
-                ->options(fn () => Series::query()->orderBy('title')->pluck('title', 'id'))
-                ->searchable()
-                ->required(),
-            Forms\Components\TextInput::make('number')->label('Numara')->numeric()->step(0.01)->required(),
-            Forms\Components\TextInput::make('title')->label('Başlık')->maxLength(255),
-            Forms\Components\DateTimePicker::make('published_at')->label('Yayın tarihi'),
-            Forms\Components\TextInput::make('ruh_tasi_fiyat')->label('Ruh taşı fiyatı')->numeric()->minValue(0)->default(0)->required(),
-            Forms\Components\Toggle::make('vip_ucretsiz')->label('VIP ücretsiz'),
-            Forms\Components\DateTimePicker::make('erken_erisim_bitis')->label('Erken erişim bitiş'),
-            Forms\Components\Checkbox::make('adult_characters_confirmed')
-                ->label('Tüm karakterler yetişkindir; reşit olmayan karakter içeren içerik yasaktır')
-                ->accepted()
-                ->dehydrated(false)
-                ->visible(fn (?Chapter $record) => $record === null)
-                ->columnSpanFull(),
-        ]);
+        return $form->schema(ChaptersRelationManager::fields(withSeries: true))->columns(2);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->poll('5s')
             ->columns([
-                Tables\Columns\TextColumn::make('series.title')->label('Seri')->searchable(),
-                Tables\Columns\TextColumn::make('number')->label('No')->sortable(),
-                Tables\Columns\TextColumn::make('title')->label('Başlık'),
-                Tables\Columns\TextColumn::make('ruh_tasi_fiyat')->label('Ruh taşı'),
-                Tables\Columns\IconColumn::make('vip_ucretsiz')->label('VIP')->boolean(),
-                Tables\Columns\TextColumn::make('published_at')->label('Yayın')->dateTime('d.m.Y H:i'),
+                \Filament\Tables\Columns\TextColumn::make('series.title')->label('Seri')->searchable(),
+                ...ChaptersRelationManager::columns(),
+                \Filament\Tables\Columns\TextColumn::make('published_at')->label('Yayın')->dateTime('d.m.Y H:i'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ]);
+            ->actions(ChaptersRelationManager::rowActions(function (Chapter $record) {
+                // ZIP, EditChapter form durumundan kuyruğa alınır.
+            }))
+            ->bulkActions([ChaptersRelationManager::bulk()]);
     }
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with('series');
+        $query = parent::getEloquentQuery()->with(['series', 'latestUpload']);
         $user = auth()->user();
 
         if ($user?->hasRole(User::ROLE_CEVIRI) && ! $user->hasRole(User::ROLE_ADMIN)) {
@@ -77,6 +58,13 @@ class ChapterResource extends Resource
         }
 
         return $query;
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            PagesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

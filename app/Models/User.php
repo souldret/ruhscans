@@ -45,7 +45,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'two_factor_secret',
         'two_factor_confirmed_at',
         'translator_group_id',
-    ];
+ 'blocked_at',
+ ];
 
     /**
      * @var list<string>
@@ -74,8 +75,14 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'ruh_tasi_bakiye' => 'integer',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
-        ];
-    }
+ 'blocked_at' => 'datetime',
+ ];
+ }
+
+ public function isBlocked(): bool
+ {
+ return $this->blocked_at !== null;
+ }
 
     public function translatorGroup(): BelongsTo
     {
@@ -90,6 +97,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
  public function walletTransactions(): HasMany
  {
  return $this->hasMany(WalletTransaction::class);
+ }
+
+ public function chapterUnlocks(): HasMany
+ {
+ return $this->hasMany(ChapterUnlock::class);
+ }
+
+ public function redeemedCodes(): HasMany
+ {
+ return $this->hasMany(RedeemCode::class, 'kullanan_user_id');
  }
 
  protected static function booted(): void
@@ -120,12 +137,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             return false;
         }
 
-        if ($this->hasRole(self::ROLE_ADMIN) && ! $this->hasConfirmedTwoFactor()) {
-            return false;
-        }
+        if ($this->isBlocked()) {
+ return false;
+ }
 
-        return true;
-    }
+ if ($this->hasRole(self::ROLE_ADMIN) && ! $this->hasConfirmedTwoFactor()) {
+ return false;
+ }
+
+ return true;
+ }
 
     public function hasConfirmedTwoFactor(): bool
     {

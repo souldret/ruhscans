@@ -15,11 +15,11 @@ class ActivityLogResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationLabel = 'İşlem günlüğü';
+    protected static ?string $navigationLabel = 'Aktivite Günlüğü';
 
-    protected static ?string $modelLabel = 'İşlem';
+ protected static ?string $modelLabel = 'Aktivite';
 
-    protected static ?string $pluralModelLabel = 'İşlem günlüğü';
+ protected static ?string $pluralModelLabel = 'Aktivite günlüğü';
 
     protected static ?string $navigationGroup = 'Sistem';
 

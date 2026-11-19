@@ -22,24 +22,35 @@ class CodeGenerator
         int $value,
         ?Carbon $expiresAt,
         string $name,
-        ?User $creator = null,
-    ): array {
-        if ($count < 1 || $count > 5000) {
-            throw new \InvalidArgumentException('Adet 1 ile 5000 arasında olmalı.');
+ ?User $creator = null,
+ ?string $note = null,
+ ): array {
+        if ($count < 1 || $count > 50000) {
+            throw new \InvalidArgumentException('Adet 1 ile 50000 arasında olmalı.');
         }
 
-        if ($value < 1) {
-            throw new \InvalidArgumentException('Değer en az 1 olmalı.');
-        }
+ if ($value < 1) {
+ throw new \InvalidArgumentException('Değer en az 1 olmalı.');
+ }
 
-        $batch = CodeBatch::query()->create([
-            'ad' => $name,
-            'tur' => $kind,
-            'deger' => $value,
-            'son_kullanma' => $expiresAt,
-            'adet' => $count,
-            'olusturan_user_id' => $creator?->id,
-        ]);
+ $batch = CodeBatch::query()->create([
+ 'ad' => $name,
+ 'tur' => $kind,
+ 'deger' => $value,
+ 'son_kullanma' => $expiresAt,
+ 'adet' => $count,
+ 'olusturan_user_id' => $creator?->id,
+ 'not' => $note,
+ ]);
+
+ return $this->fill($batch, $count, $kind, $value, $expiresAt);
+ }
+
+ /**
+ * @return array{batch: CodeBatch, codes: list<array{kod: string, tur: string, deger: int}>}
+ */
+ public function fill(CodeBatch $batch, int $count, CodeKind $kind, int $value, ?Carbon $expiresAt): array
+ {
 
         $seen = [];
         $rows = [];

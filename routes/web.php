@@ -17,6 +17,7 @@ use App\Http\Middleware\ThrottlePageReads;
 use App\Livewire\DiscoverCatalog;
 use App\Livewire\ReadingPreferences;
 use App\Models\User;
+use App\Services\Economy\CodeExportStore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -66,19 +67,21 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-Route::middleware('auth')->get('/admin/kodlar/indir', function (Request $request) {
-    abort_unless($request->user()?->hasRole(User::ROLE_ADMIN), 403);
+Route::middleware('auth')->get('/admin/kodlar/indir', function (Request $request, CodeExportStore $store) {
+ abort_unless($request->user()?->hasRole(User::ROLE_ADMIN), 403);
 
-    $token = (string) $request->query('token');
-    $csv = session()->pull('code_csv.'.$token);
-    abort_unless(is_string($csv) && $csv !== '', 404);
+ $export = $store->pull((string) $request->query('token'));
+ abort_unless($export !== null, 404);
 
-    $batch = (int) $request->query('batch');
+ $csv = $store->contents($export);
+ $batch = $export->batch_id;
+ $export->forceFill(['downloaded_at' => now()])->save();
+ $store->destroy($export);
 
-    return response($csv, 200, [
-        'Content-Type' => 'text/csv; charset=UTF-8',
-        'Content-Disposition' => 'attachment; filename="ruhscans-kod-'.$batch.'.csv"',
-    ]);
+ return response($csv, 200, [
+ 'Content-Type' => 'text/csv; charset=UTF-8',
+ 'Content-Disposition' => 'attachment; filename="ruhscans-kod-'.$batch.'.csv"',
+ ]);
 })->name('admin.codes.csv');
 
 Route::middleware('auth')->prefix('admin/iki-adim')->group(function () {

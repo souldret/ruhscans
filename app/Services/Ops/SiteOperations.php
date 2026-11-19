@@ -28,9 +28,34 @@ class SiteOperations
 
     public function announcement(): ?string
     {
+        if (! $this->announcementEnabled()) {
+            return null;
+        }
+
         $text = trim((string) SiteSetting::get('announcement'));
 
         return $text === '' ? null : $text;
+    }
+
+    public function announcementEnabled(): bool
+    {
+        return SiteSetting::get('announcement_enabled', '1') !== '0';
+    }
+
+    public function watermark(): bool
+    {
+        $stored = SiteSetting::get('watermark_enabled');
+
+        return $stored === null
+            ? (bool) config('security.watermark')
+            : $stored === '1';
+    }
+
+    public function ageGateText(): string
+    {
+        $text = trim((string) SiteSetting::get('age_gate_text'));
+
+        return $text !== '' ? $text : 'Bu site yalnızca 18 yaş ve üzeri içindir. Devam ederek yetişkin olduğunuzu onaylarsınız.';
     }
 
     public function enableMaintenance(): void

@@ -16,7 +16,8 @@ class CodeBatch extends Model
         'son_kullanma',
         'adet',
         'olusturan_user_id',
-    ];
+ 'not',
+ ];
 
     /**
      * @return array<string, string>
@@ -32,9 +33,14 @@ class CodeBatch extends Model
     }
 
     public function codes(): HasMany
-    {
-        return $this->hasMany(RedeemCode::class, 'batch_id');
-    }
+ {
+ return $this->hasMany(RedeemCode::class, 'batch_id');
+ }
+
+ public function exports(): HasMany
+ {
+ return $this->hasMany(CodeExport::class, 'batch_id');
+ }
 
     public function creator(): BelongsTo
     {

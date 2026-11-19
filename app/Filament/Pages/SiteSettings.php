@@ -2,8 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\AdminAccess;
 use App\Models\SiteSetting;
-use App\Models\User;
 use App\Services\Ops\SiteOperations;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -20,9 +20,9 @@ class SiteSettings extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationLabel = 'Site ayarları';
+    protected static ?string $navigationLabel = 'Site Ayarları';
 
-    protected static ?string $title = 'Site ayarları';
+ protected static ?string $title = 'Site Ayarları';
 
     protected static ?string $navigationGroup = 'Sistem';
 
@@ -31,18 +31,21 @@ class SiteSettings extends Page implements HasForms
     public ?array $data = [];
 
     public static function canAccess(): bool
-    {
-        return auth()->user()?->hasRole(User::ROLE_ADMIN) ?? false;
-    }
+ {
+ return AdminAccess::admin();
+ }
 
     public function mount(SiteOperations $ops): void
     {
         $this->form->fill([
             'panic_url' => $ops->panicUrl(),
             'sonteklif_url' => $ops->sonteklifUrl(),
-            'announcement' => $ops->announcement(),
-            'maintenance_mode' => $ops->maintenance(),
-        ]);
+            'announcement' => SiteSetting::get('announcement') ?? '',
+ 'announcement_enabled' => $ops->announcementEnabled(),
+ 'maintenance_mode' => $ops->maintenance(),
+ 'watermark_enabled' => $ops->watermark(),
+ 'age_gate_text' => $ops->ageGateText(),
+ ]);
     }
 
     public function form(Form $form): Form
@@ -64,10 +67,20 @@ class SiteSettings extends Page implements HasForms
                     ->label('Duyuru bandı')
                     ->rows(3)
                     ->maxLength(280)
-                    ->helperText('Boş bırakılırsa bant gizlenir.'),
+                    ->columnSpanFull(),
+                Toggle::make('announcement_enabled')
+                    ->label('Duyuru bandı açık'),
                 Toggle::make('maintenance_mode')
                     ->label('Bakım modu')
                     ->helperText('Açıkken ziyaretçi bakım sayfası görür. Yönetim paneli açık kalır.'),
+                Toggle::make('watermark_enabled')
+                    ->label('Filigran'),
+                Textarea::make('age_gate_text')
+                    ->label('Yaş kapısı metni')
+                    ->rows(3)
+                    ->required()
+                    ->maxLength(500)
+                    ->columnSpanFull(),
             ])
             ->statePath('data');
     }
@@ -80,6 +93,9 @@ class SiteSettings extends Page implements HasForms
         SiteSetting::put('panic_url', $state['panic_url']);
         SiteSetting::put('sonteklif_url', $state['sonteklif_url']);
         SiteSetting::put('announcement', $state['announcement'] ?? '');
+ SiteSetting::put('announcement_enabled', ($state['announcement_enabled'] ?? false) ? '1' : '0');
+ SiteSetting::put('watermark_enabled', ($state['watermark_enabled'] ?? false) ? '1' : '0');
+ SiteSetting::put('age_gate_text', $state['age_gate_text'] ?? '');
 
         if ($maintenance && ! $ops->maintenance()) {
             $ops->enableMaintenance();
