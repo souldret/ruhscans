@@ -5,6 +5,7 @@
             <a class="hover:text-magenta" href="{{ route('discover') }}">Keşfet</a>
             @auth
                 <a class="hover:text-magenta" href="{{ route('library') }}">Kütüphane</a>
+                    <a class="hover:text-magenta" href="{{ route('reader.history') }}">Geçmiş</a>
                 <a class="hover:text-magenta" href="{{ route('preferences') }}">Profil</a>
             @else
                 <a class="hover:text-magenta" href="{{ route('login') }}">Giriş</a>
@@ -18,7 +19,7 @@
 </header>
 <nav class="glass fixed inset-x-3 bottom-3 z-30 grid grid-cols-4 rounded-2xl p-1 text-center text-[11px] md:hidden" aria-label="Mobil menü">
     <a class="rounded-xl py-2 hover:text-magenta" href="{{ route('discover') }}">Keşfet</a>
-    <a class="rounded-xl py-2 hover:text-magenta" href="{{ route('library') }}">Kütüphane</a>
+    <a class="rounded-xl py-2 hover:text-magenta" href="{{ auth()->check() ? route('reader.history') : route('login') }}">Geçmiş</a>
     <a class="rounded-xl py-2 hover:text-magenta" href="{{ route('discover') }}?odak=ara">Ara</a>
     <a class="rounded-xl py-2 hover:text-magenta" href="{{ auth()->check() ? route('preferences') : route('login') }}">Profil</a>
 </nav>

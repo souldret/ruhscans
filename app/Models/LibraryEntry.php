@@ -12,6 +12,8 @@ class LibraryEntry extends Model
         'series_id',
         'rating',
         'last_chapter_id',
+        'last_page_order',
+        'completed',
         'last_read_at',
     ];
 
@@ -22,6 +24,8 @@ class LibraryEntry extends Model
     {
         return [
             'rating' => 'integer',
+            'last_page_order' => 'integer',
+            'completed' => 'boolean',
             'last_read_at' => 'datetime',
         ];
     }

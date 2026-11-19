@@ -35,6 +35,7 @@ class UserFactory extends Factory
             'kapak_blur' => true,
             'etiket_karaliste' => [],
             'panik_url' => 'https://www.google.com',
+            'okuma_modu' => 'webtoon',
         ];
     }
 

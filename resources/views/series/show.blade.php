@@ -34,10 +34,10 @@
                     $early = $chapter->erken_erisim_bitis && $chapter->erken_erisim_bitis->isFuture();
                 @endphp
                 <li class="flex items-center justify-between gap-3 py-3">
-                    <div class="min-w-0">
+                    <a class="min-w-0 hover:text-magenta" href="{{ route('reader.show', [$series, $chapter->number]) }}">
                         <p class="truncate font-medium">Bölüm {{ $chapter->number }} @if($chapter->title)<span class="text-mist/70">· {{ $chapter->title }}</span>@endif</p>
                         <p class="text-xs text-mist/50">{{ optional($chapter->published_at)->translatedFormat('d M Y') }}</p>
-                    </div>
+                    </a>
                     <div class="flex shrink-0 items-center gap-2">
                         @if ($chapter->vip_ucretsiz)
                             <span class="badge-vip">VIP</span>

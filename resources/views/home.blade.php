@@ -60,7 +60,7 @@
                 @else
                     <div class="strip mt-4 flex gap-4 overflow-x-auto pb-2">
                         @foreach ($continue as $entry)
-                            <a class="glass w-72 shrink-0 rounded-2xl p-4" href="{{ route('series.show', $entry->series) }}">
+                            <a class="glass w-72 shrink-0 rounded-2xl p-4" href="{{ $entry->lastChapter ? route('reader.show', [$entry->series, $entry->lastChapter->number]) : route('series.show', $entry->series) }}">
                                 <p class="text-xs text-magenta">Bölüm {{ $entry->lastChapter?->number }}</p>
                                 <h3 class="mt-2 font-display text-xl">{{ $entry->series->title }}</h3>
                             </a>

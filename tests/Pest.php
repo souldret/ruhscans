@@ -18,8 +18,9 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->beforeEach(function () {
-        $this->withCookie(EnsureAdult::COOKIE, '1');
-    })
+ $this->withCredentials()
+ ->withCookie(EnsureAdult::COOKIE, '1');
+ })
     ->in('Feature');
 
 /*

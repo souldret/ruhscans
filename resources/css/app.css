@@ -153,6 +153,14 @@
     .skeleton {
         @apply animate-pulse rounded-2xl bg-white/5;
     }
+
+    .reader-focus .reader-chrome {
+        display: none;
+    }
+
+    .reader-focus {
+        max-width: none;
+    }
 }
 
 @keyframes sheen {

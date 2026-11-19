@@ -28,7 +28,7 @@
 1. Temel — bitti
 2. İçerik motoru — bitti
 3. Tasarım ve ön yüz — bitti
-4. Okuyucu
+4. Okuyucu — bitti
 5. Ekonomi ve kodlar
 6. Güvenlik
 7. SEO ve cila
@@ -58,6 +58,12 @@
 - Kapak bulanıklığı, gizli mod, panik tuşu (düğme ve çift Esc), etiket kara listesi
 - Self-host Inter ve Fraunces (`font-display: swap`), film grain, cam paneller
 - Kütüphane kaydı ve puan; `panik_url` kullanıcı alanı
+- Okuyucu: dikey webtoon, sayfa LTR ve RTL. Tercih `users.okuma_modu` alanında.
+- Sayfa HTML'i görsel adresi taşımaz. `/sayfalar` yetki sonrası kısa ömürlü adres döner.
+- Kilitli bölümde fiyat, VIP ve yer tutucu "Kod kullan" ekranı. Açılış `chapter_unlocks` kaydıyla.
+- İlerleme girişli kullanıcıda debounce ile `library_entries` üzerine yazılır. Misafir localStorage. Gizli mod hiçbir şey yazmaz.
+- Okuma geçmişi `/okuma-gecmisi`. Panik tuşu okuyucuda da çalışır.
+- Pest: kilitli yanıtta görsel adresi yok, ilerleme, gizli mod, VIP ve açılmış bölüm
 
 ## Kararlar
 
@@ -67,15 +73,18 @@
 - Çeviri ekibi kullanıcısı `translator_group_id` ile bir gruba bağlanır. Policy ve Filament sorgusu bu gruba kilitlenir.
 - Bölüm şikayetinde bölüm yumuşak silinir, seri gizlenir. Seri şikayetinde yalnızca gizli bayrağı açılır.
 - Uzun görsel, yapılandırılmış azami yükseklikte ve renk değişiminin en az olduğu satırdan kesilir.
+- Okuma ilerlemesi ayrı tablo değil, `library_entries.last_page_order` ve `completed` alanlarıdır. Misafir ilerlemesi yalnızca tarayıcıda kalır.
+- Kilit nedenleri: yayımlanmamış, erken erişim, fiyat. VIP, `vip_ucretsiz` veya erken erişimde geçer. Ücretli bölüm `chapter_unlocks` kaydıyla açılır. Bu kayıt ekonomi fazında ruh taşı düşülerek yazılacak.
+- Görsel adresi `Storage::temporaryUrl` ile üretilir (`CONTENT_PAGE_URL_TTL`, varsayılan 15 dakika). İmzalama yoksa düz `url()` düşer. Presigned sertleştirme faz 6'da yapılacak.
+- "Kod kullan" butonu ekonomi fazına kadar devre dışıdır. Misafir girişe, üye okuma tercihlerine gider.
 
 ## Ortam değişkenleri
 
-`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_SEARCH_SIMILARITY`.
+`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`.
 
 ## Bilinen eksikler
 
-- Okuyucu ve kod ekonomisi yok.
-- Okuyucu sayfası yok. "Kaldığın yerden devam et" yalnızca `last_chapter_id` dolu kütüphane kayıtlarını gösterir; okuma ilerlemesi faz 4'te yazılır.
+- Kod ekonomisi yok. "Kod kullan" yer tutucudur; `chapter_unlocks` henüz satın alma ile dolmaz.
 - Yasal metinler taslak; hukuk incelemesi ve şikayet formu yok.
 - Windows'ta Horizon `pcntl` / `posix` olmadan çalışmaz. Üretim Linux olmalı.
 - R2 anahtarları boşken dosya yüklenemez.
@@ -87,4 +96,4 @@
 
 ## Sonraki adım
 
-Faz 4: bölüm okuyucu, okuma ilerlemesinin kütüphaneye yazılması, kilitli bölüm kapısı.
+Faz 5: ruh taşı ve VIP kod ekonomisi. Kod kullan butonunu bağla, ücretli bölümü `chapter_unlocks` ile aç, bakiyeyi ledger ve `lockForUpdate` ile düş. Ardından faz 6: kısa ömürlü presigned URL sertleştirmesi.
