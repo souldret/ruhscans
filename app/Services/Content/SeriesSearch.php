@@ -56,6 +56,7 @@ class SeriesSearch
             'eski' => $query->orderBy('series.created_at'),
             'baslik' => $query->orderBy('series.title'),
             'yil' => $query->orderByDesc('series.year'),
+            'trend' => $query->withCount('chapters')->orderByDesc('chapters_count'),
             default => $query->orderByDesc('series.created_at'),
         };
     }

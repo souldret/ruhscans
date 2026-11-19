@@ -35,6 +35,7 @@ class EnsureAdult
         'confirm-password',
         'dashboard',
         'profile',
+        'okuma-tercihleri',
         'horizon',
         'horizon/*',
         'livewire/*',

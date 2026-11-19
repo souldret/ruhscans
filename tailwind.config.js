@@ -11,8 +11,20 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                ink: '#0B0709',
+                surface: '#150D12',
+                wine: '#5A0F2E',
+                magenta: '#FF2E88',
+                gold: '#E8C26A',
+                mist: '#F3E9EE',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                display: ['Fraunces', ...defaultTheme.fontFamily.serif],
+            },
+            boxShadow: {
+                glow: '0 0 28px rgba(255, 46, 136, 0.35)',
             },
         },
     },

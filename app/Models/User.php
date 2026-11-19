@@ -8,6 +8,7 @@ use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
@@ -37,6 +38,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'gizli_mod',
         'kapak_blur',
         'etiket_karaliste',
+        'panik_url',
         'two_factor_secret',
         'two_factor_confirmed_at',
         'translator_group_id',
@@ -63,6 +65,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'gizli_mod' => 'boolean',
             'kapak_blur' => 'boolean',
             'etiket_karaliste' => 'array',
+            'panik_url' => 'string',
             'ruh_tasi_bakiye' => 'integer',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
@@ -72,6 +75,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function translatorGroup(): BelongsTo
     {
         return $this->belongsTo(TranslatorGroup::class);
+    }
+
+    public function libraryEntries(): HasMany
+    {
+        return $this->hasMany(LibraryEntry::class);
+    }
+
+    public function isVip(): bool
+    {
+        return $this->vip_bitis !== null && $this->vip_bitis->isFuture();
     }
 
     public function canAccessPanel(Panel $panel): bool

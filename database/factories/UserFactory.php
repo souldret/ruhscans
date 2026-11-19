@@ -34,6 +34,7 @@ class UserFactory extends Factory
             'gizli_mod' => false,
             'kapak_blur' => true,
             'etiket_karaliste' => [],
+            'panik_url' => 'https://www.google.com',
         ];
     }
 

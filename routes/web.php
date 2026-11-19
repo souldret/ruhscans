@@ -2,10 +2,22 @@
 
 use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\AgeGateController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPageController;
+use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\SeriesController;
+use App\Http\Controllers\TagController;
+use App\Livewire\DiscoverCatalog;
+use App\Livewire\ReadingPreferences;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'home')->name('home');
+Route::get('/', HomeController::class)->name('home');
+Route::get('/kesfet', DiscoverCatalog::class)->name('discover');
+Route::get('/etiket/{tag:slug}', [TagController::class, 'show'])->name('tags.show');
+Route::get('/seri/{series:slug}', [SeriesController::class, 'show'])->name('series.show');
+
+Route::get('/kutuphane', LibraryController::class)->middleware('auth')->name('library');
+Route::get('/okuma-tercihleri', ReadingPreferences::class)->middleware('auth')->name('preferences');
 
 Route::post('/18-onay', [AgeGateController::class, 'confirm'])->name('age-gate.confirm');
 

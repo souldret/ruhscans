@@ -27,7 +27,7 @@
 
 1. Temel — bitti
 2. İçerik motoru — bitti
-3. Tasarım ve ön yüz
+3. Tasarım ve ön yüz — bitti
 4. Okuyucu
 5. Ekonomi ve kodlar
 6. Güvenlik
@@ -54,6 +54,10 @@
 - Postgres `tsvector` + `pg_trgm` arama; filtre servisi tür, durum, etiket, seviye ve sıralama
 - Yükleme formunda zorunlu yetişkin karakter onayı
 - Şikayet kuyruğu ve tek tıkla gizleme
+- Gece Kütüphanesi ön yüzü: sinematik ana sayfa, keşfet, seri, etiket, kütüphane, okuma tercihleri
+- Kapak bulanıklığı, gizli mod, panik tuşu (düğme ve çift Esc), etiket kara listesi
+- Self-host Inter ve Fraunces (`font-display: swap`), film grain, cam paneller
+- Kütüphane kaydı ve puan; `panik_url` kullanıcı alanı
 
 ## Kararlar
 
@@ -71,16 +75,16 @@
 ## Bilinen eksikler
 
 - Okuyucu ve kod ekonomisi yok.
-- Ön yüz geçici. Kalıcı görsel tasarım faz 3'te.
+- Okuyucu sayfası yok. "Kaldığın yerden devam et" yalnızca `last_chapter_id` dolu kütüphane kayıtlarını gösterir; okuma ilerlemesi faz 4'te yazılır.
 - Yasal metinler taslak; hukuk incelemesi ve şikayet formu yok.
 - Windows'ta Horizon `pcntl` / `posix` olmadan çalışmaz. Üretim Linux olmalı.
 - R2 anahtarları boşken dosya yüklenemez.
 - İlk admin, `.env` doldurulmadan seed edilmez ve 2FA onaylamadan panele giremez.
-- Herkese açık seri listesi ve arama sayfası yok; arama servisi hazır, arayüz faz 3'te.
+- Giriş, kayıt ve profil formları hâlâ Breeze düzeninde; gece temasına alınmadı.
 - Şikayet oluşturma henüz admin formunda. Ziyaretçi şikayet sayfası yok.
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
 - R2 boşken sayfa yüklemesi `CONTENT_IMAGE_DISK=local` ile yerel diske düşürülebilir.
 
 ## Sonraki adım
 
-Faz 3: kalıcı görsel tasarım ve herkese açık seri listesi, filtre ve arama arayüzü.
+Faz 4: bölüm okuyucu, okuma ilerlemesinin kütüphaneye yazılması, kilitli bölüm kapısı.
