@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Seo\MetaBuilder;
 use Illuminate\View\View;
 
 class LegalPageController extends Controller
@@ -39,7 +40,7 @@ class LegalPageController extends Controller
         'age' => [
             'title' => '18+ uyarı',
             'paragraphs' => [
-                'Bu sitedeki içerikler 18 yaşından küçükler için uygun olmayabilir. 18 yaşından küçükseniz siteyi kullanmayın ve tarayıcıyı kapatın.',
+                'Bu site yalnızca 18 yaş ve üzeri okurlar içindir. 18 yaşından küçükseniz siteyi kullanmayın ve tarayıcıyı kapatın.',
                 '“18 yaşından büyüğüm” seçeneği, onayınızı 30 gün boyunca bir çerezde saklar. Onaysız ziyaretçilere katalog ve okuma sayfaları gösterilmez.',
                 'Ebeveynler cihazlarında yaş filtreleri kullanmalıdır. Bu metin taslaktır.',
             ],
@@ -71,6 +72,9 @@ class LegalPageController extends Controller
 
     private function show(string $page): View
     {
-        return view('legal.show', $this->pages[$page]);
+        $payload = $this->pages[$page];
+        $payload['seo'] = app(MetaBuilder::class)->legal($payload['title']);
+
+        return view('legal.show', $payload);
     }
 }

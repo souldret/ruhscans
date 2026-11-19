@@ -17,6 +17,7 @@ class EnsureAdult
         'robots.txt',
         'sitemap',
         'sitemap.xml',
+        'sitemap-*.xml',
         'kullanim-sartlari',
         'gizlilik',
         'dmca',

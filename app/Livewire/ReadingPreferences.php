@@ -4,11 +4,12 @@ namespace App\Livewire;
 
 use App\Actions\Profile\UpdateReadingPreferences;
 use App\Models\Tag;
+use App\Services\Ops\SiteOperations;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportPageComponents\PageComponentConfig;
 
-#[Layout('layouts.night')]
 class ReadingPreferences extends Component
 {
     public bool $kapak_blur = true;
@@ -20,12 +21,12 @@ class ReadingPreferences extends Component
     /** @var list<string> */
     public array $etiket_karaliste = [];
 
-    public function mount(): void
+    public function mount(SiteOperations $ops): void
     {
         $user = auth()->user();
         $this->kapak_blur = (bool) $user->kapak_blur;
         $this->gizli_mod = (bool) $user->gizli_mod;
-        $this->panik_url = $user->panik_url ?: 'https://www.google.com';
+        $this->panik_url = $user->panik_url ?: $ops->panicUrl();
         $this->etiket_karaliste = array_values($user->etiket_karaliste ?? []);
     }
 
@@ -51,10 +52,15 @@ class ReadingPreferences extends Component
         $this->dispatch('toast', message: 'Okuma tercihleri kaydedildi.');
     }
 
-    public function render(): View
+    public function render(MetaBuilder $meta): View|PageComponentConfig
     {
         return view('livewire.reading-preferences', [
             'tags' => Tag::query()->orderBy('name')->get(),
+        ])->layout('layouts.night', [
+            'seo' => $meta->privatePage(
+                'Okuma tercihleri',
+                'Kapak bulanıklığı, gizli mod ve panik adresi. 18+ hesap ayarı; dizine eklenmez.',
+            ),
         ]);
     }
 }

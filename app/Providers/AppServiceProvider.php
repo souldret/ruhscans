@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Chapter;
+use App\Models\Series;
+use App\Models\Tag;
+use App\Observers\CatalogCacheObserver;
 use App\Services\Security\ClientAddress;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -25,6 +29,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Password::defaults(fn () => Password::min(12)->mixedCase()->numbers()->symbols());
+
+        $observer = CatalogCacheObserver::class;
+        Series::observe($observer);
+        Chapter::observe($observer);
+        Tag::observe($observer);
 
         RateLimiter::for('reads', function (Request $request) {
             return Limit::perMinute((int) config('security.read_rate.per_minute', 40))

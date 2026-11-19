@@ -1,4 +1,4 @@
-<x-night-layout title="Okuma geçmişi · Ruhscans">
+<x-night-layout :seo="$seo">
     <div class="mx-auto max-w-3xl px-4 py-8">
         <h1 class="font-display text-4xl">Okuma geçmişi</h1>
         <p class="mt-2 text-sm text-mist/70">Gizli mod kapalıyken bıraktığın sayfalar.</p>

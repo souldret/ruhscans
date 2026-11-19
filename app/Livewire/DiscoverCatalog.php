@@ -7,13 +7,13 @@ use App\Enums\SeriesStatus;
 use App\Enums\SeriesType;
 use App\Models\Tag;
 use App\Services\Catalog\CatalogQuery;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\Features\SupportPageComponents\PageComponentConfig;
 use Livewire\WithPagination;
 
-#[Layout('layouts.night')]
 class DiscoverCatalog extends Component
 {
     use WithPagination;
@@ -58,7 +58,7 @@ class DiscoverCatalog extends Component
         $this->resetPage();
     }
 
-    public function render(CatalogQuery $catalog): View
+    public function render(CatalogQuery $catalog, MetaBuilder $meta): View|PageComponentConfig
     {
         $series = $catalog->query([
             'q' => $this->q,
@@ -75,6 +75,8 @@ class DiscoverCatalog extends Component
             'levels' => ContentLevel::cases(),
             'tags' => Tag::query()->orderBy('name')->limit(30)->get(),
             'blur' => auth()->user()?->kapak_blur ?? true,
+        ])->layout('layouts.night', [
+            'seo' => $meta->discover(),
         ]);
     }
 }

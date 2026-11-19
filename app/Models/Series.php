@@ -83,6 +83,11 @@ class Series extends Model
         return $this->morphMany(Report::class, 'reportable');
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

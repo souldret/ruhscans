@@ -6,15 +6,18 @@ use App\Http\Controllers\ChapterUnlockController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalNoticeController;
 use App\Http\Controllers\LegalPageController;
-use App\Http\Middleware\ThrottlePageReads;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\RedeemCodeController;
-use App\Http\Controllers\WalletController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\WalletController;
+use App\Http\Middleware\ThrottlePageReads;
 use App\Livewire\DiscoverCatalog;
 use App\Livewire\ReadingPreferences;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -29,10 +32,10 @@ Route::get('/sayfa/{page}', [ReaderController::class, 'media'])
     ->name('reader.media');
 
 Route::middleware('auth')->group(function () {
- Route::get('/cuzdan', [WalletController::class, 'show'])->name('wallet.show');
- Route::post('/cuzdan/kod', [RedeemCodeController::class, 'store'])->middleware('throttle:30,1')->name('wallet.redeem');
- Route::post('/seri/{series:slug}/bolum/{number}/ac', [ChapterUnlockController::class, 'store'])->name('reader.unlock');
- Route::post('/seri/{series:slug}/bolum/{number}/ilerleme', [ReaderController::class, 'progress'])->name('reader.progress');
+    Route::get('/cuzdan', [WalletController::class, 'show'])->name('wallet.show');
+    Route::post('/cuzdan/kod', [RedeemCodeController::class, 'store'])->middleware('throttle:30,1')->name('wallet.redeem');
+    Route::post('/seri/{series:slug}/bolum/{number}/ac', [ChapterUnlockController::class, 'store'])->name('reader.unlock');
+    Route::post('/seri/{series:slug}/bolum/{number}/ilerleme', [ReaderController::class, 'progress'])->name('reader.progress');
     Route::post('/okuma-modu', [ReaderController::class, 'mode'])->name('reader.mode');
     Route::get('/okuma-gecmisi', [ReaderController::class, 'history'])->name('reader.history');
 });
@@ -51,8 +54,9 @@ Route::post('/bildirim', [LegalNoticeController::class, 'store'])
     ->middleware('throttle:5,10')
     ->name('legal.notice.store');
 
-Route::view('/robots.txt', 'seo.robots')->name('robots');
-Route::view('/sitemap.xml', 'seo.sitemap')->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [SeoController::class, 'index'])->name('sitemap');
+Route::get('/sitemap-{page}.xml', [SeoController::class, 'page'])->whereNumber('page')->name('sitemap.page');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -62,8 +66,8 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-Route::middleware('auth')->get('/admin/kodlar/indir', function (\Illuminate\Http\Request $request) {
-    abort_unless($request->user()?->hasRole(\App\Models\User::ROLE_ADMIN), 403);
+Route::middleware('auth')->get('/admin/kodlar/indir', function (Request $request) {
+    abort_unless($request->user()?->hasRole(User::ROLE_ADMIN), 403);
 
     $token = (string) $request->query('token');
     $csv = session()->pull('code_csv.'.$token);

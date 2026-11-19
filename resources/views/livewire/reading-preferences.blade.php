@@ -1,5 +1,5 @@
 <div>
-    <div class="mx-auto max-w-xl px-4 py-8">
+ <div class="mx-auto max-w-xl px-4 py-8">
         <h1 class="font-display text-4xl">Okuma tercihleri</h1>
         <p class="mt-2 text-sm text-mist/70">Bulanıklık, gizli mod ve panik adresi bu hesapta saklanır.</p>
 

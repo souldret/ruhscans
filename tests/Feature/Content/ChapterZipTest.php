@@ -90,3 +90,31 @@ test('uzun webtoon görseli kesilir', function () {
     unlink($directory.'/1.png');
     rmdir($directory);
 });
+
+test('geniş görsel yapılandırılmış genişliğe küçülür', function () {
+    Storage::fake('local');
+    config(['content.max_page_width' => 40, 'content.max_page_height' => 16000]);
+
+    $manager = new ImageManager(new Driver);
+    $directory = storage_path('app/scale-test-'.uniqid());
+    mkdir($directory);
+    file_put_contents($directory.'/1.png', (string) $manager->create(80, 20)->fill('#112233')->toPng());
+
+    $zipPath = $directory.'.zip';
+    $zip = new ZipArchive;
+    $zip->open($zipPath, ZipArchive::CREATE);
+    $zip->addFile($directory.'/1.png', '1.png');
+    $zip->close();
+
+    $chapter = Chapter::factory()->create();
+    app(ChapterZipImporter::class)->import($chapter, $zipPath);
+
+    $page = $chapter->pages()->first();
+
+    expect($page->width)->toBe(40)
+        ->and($page->height)->toBe(10);
+
+    unlink($zipPath);
+    unlink($directory.'/1.png');
+    rmdir($directory);
+});

@@ -1,4 +1,4 @@
-<x-night-layout :title="$series->title.' · Ruhscans'">
+<x-night-layout :seo="$seo">
     <section class="relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-wine/80 via-ink to-ink" aria-hidden="true"></div>
         <div class="relative mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[16rem_1fr]">

@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\LibraryEntry;
 use App\Models\Series;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\View\View;
 
 class SeriesController extends Controller
 {
-    public function show(Series $series): View
+    public function show(Series $series, MetaBuilder $meta): View
     {
         abort_if($series->hidden, 404);
 
@@ -29,6 +30,7 @@ class SeriesController extends Controller
             'series' => $series,
             'entry' => $entry,
             'blur' => auth()->user()?->kapak_blur ?? true,
+            'seo' => $meta->series($series),
         ]);
     }
 }

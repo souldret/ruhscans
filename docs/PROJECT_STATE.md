@@ -31,7 +31,9 @@
 4. Okuyucu — bitti
 5. Ekonomi ve kodlar — bitti
 6. Güvenlik — bitti
-7. SEO ve cila
+7. SEO ve cila — bitti
+
+Tüm fazlar tamam. Canlıya hazır.
 
 ## Biten
 
@@ -77,6 +79,12 @@
 - Cloudflare `CF-Connecting-IP` gerçek istemci IP’si; `trustProxies` ve hız sınırı bu adrese bağlı.
 - `/sikayet` ve `/dmca` formları, honeypot `website`, `throttle:5,10`. Admin işlem günlüğü salt okunur.
 - Pest: yetkisiz presigned yok, süre dolunca 403, hız sınırı, başlıklar, yabancı referer, honeypot
+- Sitemap, robots, canonical, nötr OG (`og-adult.svg`), Book/ComicSeries ve ComicIssue. Bölüm sayfası `noindex, follow`.
+- Katalog önbelleği kimlik listesi tutar; kara liste bellekten uygulanır. TTL: ana sayfa 300 sn, etiket 900 sn.
+- Geniş sayfa `CONTENT_MAX_PAGE_WIDTH` (1600) değerine ölçeklenir. Katalog indeksleri: üye tarihi, gizli seri, yayın tarihi, okuma, kod kullanımı.
+- Yönetici özeti (günlük okuma, yeni üye, kod, bekleyen şikayet), site ayarları (panik, Sonteklif, duyuru) ve bakım modu.
+- 404, 403, 500, 503 gece temasında ve aynı 18+ uyarıyla.
+- `php artisan optimize` config dosyalarında çapraz `config()` çağrısı olmadan çalışır.
 
 ## Kararlar
 
@@ -97,7 +105,7 @@
 
 ## Ortam değişkenleri
 
-`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`, `CONTENT_WATERMARK`, `READ_RATE_PER_MINUTE`, `READ_BURST_WINDOW`, `READ_BURST_MAX`, `READ_BLOCK_MINUTES`, `HOTLINK_HOSTS`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `CODE_HMAC_KEY`, `SONTEKLIF_URL`.
+`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_MAX_PAGE_WIDTH`, `CATALOG_HOME_TTL`, `CATALOG_TAGS_TTL`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`, `CONTENT_WATERMARK`, `READ_RATE_PER_MINUTE`, `READ_BURST_WINDOW`, `READ_BURST_MAX`, `READ_BLOCK_MINUTES`, `HOTLINK_HOSTS`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `CODE_HMAC_KEY`, `SONTEKLIF_URL`.
 
 ## Bilinen eksikler
 
@@ -111,6 +119,18 @@
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
 - R2 boşken sayfa yüklemesi `CONTENT_IMAGE_DISK=local` ile yerel diske düşürülebilir.
 
+## Canlıya almadan önce
+
+- `.env` commit edilmez. `APP_KEY`, `CODE_HMAC_KEY`, veritabanı ve R2 anahtarları üretimde üretilir.
+- `APP_DEBUG=false`, `APP_ENV=production`, `APP_URL=https://ruhscans.com`.
+- PostgreSQL 16'da `php artisan migrate --force`. `pg_trgm` ve GIN arama indeksi bu migration ile kurulur; bu geliştirme makinesinde Postgres çalıştırılmadı.
+- Redis ayakta. `CACHE_STORE=redis`, `SESSION_DRIVER=redis`, `QUEUE_CONNECTION=redis`. Horizon yalnızca Linux'ta.
+- İlk admin seed edilir ve TOTP onaylanır. Filament `/admin` robots ile kapalıdır.
+- Yasal metinler (kullanım, gizlilik, DMCA, 18+ uyarı) hukuk incelemesinden geçer. Şu an taslaktır.
+- Cloudflare: HSTS, gerçek IP (`TRUSTED_PROXIES`), R2 bucket ve `HOTLINK_HOSTS`.
+- `php artisan optimize` sonrası `php artisan up`. Bakım sayfası `errors.503`.
+- Sonteklif bağlantısı panelden (`site_settings.sonteklif_url`) doğrulanır.
+
 ## Sonraki adım
 
-Faz 7: SEO ve cila.
+Canlı dağıtım. Uygulama fazı kalmadı.

@@ -5,20 +5,27 @@ namespace App\Http\Controllers;
 use App\Actions\Legal\SubmitReport;
 use App\Models\Chapter;
 use App\Models\Series;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LegalNoticeController extends Controller
 {
-    public function reportForm(Request $request): View
+    public function reportForm(Request $request, MetaBuilder $meta): View
     {
-        return view('legal.report', $this->prefill($request) + ['kind' => 'sikayet']);
+        return view('legal.report', $this->prefill($request) + [
+            'kind' => 'sikayet',
+            'seo' => $meta->legal('Şikayet'),
+        ]);
     }
 
-    public function dmcaForm(Request $request): View
+    public function dmcaForm(Request $request, MetaBuilder $meta): View
     {
-        return view('legal.report', $this->prefill($request) + ['kind' => 'dmca']);
+        return view('legal.report', $this->prefill($request) + [
+            'kind' => 'dmca',
+            'seo' => $meta->legal('Telif bildirimi'),
+        ]);
     }
 
     public function store(Request $request, SubmitReport $submit): RedirectResponse

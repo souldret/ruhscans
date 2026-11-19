@@ -1,9 +1,9 @@
-<x-guest-layout>
-    <article class="space-y-4 text-sm leading-6 text-gray-700">
-        <h1 class="text-2xl font-semibold text-gray-900">
-            {{ $kind === 'dmca' ? 'Telif bildirimi' : 'Şikayet' }}
-        </h1>
-        <p class="text-xs uppercase tracking-wide text-gray-400">Taslak metin · hukuki inceleme bekliyor</p>
+<x-night-layout :seo="$seo">
+ <article class="mx-auto max-w-2xl space-y-4 px-4 py-10 text-sm leading-6 text-mist/80">
+ <h1 class="font-display text-4xl text-mist">
+ {{ $kind === 'dmca' ? 'Telif bildirimi' : 'Şikayet' }}
+ </h1>
+ <p class="text-xs uppercase tracking-wide text-gold">Taslak metin · hukuki inceleme bekliyor · 18+</p>
 
         @if (session('notice'))
             <p class="rounded-md bg-green-50 px-3 py-2 text-green-800">{{ session('notice') }}</p>
@@ -42,7 +42,7 @@
                 @error('reason') <p class="mt-1 text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <button type="submit" class="rounded-md bg-gray-900 px-4 py-2 text-white">Gönder</button>
-        </form>
-    </article>
-</x-guest-layout>
+            <button type="submit" class="rounded-2xl bg-magenta px-4 py-2 text-white">Gönder</button>
+ </form>
+ </article>
+</x-night-layout>

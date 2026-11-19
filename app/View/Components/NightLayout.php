@@ -7,7 +7,10 @@ use Illuminate\View\View;
 
 class NightLayout extends Component
 {
-    public function __construct(public ?string $title = null) {}
+    /**
+     * @param  array<string, mixed>|null  $seo
+     */
+    public function __construct(public ?string $title = null, public ?array $seo = null) {}
 
     public function render(): View
     {

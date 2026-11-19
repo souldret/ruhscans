@@ -1,4 +1,4 @@
-<x-night-layout :title="$tag->name.' · Ruhscans'">
+<x-night-layout :seo="$seo">
     <div class="mx-auto max-w-6xl px-4 py-8">
         <p class="text-xs uppercase tracking-[0.25em] text-magenta">Etiket</p>
         <h1 class="mt-2 font-display text-4xl">{{ $tag->name }}</h1>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0B0709">
-    <title>{{ $title ?? config('app.name', 'Ruhscans') }}</title>
+    <x-seo-meta :meta="$seo ?? ['title' => $title ?? config('seo.site_name')]" />
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
@@ -16,7 +16,7 @@
         $shell = [
             'blur' => (bool) ($viewer->kapak_blur ?? true),
             'stealth' => (bool) ($viewer->gizli_mod ?? false),
-            'panic' => $viewer->panik_url ?? 'https://www.google.com',
+            'panic' => $viewer->panik_url ?? app(\App\Services\Ops\SiteOperations::class)->panicUrl(),
         ];
     @endphp
     <div
@@ -25,6 +25,10 @@
         :class="stealth ? 'stealth' : ''"
         x-on:blur-changed.window="setBlur($event.detail.blur)"
     >
+        @php $announcement = \App\Models\SiteSetting::get('announcement'); @endphp
+        @if (filled($announcement))
+            <p class="bg-wine/80 px-4 py-2 text-center text-sm text-gold">{{ $announcement }}</p>
+        @endif
         <x-night-nav />
         <main id="icerik">
             {{ $slot }}

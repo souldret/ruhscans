@@ -6,12 +6,13 @@ use App\Actions\Reader\RecordReadingProgress;
 use App\Enums\ReadingMode;
 use App\Models\Chapter;
 use App\Models\LibraryEntry;
-use App\Models\Series;
 use App\Models\Page;
+use App\Models\Series;
 use App\Services\Reader\ChapterAccess;
 use App\Services\Reader\PageUrlFactory;
 use App\Services\Security\PageWatermark;
 use App\Services\Security\ReadRateGuard;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,7 +20,7 @@ use Illuminate\View\View;
 
 class ReaderController extends Controller
 {
-    public function show(Series $series, string $number, ChapterAccess $access): View
+    public function show(Series $series, string $number, ChapterAccess $access, MetaBuilder $meta): View
     {
         abort_if($series->hidden, 404);
 
@@ -45,6 +46,7 @@ class ReaderController extends Controller
             'stealth' => (bool) $user?->gizli_mod,
             'progress' => $progress,
             'neighbors' => $this->neighbors($chapter),
+            'seo' => $meta->chapter($series, $chapter),
         ]);
     }
 
@@ -145,6 +147,10 @@ class ReaderController extends Controller
 
         return view('reader.history', [
             'entries' => $entries,
+            'seo' => app(MetaBuilder::class)->privatePage(
+                'Okuma geçmişi',
+                'Bıraktığın bölümler. Gizli mod kayıt yazmaz. Bu sayfa dizine eklenmez.',
+            ),
         ]);
     }
 

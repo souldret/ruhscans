@@ -1,5 +1,5 @@
 <div>
-    <div class="mx-auto max-w-6xl px-4 py-8">
+ <div class="mx-auto max-w-6xl px-4 py-8">
         <h1 class="font-display text-4xl">Keşfet</h1>
         <p class="mt-2 text-sm text-mist/70">Yazarken süzülür. Tür, durum ve seviye aynı anda daraltır.</p>
 

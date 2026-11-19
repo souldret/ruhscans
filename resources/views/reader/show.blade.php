@@ -1,4 +1,4 @@
-<x-night-layout :title="'Bölüm '.$chapter->number.' · '.$series->title">
+<x-night-layout :seo="$seo">
     @php
         $boot = [
             'mode' => $mode,

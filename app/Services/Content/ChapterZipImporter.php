@@ -42,6 +42,12 @@ class ChapterZipImporter
                 $this->assertImage($path, $contents);
 
                 $image = $manager->read($contents);
+                $maxWidth = (int) config('content.max_page_width', 1600);
+
+                if ($maxWidth > 0 && $image->width() > $maxWidth) {
+                    $image->scale(width: $maxWidth);
+                }
+
                 foreach ($this->slicer->slice($image) as $slice) {
                     $order++;
                     $encoded = $slice['image']->toWebp((int) config('content.webp_quality'));

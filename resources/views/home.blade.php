@@ -1,4 +1,4 @@
-<x-night-layout>
+<x-night-layout :seo="$seo">
     <section
         class="relative overflow-hidden"
         x-data="{

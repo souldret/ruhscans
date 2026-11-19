@@ -1,4 +1,4 @@
-<x-night-layout title="Cüzdan">
+<x-night-layout :seo="$seo">
     <div class="mx-auto max-w-3xl px-4 py-10" @if ($glow) x-data x-init="setTimeout(() => $el.querySelector('.stone-burst')?.classList.add('is-on'), 40)" @endif>
         <header class="flex items-end justify-between gap-4">
             <div>
