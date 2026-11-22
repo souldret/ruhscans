@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DirectZipUploadController;
 use App\Http\Controllers\AgeGateController;
 use App\Http\Controllers\ChapterUnlockController;
 use App\Http\Controllers\HomeController;
@@ -65,6 +66,13 @@ Route::view('dashboard', 'dashboard')
 Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
+
+Route::middleware('auth')->prefix('admin/zip')->name('admin.zip.direct.')->group(function () {
+    Route::post('/presign', [DirectZipUploadController::class, 'presign'])->name('presign');
+    Route::post('/multipart', [DirectZipUploadController::class, 'startMultipart'])->name('multipart.start');
+    Route::post('/multipart/tamamla', [DirectZipUploadController::class, 'completeMultipart'])->name('multipart.complete');
+    Route::post('/tamamla', [DirectZipUploadController::class, 'complete'])->name('complete');
+});
 
 Route::middleware('auth')->get('/admin/kodlar/indir', function (Request $request, CodeExportStore $store) {
  abort_unless($request->user()?->hasRole(User::ROLE_ADMIN), 403);

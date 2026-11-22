@@ -98,15 +98,71 @@ class ChapterZipImporter
             throw new RuntimeException('ZIP açılamadı.');
         }
 
+        $maxFiles = (int) config('content.max_zip_files', 500);
+        $maxUncompressed = (int) config('content.max_zip_uncompressed_kilobytes', 512000) * 1024;
+        $maxRatio = (int) config('content.max_zip_compression_ratio', 200);
+        $allowedExtensions = (array) config('content.zip_allowed_extensions', ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+        if ($zip->numFiles > $maxFiles) {
+            $zip->close();
+            throw new RuntimeException('ZIP dosya sayısı sınırı aşıldı (en fazla '.$maxFiles.').');
+        }
+
+        $safeNames = [];
+        $failures = [];
+        $total = 0;
+
+        for ($index = 0; $index < $zip->numFiles; $index++) {
+            $stat = $zip->statIndex($index);
+            if (! is_array($stat)) {
+                continue;
+            }
+
+            $name = (string) $stat['name'];
+            $base = basename(str_replace('\\', '/', $name));
+
+            if (! $this->isSafeName($name) || str_starts_with($base, '.') || str_contains($name, '__MACOSX')) {
+                $failures[] = ['file' => $base, 'message' => 'Güvenli olmayan dosya yolu.'];
+
+                continue;
+            }
+
+            if (str_ends_with($name, '/')) {
+                continue;
+            }
+
+            $extension = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
+            if (! in_array($extension, $allowedExtensions, true)) {
+                $failures[] = ['file' => $base, 'message' => 'Desteklenmeyen dosya uzantısı: '.$extension];
+
+                continue;
+            }
+
+            $size = (int) ($stat['size'] ?? 0);
+            $compressed = (int) ($stat['comp_size'] ?? 0);
+            $total += $size;
+
+            if ($total > $maxUncompressed) {
+                $zip->close();
+                throw new RuntimeException('ZIP açılmamış boyut sınırı aşıldı.');
+            }
+
+            if ($compressed > 0 && $size / $compressed > $maxRatio) {
+                $failures[] = ['file' => $base, 'message' => 'Sıkıştırma oranı şüpheli (zip bombası).'];
+
+                continue;
+            }
+
+            $safeNames[] = $name;
+        }
+
         $directory = storage_path('app/chapter-imports/'.uniqid('zip_', true));
         mkdir($directory, 0777, true);
-        $zip->extractTo($directory);
+        $zip->extractTo($directory, $safeNames);
         $zip->close();
 
         $images = [];
-        $failures = [];
-        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS));
 
         foreach ($iterator as $file) {
@@ -115,14 +171,10 @@ class ChapterZipImporter
             }
 
             $name = $file->getFilename();
-            if (str_starts_with($name, '.') || str_contains($file->getPathname(), '__MACOSX')) {
-                continue;
-            }
-
             $mime = mime_content_type($file->getPathname()) ?: '';
             $kilobytes = (int) ceil($file->getSize() / 1024);
 
-            if (! in_array($mime, $allowed, true)) {
+            if (! in_array($mime, $allowedMimes, true)) {
                 $failures[] = ['file' => $name, 'message' => 'Desteklenmeyen dosya türü: '.$mime];
 
                 continue;
@@ -138,6 +190,25 @@ class ChapterZipImporter
         }
 
         return compact('directory', 'images', 'failures');
+    }
+
+    private function isSafeName(string $name): bool
+    {
+        if ($name === '' || str_contains($name, "\0")) {
+            return false;
+        }
+
+        if (str_starts_with($name, '/') || preg_match('#^[A-Za-z]:[\\\\/]#', $name)) {
+            return false;
+        }
+
+        foreach (explode('/', str_replace('\\', '/', $name)) as $segment) {
+            if ($segment === '..') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function assertImage(string $path, string|false $contents): void

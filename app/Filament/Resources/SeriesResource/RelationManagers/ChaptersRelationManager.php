@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SeriesResource\RelationManagers;
 
+use App\Filament\Forms\Components\DirectZipUpload as DirectZipUploadField;
 use App\Filament\Support\UploadFields;
 use App\Jobs\ProcessChapterZip;
 use App\Models\Chapter;
@@ -9,6 +10,7 @@ use App\Models\Series;
 use App\Services\Content\BulkChapterZipImporter;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -155,14 +157,24 @@ class ChaptersRelationManager extends RelationManager
         return [
             Tables\Actions\EditAction::make()->after($afterEdit),
             Tables\Actions\Action::make('yeniden')
-                ->label('Yeniden dene')
+                ->label('ZIP yükle / yeniden dene')
                 ->icon('heroicon-o-arrow-path')
-                ->visible(fn (Chapter $record) => in_array($record->latestUpload?->status, ['kismi', 'hata'], true))
                 ->form([
-                    UploadFields::zip('zip', 'Sayfa ZIP')->required(),
+                    UploadFields::zip('zip', 'Sayfa ZIP')
+                        ->required(fn (Get $get): bool => blank($get('direct_zip'))),
+                    DirectZipUploadField::make('direct_zip')
+                        ->label('Büyük ZIP (doğrudan R2)')
+                        ->chapterId(fn (?Chapter $record) => $record?->id ?? 0)
+                        ->helperText('100 MB üstü dosyalar için. Yükleme bitince iş otomatik kuyruğa alınır.'),
                     UploadFields::adultConsent(),
                 ])
                 ->action(function (Chapter $record, array $data) {
+                    if (filled($data['direct_zip'] ?? null)) {
+                        Notification::make()->title('Büyük ZIP kuyruğa alındı')->success()->send();
+
+                        return;
+                    }
+
                     $path = self::uploadedPath($data['zip'] ?? null);
 
                     if ($path === null) {

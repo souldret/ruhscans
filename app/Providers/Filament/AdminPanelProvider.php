@@ -85,6 +85,7 @@ class AdminPanelProvider extends PanelProvider
                     .fi-body { background: #120910; }
                 </style>
             HTML))
+            ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): string => view('filament.direct-zip-upload-scripts')->render())
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): string => view('components.turnstile', ['wireModel' => 'turnstileToken'])->render(),
