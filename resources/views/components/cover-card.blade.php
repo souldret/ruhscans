@@ -4,13 +4,33 @@
     <article class="cover-frame relative overflow-hidden rounded-2xl bg-surface">
         @if ($series->cover_path)
             <img
-                src="{{ \Illuminate\Support\Facades\Storage::disk(config('content.image_disk', 'public'))->url($series->cover_path) }}"
+                src="{{ $series->coverPlaceholderUrl }}"
                 alt=""
-                width="320"
-                height="480"
+                aria-hidden="true"
+                width="20"
+                height="30"
+                class="cover-art pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+                onerror="this.style.display='none'"
+            >
+            <img
+                src="{{ $series->coverSmallUrl }}"
+                alt=""
+                width="300"
+                height="450"
                 loading="lazy"
                 decoding="async"
                 class="cover-art h-full w-full object-cover"
+                onerror="this.style.display='none'"
+            >
+            <img
+                src="{{ $series->coverUrl }}"
+                alt=""
+                width="600"
+                height="900"
+                loading="lazy"
+                decoding="async"
+                class="cover-art absolute inset-0 h-full w-full object-cover"
+                onerror="this.style.display='none'"
             >
         @else
             <div class="cover-art flex h-full w-full items-end bg-gradient-to-br from-wine via-surface to-ink p-3">

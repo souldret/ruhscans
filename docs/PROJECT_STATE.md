@@ -123,6 +123,73 @@ php artisan optimize
 php artisan queue:restart
 ```
 
+## Kapak ve ZIP yükleme düzeltmeleri (2026-11-22)
+
+### Kök neden
+
+Admin panelinde kapak yüklemesinin validation hatası vermesinin nedeni Livewire geçici yükleme kapısıydı. Livewire 3 varsayılan `temporary_file_upload.rules` değeri `max:12288` (12 MB) olduğu için dosya, Filament `FileUpload::maxSize()` kuralına hiç ulaşmadan reddediliyordu. Yerelde 13 MB dosya ile `FileUploadController::validateAndStore` çağrılarak bu durum yeniden üretildi ve hata mesajı doğrulandı.
+
+### Kapak akışı
+
+- `config/livewire.php` eklendi; geçici yükleme sınırı `CONTENT_DIRECT_UPLOAD_THRESHOLD_KB` (varsayılan 100000 KB) değerine bağlandı.
+- Kapak alanı yalnızca JPG/PNG/WebP kabul eder, 10 MB sınırı ve gerçek MIME kontrolü (`finfo`) uygular.
+- Kapak piksel sınırları eklendi: varsayılan en az 300×450, en fazla 6000×9000.
+- `ProcessSeriesCover` kuyruk job'ı Intervention ile `cover.webp` (600×900), `cover-small.webp` (300×450) ve bulanık `cover-placeholder.webp` üretir; `ContentType: image/webp` ve uzun ömürlü `Cache-Control` yazar.
+- Eski kapak ve türevleri değiştirme sırasında silinir.
+- `CoverUrl` ve `Series` erişimcileri kapakları `R2_URL` CDN adresiyle üretir. `R2_URL` `https://` içermiyorsa otomatik eklenir.
+- R2 diski `visibility => private` kullanır; ACL isteği gönderilmez.
+- Türkçe doğrulama mesajları eklendi: yüklenemedi, çok büyük, desteklenmeyen biçim, piksel boyutu.
+- Ön yüz kapak kartı placeholder → small → full katmanlarıyla yüklenir.
+
+### ZIP güvenliği ve büyük dosya akışı
+
+- `ChapterZipImporter`: zip-slip, zip bombası (sıkıştırma oranı ve toplam açılmamış boyut), dosya sayısı, uzantı ve MIME allowlist kontrolleri uygular. SVG/PHP gibi dosyalar reddedilir.
+- 100 MB altındaki ZIP'ler mevcut Livewire akışıyla çalışmaya devam eder.
+- 100 MB üstü ZIP'ler için tarayıcıdan doğrudan R2'ye yükleme eklendi:
+  - tek PUT için presigned URL,
+  - 16 MB parçalarla S3 multipart,
+  - tek kullanımlık yükleme token'ı,
+  - sunucuda yalnızca `ProcessChapterZip` job'ını tetikleyen endpoint.
+- Bu akış şu an bölüm "ZIP yükle / yeniden dene" satır aksiyonunda kullanılabilir. Create/edit chapter formları yerel ZIP akışını kullanmaya devam eder.
+- Vite girdisi ve Filament script hook'u ile `direct-zip-upload.js` panele yüklenir.
+
+### Testler
+
+- `CoverUploadTest`: geçerli kapak, 10 MB üstü, düşük piksel, yanlış MIME/sahte JPG, R2 fake disk ile WebP türevleri ve eski dosya silme, CDN URL.
+- `ChapterZipSecurityTest`: zip-slip, tehlikeli uzantılar, dosya sayısı limiti.
+- `DirectZipUploadTest`: eşik kontrolü, tek kullanımlık token, yetki, job dispatch, rota koruması.
+- Son tam suite: **110 passed (500 assertions)**.
+
+### Canlıda yapılacaklar
+
+Web PHP (`lsphp83`) için `upload_max_filesize` ve `post_max_size` en az 100 MB olmalı; 100 MB üstü dosyalar zaten tarayıcıdan R2'ye gider. `.env` içinde `CONTENT_MAX_COVER_KB=10240`, `CONTENT_DIRECT_UPLOAD_THRESHOLD_KB=100000`, `CONTENT_DIRECT_UPLOAD_TTL=30`, `CONTENT_COVER_MIN_WIDTH=300`, `CONTENT_COVER_MIN_HEIGHT=450`, `CONTENT_COVER_MAX_WIDTH=6000`, `CONTENT_COVER_MAX_HEIGHT=9000`, `CONTENT_MAX_ZIP_FILES=500`, `CONTENT_MAX_ZIP_UNCOMPRESSED_KB=512000`, `CONTENT_MAX_ZIP_RATIO=200`, `CONTENT_COVER_CACHE_TTL=31536000` tanımlanır. `R2_URL` https ile başlamalıdır.
+
+R2 bucket CORS (tarayıcıdan PUT için):
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://ruhscans.com"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedHeaders": ["Content-Type", "x-amz-*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+Canlı komutlar:
+
+```bash
+npm ci && npm run build
+php artisan migrate --force
+php artisan optimize:clear
+php artisan optimize
+php artisan queue:restart
+```
+
+Test adımları: admin panelinde 8 MB geçerli JPG kapak yükle, 11 MB dosyanın "çok büyük" mesajını verdiğini gör, sahte JPG'nin "Desteklenmeyen biçim" mesajını verdiğini gör, 100 MB altı ZIP'i normal akışla yükle, 100 MB üstü ZIP'i "Büyük ZIP seç" ile yükleyip kuyrukta `ProcessChapterZip` oluşumunu kontrol et.
+
 ## Kararlar
 
 - Laravel 12 korunur. İçerik şeması migration ile gelir.
@@ -147,7 +214,7 @@ php artisan queue:restart
 
 ## Ortam değişkenleri
 
-`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_MAX_PAGE_WIDTH`, `CATALOG_HOME_TTL`, `CATALOG_TAGS_TTL`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`, `CONTENT_WATERMARK`, `READ_RATE_PER_MINUTE`, `READ_BURST_WINDOW`, `READ_BURST_MAX`, `READ_BLOCK_MINUTES`, `HOTLINK_HOSTS`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `CODE_HMAC_KEY`, `SONTEKLIF_URL`, `TURNSTILE_ENABLED`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`.
+`APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL`, `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE`, `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT`, `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_DEFAULT_REGION`, `R2_BUCKET`, `R2_URL`, `R2_ENDPOINT`, `R2_USE_PATH_STYLE_ENDPOINT`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CONTENT_IMAGE_DISK`, `CONTENT_WEBP_QUALITY`, `CONTENT_MAX_ZIP_KB`, `CONTENT_MAX_IMAGE_KB`, `CONTENT_MAX_PAGE_HEIGHT`, `CONTENT_MAX_PAGE_WIDTH`, `CONTENT_MAX_COVER_KB`, `CONTENT_COVER_MIN_WIDTH`, `CONTENT_COVER_MIN_HEIGHT`, `CONTENT_COVER_MAX_WIDTH`, `CONTENT_COVER_MAX_HEIGHT`, `CONTENT_DIRECT_UPLOAD_THRESHOLD_KB`, `CONTENT_DIRECT_UPLOAD_TTL`, `CONTENT_MAX_ZIP_FILES`, `CONTENT_MAX_ZIP_UNCOMPRESSED_KB`, `CONTENT_MAX_ZIP_RATIO`, `CONTENT_COVER_CACHE_TTL`, `CATALOG_HOME_TTL`, `CATALOG_TAGS_TTL`, `CONTENT_SEARCH_SIMILARITY`, `CONTENT_PAGE_URL_TTL`, `CONTENT_WATERMARK`, `READ_RATE_PER_MINUTE`, `READ_BURST_WINDOW`, `READ_BURST_MAX`, `READ_BLOCK_MINUTES`, `HOTLINK_HOSTS`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `CODE_HMAC_KEY`, `SONTEKLIF_URL`, `TURNSTILE_ENABLED`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`.
 
 ## Bilinen eksikler
 
@@ -161,7 +228,7 @@ php artisan queue:restart
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
 - R2 boşken sayfa yüklemesi `CONTENT_IMAGE_DISK=local` ile yerel diske düşürülebilir.
 - `ReportStatus` içinde ayrı "çözüldü" değeri yok; kuyruk `Incelendi` yazar.
-- Cloudflare istek gövdesi yaklaşık 100 MB. `CONTENT_MAX_ZIP_KB` daha yüksek olsa da form bu sınırı uyarır.
+- Cloudflare istek gövdesi yaklaşık 100 MB. 100 MB üstü ZIP'ler doğrudan R2'ye yüklenir; create/edit chapter formlarında büyük ZIP alanı henüz yok, retry aksiyonunda kullanılabilir.
 - Sayfa küçük resmi local diskte geçici URL üretemez; R2/S3 `temporaryUrl` ister.
 - Horizon menüsü `/horizon` bağlantısıdır. Windows geliştirmede `pcntl` yoktur.
 
@@ -179,4 +246,4 @@ php artisan queue:restart
 
 ## Sonraki adım
 
-Canlıda `php artisan migrate --force`, ardından `php artisan optimize` ve kuyruk işçisini yeniden başlat. Turnstile anahtarları `.env` içinde tanımlanır; gerçek anahtarlar commit edilmez. Panel erişimi için 2FA kurulumu gerekmez; engelli olmayan `admin`/`ceviri_ekibi` doğrudan giriş yapar.
+Canlıda `php artisan migrate --force`, `php artisan optimize:clear`, `php artisan optimize` ve kuyruk işçisini yeniden başlat. Web PHP `lsphp83` için `upload_max_filesize`/`post_max_size` en az 100 MB, R2 bucket CORS'unda `ETag` expose edilmiş olmalı. Turnstile anahtarları `.env` içinde tanımlanır; gerçek anahtarlar commit edilmez. Panel erişimi için 2FA kurulumu gerekmez; engelli olmayan `admin`/`ceviri_ekibi` doğrudan giriş yapar.

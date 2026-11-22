@@ -3,7 +3,7 @@
         class="relative overflow-hidden"
         x-data="{
             index: 0,
-            covers: {{ \Illuminate\Support\Js::from($showcase->map(fn ($series) => $series->cover_path ? \Illuminate\Support\Facades\Storage::disk(config('content.image_disk', 'public'))->url($series->cover_path) : null)->values()) }},
+            covers: {{ \Illuminate\Support\Js::from($showcase->map(fn ($series) => $series->cover_path ? $series->coverUrl : null)->values()) }},
         }"
     >
         <div
@@ -29,7 +29,9 @@
                             <div class="relative grid min-h-72 gap-4 p-6 sm:grid-cols-[9rem_1fr]">
                                 <div class="cover-frame relative overflow-hidden rounded-2xl bg-surface">
                                     @if ($series->cover_path)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::disk(config('content.image_disk', 'public'))->url($series->cover_path) }}" alt="" width="320" height="480" loading="lazy" decoding="async" class="cover-art h-full w-full object-cover">
+                                        <img src="{{ $series->coverPlaceholderUrl }}" alt="" aria-hidden="true" width="20" height="30" class="cover-art pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl" onerror="this.style.display='none'">
+                                        <img src="{{ $series->coverSmallUrl }}" alt="" width="300" height="450" loading="lazy" decoding="async" class="cover-art h-full w-full object-cover" onerror="this.style.display='none'">
+                                        <img src="{{ $series->coverUrl }}" alt="" width="600" height="900" loading="lazy" decoding="async" class="cover-art absolute inset-0 h-full w-full object-cover" onerror="this.style.display='none'">
                                     @else
                                         <div class="cover-art h-full w-full bg-gradient-to-br from-wine to-ink"></div>
                                     @endif

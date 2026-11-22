@@ -6,6 +6,8 @@ use App\Enums\ContentLevel;
 use App\Enums\SeriesStatus;
 use App\Enums\SeriesType;
 use App\Filament\Resources\SeriesResource\Pages;
+use App\Rules\RealMimeImage;
+use App\Services\Content\CoverUrl;
 use App\Filament\Resources\SeriesResource\RelationManagers\ChaptersRelationManager;
 use App\Models\Series;
 use App\Models\Tag;
@@ -17,7 +19,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class SeriesResource extends Resource
@@ -66,10 +67,13 @@ class SeriesResource extends Resource
             Forms\Components\FileUpload::make('cover_path')
                 ->label('Kapak')
                 ->image()
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                ->rules([new RealMimeImage])
+                ->maxSize((int) config('content.max_cover_kilobytes', 10240))
                 ->imagePreviewHeight('160')
                 ->disk(config('content.image_disk'))
                 ->directory('covers')
-                ->visibility('private')
+                ->helperText('JPG, PNG veya WebP · en fazla 10 MB · en az 300×450 piksel. Kuyrukta 600×900 kapak, 300×450 küçük kapak ve bulanık yer tutucu üretilir.')
                 ->columnSpanFull(),
             Forms\Components\Select::make('type')
                 ->label('Tür')
@@ -196,20 +200,6 @@ class SeriesResource extends Resource
 
     private static function coverUrl(Series $series): ?string
     {
-        if (blank($series->cover_path)) {
-            return null;
-        }
-
-        $disk = Storage::disk((string) config('content.image_disk'));
-
-        try {
-            if (method_exists($disk, 'temporaryUrl')) {
-                return $disk->temporaryUrl($series->cover_path, now()->addMinutes(10));
-            }
-        } catch (\Throwable) {
-            return null;
-        }
-
-        return null;
+        return app(CoverUrl::class)->for($series);
     }
 }

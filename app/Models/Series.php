@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\ContentLevel;
 use App\Enums\SeriesStatus;
 use App\Enums\SeriesType;
+use App\Services\Content\CoverUrl;
 use Database\Factories\SeriesFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -79,6 +81,21 @@ class Series extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    protected function coverUrl(): Attribute
+    {
+        return Attribute::get(fn () => app(CoverUrl::class)->for($this));
+    }
+
+    protected function coverSmallUrl(): Attribute
+    {
+        return Attribute::get(fn () => app(CoverUrl::class)->for($this, 'small'));
+    }
+
+    protected function coverPlaceholderUrl(): Attribute
+    {
+        return Attribute::get(fn () => app(CoverUrl::class)->for($this, 'placeholder'));
     }
 
     public function getActivitylogOptions(): LogOptions
