@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\AgeGateController;
 use App\Http\Controllers\ChapterUnlockController;
 use App\Http\Controllers\HomeController;
@@ -83,13 +82,5 @@ Route::middleware('auth')->get('/admin/kodlar/indir', function (Request $request
  'Content-Disposition' => 'attachment; filename="ruhscans-kod-'.$batch.'.csv"',
  ]);
 })->name('admin.codes.csv');
-
-Route::middleware('auth')->prefix('guvenlik/iki-adim')->group(function () {
-    Route::get('/', [TwoFactorChallengeController::class, 'create'])->name('admin.two-factor');
-    Route::post('/', [TwoFactorChallengeController::class, 'store'])->name('admin.two-factor.store');
-    Route::get('/kurtarma', [TwoFactorChallengeController::class, 'recovery'])->name('admin.two-factor.recovery');
-    Route::get('/dogrula', [TwoFactorChallengeController::class, 'challenge'])->name('admin.two-factor.challenge');
-    Route::post('/dogrula', [TwoFactorChallengeController::class, 'verify'])->name('admin.two-factor.verify');
-});
 
 require __DIR__.'/auth.php';

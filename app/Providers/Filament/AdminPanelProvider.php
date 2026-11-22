@@ -3,8 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
-use App\Http\Middleware\AuthenticateAdminPanel;
-use App\Http\Middleware\EnsureAdminTwoFactor;
+use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -36,17 +35,7 @@ class AdminPanelProvider extends PanelProvider
             {
                 public function toResponse($request)
                 {
-                    $user = $request->user();
-
-                    if ($user !== null && $user->hasRole('admin')) {
-            $route = $user->hasConfirmedTwoFactor()
-                ? 'admin.two-factor.challenge'
-                : 'admin.two-factor';
-
-            return redirect()->route($route);
-        }
-
-        return redirect()->intended(filament()->getUrl());
+                    return redirect()->intended(filament()->getUrl());
                 }
             };
         });
@@ -96,6 +85,22 @@ class AdminPanelProvider extends PanelProvider
                     .fi-body { background: #120910; }
                 </style>
             HTML))
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): string => view('components.turnstile', ['wireModel' => 'turnstileToken'])->render(),
+            )
+            ->renderHook(PanelsRenderHook::TOPBAR_START, fn (): string => Blade::render(<<<'HTML'
+                <a href="https://ruhscans.com" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5">
+                    <span aria-hidden="true">←</span> Siteye Dön
+                </a>
+            HTML))
+            ->renderHook(PanelsRenderHook::USER_MENU_AFTER, fn (): string => Blade::render(<<<'HTML'
+                <a href="https://ruhscans.com" target="_blank" rel="noopener noreferrer"
+                   class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5">
+                    <span aria-hidden="true">←</span> Siteye Dön
+                </a>
+            HTML))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -108,8 +113,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-            AuthenticateAdminPanel::class,
-            EnsureAdminTwoFactor::class,
-        ]);
+                Authenticate::class,
+            ]);
     }
 }

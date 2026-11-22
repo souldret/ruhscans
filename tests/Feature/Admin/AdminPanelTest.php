@@ -4,7 +4,6 @@ use App\Enums\CodeKind;
 use App\Enums\LedgerDirection;
 use App\Filament\Pages\EconomySettings;
 use App\Filament\Pages\GenerateCodes;
-use App\Filament\Pages\SecuritySettings;
 use App\Filament\Pages\SiteSettings;
 use App\Filament\Pages\SystemStatus;
 use App\Filament\Resources\ActivityLogResource;
@@ -34,13 +33,6 @@ function panelUser(string $role): User
 {
     $user = User::factory()->create();
     $user->assignRole($role);
-
-    if ($role === User::ROLE_ADMIN) {
-        $user->forceFill([
-            'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
-            'two_factor_confirmed_at' => now(),
-        ])->save();
-    }
 
     return $user->fresh();
 }
@@ -80,8 +72,7 @@ test('çeviri ekibi ekonomi kullanıcı ve sistem menülerini görmez', function
         ->and(GenerateCodes::canAccess())->toBeFalse()
         ->and(SiteSettings::canAccess())->toBeFalse()
         ->and(SystemStatus::canAccess())->toBeFalse()
-        ->and(EconomySettings::canAccess())->toBeFalse()
-        ->and(SecuritySettings::canAccess())->toBeFalse();
+        ->and(EconomySettings::canAccess())->toBeFalse();
 });
 
 test('kod csv yalnızca bir kez iner', function () {
