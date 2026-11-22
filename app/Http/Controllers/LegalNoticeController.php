@@ -6,6 +6,7 @@ use App\Actions\Legal\SubmitReport;
 use App\Models\Chapter;
 use App\Models\Series;
 use App\Services\Seo\MetaBuilder;
+use App\Services\Security\TurnstileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -28,10 +29,16 @@ class LegalNoticeController extends Controller
         ]);
     }
 
-    public function store(Request $request, SubmitReport $submit): RedirectResponse
+    public function store(Request $request, SubmitReport $submit, TurnstileService $turnstile): RedirectResponse
     {
         if (filled($request->input('website'))) {
             return back()->with('notice', 'Bildirim alındı.');
+        }
+
+        if (! $turnstile->verify($request->input('turnstile_token'), $request)) {
+            return back()
+                ->withInput()
+                ->withErrors(['turnstile_token' => 'Doğrulama başarısız. Lütfen tekrar deneyin.']);
         }
 
         $validated = $request->validate([

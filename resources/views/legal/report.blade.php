@@ -42,6 +42,11 @@
                 @error('reason') <p class="mt-1 text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            <div>
+                <x-turnstile />
+                @error('turnstile_token') <p class="mt-1 text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             <button type="submit" class="rounded-2xl bg-magenta px-4 py-2 text-white">Gönder</button>
  </form>
  </article>

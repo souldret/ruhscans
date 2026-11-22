@@ -28,13 +28,19 @@
 
         <section class="mt-6 glass rounded-3xl p-6">
             <h2 class="font-display text-3xl">Kod kullan</h2>
-            <form class="mt-4 flex flex-col gap-3 sm:flex-row" method="POST" action="{{ route('wallet.redeem') }}">
+            <form class="mt-4 flex flex-col gap-3" method="POST" action="{{ route('wallet.redeem') }}">
                 @csrf
-                <label class="sr-only" for="kod">Kod</label>
-                <input id="kod" name="kod" value="{{ old('kod') }}" autocomplete="off" spellcheck="false" placeholder="RUH-XXXX-XXXX-XXXX-XXXX" class="w-full rounded-2xl border-white/10 bg-ink text-mist placeholder:text-mist/40">
-                <button class="btn-magenta shrink-0" type="submit">Kullan</button>
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <label class="sr-only" for="kod">Kod</label>
+                    <input id="kod" name="kod" value="{{ old('kod') }}" autocomplete="off" spellcheck="false" placeholder="RUH-XXXX-XXXX-XXXX-XXXX" class="w-full rounded-2xl border-white/10 bg-ink text-mist placeholder:text-mist/40">
+                    <button class="btn-magenta shrink-0" type="submit">Kullan</button>
+                </div>
+                <x-turnstile />
             </form>
             @error('kod')
+                <p class="mt-3 text-sm text-magenta">{{ $message }}</p>
+            @enderror
+            @error('turnstile_token')
                 <p class="mt-3 text-sm text-magenta">{{ $message }}</p>
             @enderror
             @if (session('status'))

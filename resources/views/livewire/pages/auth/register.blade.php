@@ -2,6 +2,7 @@
 
 use App\Actions\Auth\RegisterUser;
 use App\Models\User;
+use App\Services\Security\TurnstileService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules;
@@ -14,11 +15,12 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $turnstileToken = '';
 
     /**
      * Handle an incoming registration request.
      */
-    public function register(RegisterUser $registerUser): void
+    public function register(RegisterUser $registerUser, TurnstileService $turnstile): void
     {
         $key = 'register|'.request()->ip();
 
@@ -38,6 +40,13 @@ new #[Layout('layouts.guest')] class extends Component
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        if (! $turnstile->verify($this->turnstileToken)) {
+            $this->addError('turnstileToken', 'Doğrulama başarısız. Lütfen tekrar deneyin.');
+            $this->dispatch('turnstile-reset');
+
+            return;
+        }
 
         Auth::login($registerUser->handle($validated));
 
@@ -82,6 +91,11 @@ new #[Layout('layouts.guest')] class extends Component
                             name="password_confirmation" required autocomplete="new-password" />
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        </div>
+
+        <div class="mt-4">
+            <x-turnstile wire-model="turnstileToken" />
+            <x-input-error :messages="$errors->get('turnstileToken')" class="mt-2" />
         </div>
 
         <div class="flex items-center justify-end mt-4">

@@ -2,40 +2,76 @@
 
 namespace App\Filament\Auth;
 
-use App\Models\User;
+use App\Services\Security\TurnstileService;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Notifications\Notification;
 use Filament\Pages\Auth\Login as BaseLogin;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 
 class Login extends BaseLogin
 {
+    public string $turnstileToken = '';
+
     public function authenticate(): ?LoginResponse
     {
+        $data = $this->form->getState();
+        $email = (string) ($data['email'] ?? '');
+        $ip = (string) (request()->ip() ?? 'unknown');
+        $scope = sha1($ip.'|'.$email);
+        $attemptKey = 'admin-login:attempt:'.$scope;
+        $failKey = 'admin-login:fail:'.$scope;
+        $lockKey = 'admin-login:lock:'.$scope;
+
+        if (Cache::has($lockKey)) {
+            $this->throwFailureValidationException();
+
+            return null;
+        }
+
         try {
-            $this->rateLimit(5);
+            RateLimiter::attempt($attemptKey, 5, static fn (): null => null, 60);
         } catch (TooManyRequestsException $exception) {
             $this->getRateLimitedNotification($exception)?->send();
 
             return null;
         }
 
-        $data = $this->form->getState();
-
-        if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
-            $this->throwFailureValidationException();
-        }
-
-        $user = Filament::auth()->user();
-
-        if ($user instanceof User && $user->requiresTwoFactorSetup()) {
-            session()->regenerate();
-
-            $this->redirect(route('admin.two-factor'), navigate: false);
+        if (! app(TurnstileService::class)->verify($this->turnstileToken)) {
+            Notification::make()
+                ->danger()
+                ->title('Doğrulama başarısız. Lütfen tekrar deneyin.')
+                ->send();
+            $this->dispatch('turnstile-reset');
 
             return null;
         }
+
+        if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
+            $failures = (int) Cache::increment($failKey);
+
+            if ($failures === 1) {
+                Cache::put($failKey, 1, now()->addMinutes(15));
+            }
+
+            activity('admin-login')
+                ->withProperties(['email' => $email, 'ip' => $ip])
+                ->log('Başarısız panel girişi');
+
+            if ($failures >= 10) {
+                Cache::put($lockKey, true, now()->addMinutes(15));
+                Cache::forget($failKey);
+            }
+
+            $this->throwFailureValidationException();
+
+            return null;
+        }
+
+        $user = Filament::auth()->user();
 
         if (
             ($user instanceof FilamentUser) &&
@@ -44,15 +80,21 @@ class Login extends BaseLogin
             Filament::auth()->logout();
 
             $this->throwFailureValidationException();
-        }
-
-        session()->regenerate();
-
-        if ($user instanceof User && $user->hasRole(User::ROLE_ADMIN)) {
-            $this->redirect(route('admin.two-factor.challenge'), navigate: false);
 
             return null;
         }
+
+        Cache::forget($failKey);
+        Cache::forget($lockKey);
+        session()->regenerate();
+
+        activity('admin-login')
+            ->withProperties([
+                'email' => $email,
+                'ip' => $ip,
+                'user_id' => $user?->id,
+            ])
+            ->log('Başarılı panel girişi');
 
         return app(LoginResponse::class);
     }
