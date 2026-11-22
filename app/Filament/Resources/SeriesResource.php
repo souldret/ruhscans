@@ -70,6 +70,9 @@ class SeriesResource extends Resource
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                 ->rules([new RealMimeImage])
                 ->maxSize((int) config('content.max_cover_kilobytes', 10240))
+                ->validationMessages([
+                    'max' => 'Kapak dosyası çok büyük (en fazla '.round((int) config('content.max_cover_kilobytes', 10240) / 1024).' MB).',
+                ])
                 ->imagePreviewHeight('160')
                 ->disk(config('content.image_disk'))
                 ->directory('covers')
