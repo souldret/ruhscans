@@ -9,7 +9,6 @@ use App\Models\Chapter;
 use App\Models\Page;
 use App\Models\Series;
 use App\Models\Tag;
-use App\Models\TranslatorGroup;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -17,14 +16,6 @@ class ContentSeeder extends Seeder
 {
     public function run(): void
     {
-        $groups = collect([
-            'Gece Atölyesi',
-            'Kızıl Mürekkep',
-        ])->map(fn (string $name) => TranslatorGroup::query()->firstOrCreate(
-            ['slug' => Str::slug($name)],
-            ['name' => $name, 'description' => $name.' çeviri ekibi.'],
-        ));
-
         $tags = collect(['Romantik', 'Dram', 'Fantastik', 'Ofis'])->map(
             fn (string $name) => Tag::query()->firstOrCreate(
                 ['slug' => Str::slug($name)],
@@ -59,11 +50,10 @@ class ContentSeeder extends Seeder
             ],
         ];
 
-        foreach ($catalog as $index => $item) {
+        foreach ($catalog as $item) {
             $series = Series::query()->updateOrCreate(
                 ['slug' => Str::slug($item['title'])],
                 [
-                    'translator_group_id' => $groups[$index % $groups->count()]->id,
                     'title' => $item['title'],
                     'alternative_names' => $item['alternative_names'],
                     'description' => $item['title'].' yetişkin bir dizidir. Tüm karakterler reşittir.',

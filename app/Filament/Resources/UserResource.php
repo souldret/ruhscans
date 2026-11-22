@@ -50,10 +50,6 @@ class UserResource extends Resource
                 ->relationship('roles', 'name')
                 ->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id'))
                 ->preload(),
-            Forms\Components\Select::make('translator_group_id')
-                ->label('Çeviri grubu')
-                ->relationship('translatorGroup', 'name')
-                ->searchable(),
             Forms\Components\DateTimePicker::make('vip_bitis')->label('VIP bitiş')->disabled()->dehydrated(false),
             Forms\Components\TextInput::make('ruh_tasi_bakiye')->label('Ruh taşı')->disabled()->dehydrated(false),
         ])->columns(2);

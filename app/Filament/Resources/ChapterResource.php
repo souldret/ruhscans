@@ -6,7 +6,6 @@ use App\Filament\Resources\ChapterResource\Pages;
 use App\Filament\Resources\ChapterResource\RelationManagers\PagesRelationManager;
 use App\Filament\Resources\SeriesResource\RelationManagers\ChaptersRelationManager;
 use App\Models\Chapter;
-use App\Models\User;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
@@ -50,14 +49,7 @@ class ChapterResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with(['series', 'latestUpload']);
-        $user = auth()->user();
-
-        if ($user?->hasRole(User::ROLE_CEVIRI) && ! $user->hasRole(User::ROLE_ADMIN)) {
-            $query->whereHas('series', fn (Builder $series) => $series->where('translator_group_id', $user->translator_group_id));
-        }
-
-        return $query;
+        return parent::getEloquentQuery()->with(['series', 'latestUpload']);
     }
 
     public static function getRelations(): array

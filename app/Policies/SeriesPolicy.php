@@ -9,38 +9,31 @@ class SeriesPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole([User::ROLE_ADMIN, User::ROLE_CEVIRI]);
+        return $this->canManage($user);
     }
 
     public function view(User $user, Series $series): bool
     {
-        return $this->manage($user, $series);
+        return $this->canManage($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(User::ROLE_ADMIN)
-            || ($user->hasRole(User::ROLE_CEVIRI) && $user->translator_group_id !== null);
+        return $this->canManage($user);
     }
 
     public function update(User $user, Series $series): bool
     {
-        return $this->manage($user, $series);
+        return $this->canManage($user);
     }
 
     public function delete(User $user, Series $series): bool
     {
-        return $this->manage($user, $series);
+        return $this->canManage($user);
     }
 
-    private function manage(User $user, Series $series): bool
+    private function canManage(User $user): bool
     {
-        if ($user->hasRole(User::ROLE_ADMIN)) {
-            return true;
-        }
-
-        return $user->hasRole(User::ROLE_CEVIRI)
-            && $user->translator_group_id !== null
-            && (int) $series->translator_group_id === (int) $user->translator_group_id;
+        return $user->hasAnyRole([User::ROLE_ADMIN, User::ROLE_CEVIRI]);
     }
 }

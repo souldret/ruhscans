@@ -34,9 +34,9 @@ class ReportResource extends Resource
  protected static ?int $navigationSort = 5;
 
     public static function canViewAny(): bool
- {
- return AdminAccess::admin();
- }
+    {
+        return AdminAccess::staff();
+    }
 
     public static function form(Form $form): Form
     {

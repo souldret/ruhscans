@@ -15,7 +15,6 @@ class SeriesController extends Controller
 
         $series->load([
             'tags',
-            'translatorGroup',
             'chapters' => fn ($chapters) => $chapters->orderByDesc('number'),
         ]);
 

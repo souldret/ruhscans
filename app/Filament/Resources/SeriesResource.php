@@ -9,8 +9,6 @@ use App\Filament\Resources\SeriesResource\Pages;
 use App\Filament\Resources\SeriesResource\RelationManagers\ChaptersRelationManager;
 use App\Models\Series;
 use App\Models\Tag;
-use App\Models\TranslatorGroup;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -41,14 +39,6 @@ class SeriesResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('translator_group_id')
-                ->label('Çeviri grubu')
-                ->options(fn () => TranslatorGroup::query()->orderBy('name')->pluck('name', 'id'))
-                ->default(fn () => auth()->user()?->translator_group_id)
-                ->disabled(fn () => auth()->user()?->hasRole(User::ROLE_CEVIRI) && ! auth()->user()?->hasRole(User::ROLE_ADMIN))
-                ->dehydrated()
-                ->required()
-                ->searchable(),
             Forms\Components\TextInput::make('title')
                 ->label('Başlık')
                 ->required()
@@ -128,7 +118,6 @@ class SeriesResource extends Resource
                     ->width(36)
                     ->getStateUsing(fn (Series $record) => self::coverUrl($record)),
                 Tables\Columns\TextColumn::make('title')->label('Başlık')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('translatorGroup.name')->label('Grup'),
                 Tables\Columns\TextColumn::make('type')->label('Tür')->badge(),
                 Tables\Columns\TextColumn::make('status')->label('Durum')->badge(),
                 Tables\Columns\TextColumn::make('content_level')->label('Seviye'),
@@ -185,16 +174,8 @@ class SeriesResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()
-            ->withoutGlobalScopes([SoftDeletingScope::class])
-            ->with('translatorGroup');
-        $user = auth()->user();
-
-        if ($user?->hasRole(User::ROLE_CEVIRI) && ! $user->hasRole(User::ROLE_ADMIN)) {
-            $query->where('translator_group_id', $user->translator_group_id);
-        }
-
-        return $query;
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getRelations(): array
@@ -211,17 +192,6 @@ class SeriesResource extends Resource
             'create' => Pages\CreateSeries::route('/create'),
             'edit' => Pages\EditSeries::route('/{record}/edit'),
         ];
-    }
-
-    public static function mutateGroupOnCreate(array $data): array
-    {
-        $user = auth()->user();
-
-        if ($user?->hasRole(User::ROLE_CEVIRI) && ! $user->hasRole(User::ROLE_ADMIN)) {
-            $data['translator_group_id'] = $user->translator_group_id;
-        }
-
-        return $data;
     }
 
     private static function coverUrl(Series $series): ?string

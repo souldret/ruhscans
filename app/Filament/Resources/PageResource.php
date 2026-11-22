@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PageResource\Pages;
 use App\Models\Page;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -58,14 +57,7 @@ class PageResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with('chapter.series');
-        $user = auth()->user();
-
-        if ($user?->hasRole(User::ROLE_CEVIRI) && ! $user->hasRole(User::ROLE_ADMIN)) {
-            $query->whereHas('chapter.series', fn (Builder $series) => $series->where('translator_group_id', $user->translator_group_id));
-        }
-
-        return $query;
+        return parent::getEloquentQuery()->with('chapter.series');
     }
 
     public static function getPages(): array

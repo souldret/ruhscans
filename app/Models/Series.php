@@ -8,7 +8,6 @@ use App\Enums\SeriesType;
 use Database\Factories\SeriesFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,7 +22,6 @@ class Series extends Model
     use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
-        'translator_group_id',
         'title',
         'slug',
         'alternative_names',
@@ -51,11 +49,6 @@ class Series extends Model
             'hidden' => 'boolean',
             'year' => 'integer',
         ];
-    }
-
-    public function translatorGroup(): BelongsTo
-    {
-        return $this->belongsTo(TranslatorGroup::class);
     }
 
     public function tags(): BelongsToMany
