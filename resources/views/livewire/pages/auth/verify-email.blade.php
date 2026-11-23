@@ -36,23 +36,23 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-gold">Gece Kütüphanesi</p>
+    <h1 class="mt-2 font-display text-3xl text-mist">E-postanı doğrula</h1>
+    <p class="mt-2 text-base leading-7 text-mist/60">Gönderdiğimiz bağlantıya tıkla. Gelmediyse yeniden gönder.</p>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div class="mt-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-base text-gold">
+            {{ __('Yeni doğrulama bağlantısı gönderildi.') }}
         </div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
+    <div class="mt-6 space-y-3">
         <x-primary-button wire:click="sendVerification">
-            {{ __('Resend Verification Email') }}
+            {{ __('Doğrulama bağlantısını yeniden gönder') }}
         </x-primary-button>
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            {{ __('Log Out') }}
+        <button wire:click="logout" type="submit" class="tap-target inline-flex w-full items-center justify-center rounded-full border border-white/10 text-base text-mist/80 hover:border-magenta/60 hover:text-magenta">
+            {{ __('Çıkış yap') }}
         </button>
     </div>
 </div>

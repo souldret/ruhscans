@@ -34,52 +34,48 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-gold">Gece Kütüphanesi</p>
+    <h1 class="mt-2 font-display text-3xl text-mist">Tekrar hoş geldin</h1>
+    <p class="mt-2 text-base leading-7 text-mist/60">Kütüphanene dön, kaldığın yerden oku.</p>
 
-    <form wire:submit="login">
-        <!-- Email Address -->
+    <x-auth-session-status :status="session('status')" />
+
+    <form wire:submit="login" class="mt-6 space-y-5">
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="form.email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
+            <x-input-label for="email" :value="__('E-posta')" />
+            <x-text-input wire:model="form.email" id="email" class="block w-full" type="email" name="email" required autofocus autocomplete="username" placeholder="ornek@ruhscans.com" />
+            <x-input-error :messages="$errors->get('form.email')" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
+        <div>
+            <x-input-label for="password" :value="__('Şifre')" />
+            <x-text-input wire:model="form.password" id="password" class="block w-full" type="password" name="password" required autocomplete="current-password" placeholder="Şifren" />
+            <x-input-error :messages="$errors->get('form.password')" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember" class="inline-flex items-center">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        <label for="remember" class="flex min-h-11 cursor-pointer items-center gap-3 text-base text-mist/80">
+            <input wire:model="form.remember" id="remember" type="checkbox" class="h-5 w-5 shrink-0 rounded border-white/25 bg-ink text-magenta focus:ring-magenta" name="remember">
+            <span>Beni hatırla</span>
+        </label>
 
-        <div class="mt-4">
+        <div>
             <x-turnstile wire-model="turnstileToken" />
-            <x-input-error :messages="$errors->get('turnstileToken')" class="mt-2" />
+            <x-input-error :messages="$errors->get('turnstileToken')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}" wire:navigate>
-                    {{ __('Forgot your password?') }}
+        <x-primary-button>{{ __('Giriş yap') }}</x-primary-button>
+
+        @if (Route::has('password.request'))
+            <div class="text-center">
+                <a class="tap-target inline-flex items-center text-base text-mist/70 underline decoration-magenta/60 underline-offset-4 hover:text-magenta" href="{{ route('password.request') }}" wire:navigate>
+                    {{ __('Şifremi unuttum') }}
                 </a>
-            @endif
+            </div>
+        @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
+        <p class="border-t border-white/10 pt-5 text-center text-base text-mist/60">
+            Henüz üye değil misin?
+            <a class="tap-target inline-flex items-center font-semibold text-magenta hover:underline" href="{{ route('register') }}" wire:navigate>Kayıt ol</a>
+        </p>
     </form>
 </div>

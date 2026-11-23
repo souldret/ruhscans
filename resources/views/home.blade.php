@@ -1,9 +1,15 @@
 <x-night-layout :seo="$seo">
+    {{-- Vitrin: mobilde tek kart, swipe + noktalar; tablet/masaüstünde 3 kart --}}
     <section
         class="relative overflow-hidden"
         x-data="{
             index: 0,
             covers: {{ \Illuminate\Support\Js::from($showcase->map(fn ($series) => $series->cover_path ? $series->coverUrl : null)->values()) }},
+            go(i) {
+                this.index = i;
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                this.$refs.strip?.children[i]?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', inline: 'start', block: 'nearest' });
+            },
         }"
     >
         <div
@@ -11,59 +17,82 @@
             aria-hidden="true"
             :style="covers[index] ? `background-image:url('${covers[index]}');background-size:cover` : ''"
         ></div>
-        <div class="relative mx-auto max-w-6xl px-4 pb-10 pt-8">
-            <p class="text-xs uppercase tracking-[0.28em] text-magenta">Gece kütüphanesi</p>
+        <div class="relative mx-auto max-w-6xl px-4 pb-6 pt-8 sm:pt-12">
+            <p class="text-sm uppercase tracking-[0.28em] text-magenta">Gece kütüphanesi</p>
             <h1 class="mt-3 max-w-xl font-display text-4xl leading-tight sm:text-6xl"><span class="sr-only">Ruhscans. </span>Bu gece rafta ne var?</h1>
-            <p class="mt-4 max-w-lg text-sm text-mist/75">Tam genişlik vitrin. Izgara ve kenar çubuğu yok; kapaklar koridorda yan yana durur.</p>
+            <p class="mt-4 max-w-lg text-base text-mist/75">Yeni bölümler, trend seriler ve kaldığın yer — hepsi tek rafta.</p>
         </div>
+
         @if ($showcase->isEmpty())
             <div class="mx-auto max-w-6xl px-4 pb-10">
                 <x-empty-state title="Vitrin boş" body="Yayımlanmış seri henüz yok. Çeviri ekibi ilk rafı kurduğunda burada belirecek." />
             </div>
         @else
-            <div class="strip flex gap-4 overflow-x-auto px-4 pb-12" role="list">
+            <div
+                x-ref="strip"
+                class="strip no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3"
+                role="list"
+                @scroll.throttle="index = Math.round($event.target.scrollLeft / ($event.target.clientWidth || 1))"
+            >
                 @foreach ($showcase as $series)
-                    <div class="w-[78vw] shrink-0 snap-start sm:w-[28rem]" role="listitem" x-intersect.margin.-40%="index = {{ $loop->index }}">
+                    <div class="w-full shrink-0 snap-start sm:w-auto" role="listitem">
                         <a href="{{ route('series.show', $series) }}" class="glass relative block overflow-hidden rounded-3xl">
                             <div class="cover-art absolute inset-0 bg-gradient-to-br from-wine to-ink opacity-70"></div>
                             <div class="relative grid min-h-72 gap-4 p-6 sm:grid-cols-[9rem_1fr]">
-                                <div class="cover-frame relative overflow-hidden rounded-2xl bg-surface">
+                                <div class="cover-frame relative mx-auto w-32 overflow-hidden rounded-2xl bg-surface sm:mx-0 sm:w-full">
                                     @if ($series->cover_path)
                                         <img src="{{ $series->coverPlaceholderUrl }}" alt="" aria-hidden="true" width="20" height="30" class="cover-art pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl" onerror="this.style.display='none'">
                                         <img src="{{ $series->coverSmallUrl }}" alt="" width="300" height="450" loading="lazy" decoding="async" class="cover-art h-full w-full object-cover" onerror="this.style.display='none'">
                                         <img src="{{ $series->coverUrl }}" alt="" width="600" height="900" loading="lazy" decoding="async" class="cover-art absolute inset-0 h-full w-full object-cover" onerror="this.style.display='none'">
                                     @else
-                                        <div class="cover-art h-full w-full bg-gradient-to-br from-wine to-ink"></div>
+                                        <div class="cover-art flex h-full w-full items-center justify-center bg-gradient-to-br from-wine via-surface to-ink">
+                                            <x-stone class="h-8 w-8 opacity-60" />
+                                        </div>
                                     @endif
                                 </div>
                                 <div class="self-end">
-                                    <p class="text-xs uppercase tracking-widest text-gold">{{ $series->type->label() }}</p>
-                                    <h2 class="mt-2 font-display text-3xl">{{ $series->title }}</h2>
-                                    <p class="mt-3 line-clamp-3 text-sm text-mist/75">{{ $series->description }}</p>
+                                    <p class="text-xs font-semibold uppercase tracking-widest text-gold">{{ $series->type->label() }}</p>
+                                    <h2 class="mt-2 font-display text-3xl leading-tight">{{ $series->title }}</h2>
+                                    <p class="mt-3 line-clamp-3 text-base text-mist/80">{{ $series->description }}</p>
                                 </div>
                             </div>
                         </a>
                     </div>
                 @endforeach
             </div>
+            @if ($showcase->count() > 1)
+                <div class="mx-auto mt-1 flex max-w-6xl justify-center gap-1 px-4 sm:hidden" role="tablist" aria-label="Vitrin sayfaları">
+                    @foreach ($showcase as $i => $series)
+                        <button
+                            type="button"
+                            class="tap-target inline-flex items-center justify-center"
+                            :aria-selected="index === {{ $i }}"
+                            aria-label="{{ $i + 1 }}. vitrin kartı"
+                            @click="go({{ $i }})"
+                        >
+                            <span class="showcase-dot" :class="index === {{ $i }} ? 'active' : 'bg-white/25'"></span>
+                        </button>
+                    @endforeach
+                </div>
+            @endif
         @endif
     </section>
 
-    <div class="mx-auto max-w-6xl space-y-12 px-4">
+    <div class="mx-auto max-w-6xl space-y-12 px-4 pb-8 pt-10">
         @auth
             <section aria-labelledby="devam">
                 <h2 id="devam" class="font-display text-3xl">Kaldığın yerden devam et</h2>
                 @if ($continue->isEmpty())
                     <x-empty-state class="mt-4" title="Henüz iz bırakmadın" body="Bir bölüm açtığında seri burada seni bekler.">
                         <x-slot:action>
-                            <a class="btn-magenta" href="{{ route('discover') }}">Keşfe çık</a>
+                            <a class="btn-magenta tap-target" href="{{ route('discover') }}">Keşfe çık</a>
                         </x-slot:action>
                     </x-empty-state>
                 @else
-                    <div class="strip mt-4 flex gap-4 overflow-x-auto pb-2">
+                    <div class="strip no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-2">
                         @foreach ($continue as $entry)
-                            <a class="glass w-72 shrink-0 rounded-2xl p-4" href="{{ $entry->lastChapter ? route('reader.show', [$entry->series, $entry->lastChapter->number]) : route('series.show', $entry->series) }}">
-                                <p class="text-xs text-magenta">Bölüm {{ $entry->lastChapter?->number }}</p>
+                            <a class="glass w-64 shrink-0 rounded-2xl p-4 sm:w-72" href="{{ $entry->lastChapter ? route('reader.show', [$entry->series, $entry->lastChapter->number]) : route('series.show', $entry->series) }}">
+                                <p class="text-sm text-magenta">Bölüm {{ $entry->lastChapter?->number }}</p>
                                 <h3 class="mt-2 font-display text-xl">{{ $entry->series->title }}</h3>
                             </a>
                         @endforeach
@@ -72,9 +101,27 @@
             </section>
         @endauth
 
+        <section aria-labelledby="yeni">
+            <div class="flex items-end justify-between gap-4">
+                <h2 id="yeni" class="font-display text-3xl">Yeni bölümler</h2>
+                <a class="tap-target inline-flex items-center text-base text-magenta" href="{{ route('discover') }}?sira=yeni">Tümü →</a>
+            </div>
+            @if ($fresh->isEmpty())
+                <x-empty-state class="mt-4" title="Yeni bölüm yok" body="Bu gece henüz sayfa düşmedi." />
+            @else
+                <ul class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                    @foreach ($fresh as $chapter)
+                        <li>
+                            <x-cover-card :series="$chapter->series" fluid :subtitle="'Bölüm ' . $chapter->number" />
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+
         <section aria-labelledby="trend">
             <h2 id="trend" class="font-display text-3xl">Bu gece trend</h2>
-            <div class="strip mt-4 flex gap-4 overflow-x-auto pb-4">
+            <div class="strip no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-4">
                 @forelse ($trending as $series)
                     <x-cover-card :series="$series" />
                 @empty
@@ -83,39 +130,29 @@
             </div>
         </section>
 
-        <section aria-labelledby="yeni">
-            <h2 id="yeni" class="font-display text-3xl">Yeni bölümler</h2>
-            <ul class="mt-4 divide-y divide-white/10">
-                @forelse ($fresh as $chapter)
-                    <li class="flex items-center justify-between gap-4 py-3">
-                        <a class="min-w-0" href="{{ route('series.show', $chapter->series) }}">
-                            <span class="block truncate font-medium">{{ $chapter->series->title }}</span>
-                            <span class="text-xs text-mist/60">Bölüm {{ $chapter->number }}</span>
-                        </a>
-                        <span class="shrink-0 text-xs text-mist/50">{{ optional($chapter->published_at)->diffForHumans() }}</span>
-                    </li>
-                @empty
-                    <li><x-empty-state title="Yeni bölüm yok" body="Bu gece henüz sayfa düşmedi." /></li>
-                @endforelse
-            </ul>
-        </section>
-
         <section aria-labelledby="etiketler">
-            <h2 id="etiketler" class="font-display text-3xl">Etiket bulutu</h2>
-            <div class="mt-4 flex flex-wrap gap-2">
-                @foreach ($tags as $tag)
-                    <a class="btn-ghost" href="{{ route('tags.show', $tag) }}">{{ $tag->name }}</a>
-                @endforeach
+            <h2 id="etiketler" class="font-display text-3xl">Türler</h2>
+            <div class="no-scrollbar mt-4 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap">
+                @forelse ($tags as $tag)
+                    <a class="btn-ghost tap-target shrink-0" href="{{ route('tags.show', $tag) }}">{{ $tag->name }}</a>
+                @empty
+                    <p class="text-base text-mist/60">Henüz tür eklenmedi.</p>
+                @endforelse
             </div>
         </section>
 
         <section class="glass overflow-hidden rounded-3xl bg-gradient-to-r from-wine to-surface p-6 sm:p-10" aria-labelledby="vip">
-            <p class="text-xs uppercase tracking-[0.25em] text-gold">VIP</p>
+            <p class="text-sm uppercase tracking-[0.25em] text-gold">VIP</p>
             <h2 id="vip" class="mt-2 font-display text-4xl">Ruh taşıyla erken oku.</h2>
-            <p class="mt-3 max-w-xl text-sm text-mist/80">Ödeme geçidi yok. VIP, ruh taşı koduyla açılır; kilitli bölümler altın rozetle durur.</p>
+            <p class="mt-3 max-w-xl text-base text-mist/80">Ödeme geçidi yok. VIP, ruh taşı koduyla açılır; kilitli bölümler altın rozetle durur.</p>
             <div class="mt-6 flex items-center gap-3 text-gold">
                 <x-stone class="h-6 w-6" />
                 <span class="font-display text-2xl">{{ auth()->user()?->ruh_tasi_bakiye ?? 0 }}</span>
+                @auth
+                    <a class="btn-ghost tap-target ml-auto" href="{{ route('wallet.show') }}">Cüzdan</a>
+                @else
+                    <a class="btn-ghost tap-target ml-auto" href="{{ route('login') }}">Giriş yap</a>
+                @endauth
             </div>
         </section>
     </div>

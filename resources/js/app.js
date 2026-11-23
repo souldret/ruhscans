@@ -5,6 +5,7 @@ document.addEventListener('alpine:init', () => {
         panicUrl: config.panic,
         toasts: [],
         lastEsc: 0,
+        installAvailable: false,
         init() {
             document.documentElement.classList.toggle('covers-open', !this.blur);
 
@@ -16,6 +17,9 @@ document.addEventListener('alpine:init', () => {
             });
 
             window.addEventListener('toast', (event) => this.push(event.detail.message));
+
+            window.addEventListener('pwa-install-ready', () => { this.installAvailable = true; });
+            window.addEventListener('pwa-installed', () => { this.installAvailable = false; });
 
             window.addEventListener('keydown', (event) => {
                 if (event.key !== 'Escape' || event.repeat) {
@@ -62,6 +66,9 @@ document.addEventListener('alpine:init', () => {
         watermark: null,
         index: 0,
         focus: false,
+        chrome: true,
+        settingsOpen: false,
+        swiped: false,
         atEnd: false,
         nextReady: null,
         touchX: 0,
@@ -69,8 +76,12 @@ document.addEventListener('alpine:init', () => {
         title: boot.title,
         seriesTitle: boot.seriesTitle,
         nextUrl: boot.nextUrl,
+        previousUrl: boot.previousUrl,
         seriesUrl: boot.seriesUrl,
+        panicUrl: boot.panicUrl,
         async init() {
+            document.body.classList.add('reader-open');
+
             if (this.locked) {
                 return;
             }
@@ -92,8 +103,18 @@ document.addEventListener('alpine:init', () => {
                 this.mark(this.current.order);
             }
         },
+        destroy() {
+            document.body.classList.remove('reader-open');
+        },
         get current() {
             return this.pages[this.index] || null;
+        },
+        get progressPercent() {
+            if (!this.pages.length) {
+                return 0;
+            }
+
+            return Math.round(((this.index + 1) / this.pages.length) * 100);
         },
         storageKey() {
             return `ruhscans:okuma:${boot.pagesUrl}`;
@@ -126,7 +147,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
         prefetch(position) {
-            this.pages.slice(position, position + 4).forEach((page) => {
+            this.pages.slice(position, position + 2).forEach((page) => {
                 const image = new Image();
                 image.src = page.url;
             });
@@ -138,7 +159,7 @@ document.addEventListener('alpine:init', () => {
 
             try {
                 const pages = await this.load(boot.nextPagesUrl);
-                this.nextReady = pages.slice(0, 3);
+                this.nextReady = pages.slice(0, 2);
                 this.nextReady.forEach((page) => {
                     const image = new Image();
                     image.src = page.url;
@@ -213,7 +234,8 @@ document.addEventListener('alpine:init', () => {
         },
         step(direction) {
             if (this.mode === 'webtoon') {
-                window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: 'smooth' });
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: reduceMotion ? 'auto' : 'smooth' });
 
                 return;
             }
@@ -227,6 +249,46 @@ document.addEventListener('alpine:init', () => {
                 this.prefetch(this.index);
             }
         },
+        toggleFocus() {
+            this.focus = !this.focus;
+
+            if (this.focus) {
+                this.chrome = false;
+                this.settingsOpen = false;
+            } else {
+                this.chrome = true;
+            }
+        },
+        toggleChrome(event) {
+            if (event?.target?.closest?.('a, button, select, input')) {
+                return;
+            }
+
+            this.chrome = !this.chrome;
+            this.settingsOpen = false;
+        },
+        zone(direction) {
+            if (this.swiped) {
+                return;
+            }
+
+            this.step(direction);
+        },
+        goChapter(url) {
+            if (url) {
+                window.location.href = url;
+            }
+        },
+        panic() {
+            document.title = 'Yeni sekme';
+            const icon = document.querySelector("link[rel='icon']");
+
+            if (icon) {
+                icon.setAttribute('href', '/favicon-neutral.svg');
+            }
+
+            window.location.replace(this.panicUrl || 'https://www.google.com');
+        },
         onKey(event) {
             if (event.target.closest('input, textarea, select')) {
                 return;
@@ -234,6 +296,10 @@ document.addEventListener('alpine:init', () => {
 
             if (event.key === 'f') {
                 this.focus = !this.focus;
+            }
+
+            if (event.key === 'c') {
+                this.chrome = !this.chrome;
             }
 
             if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
@@ -248,6 +314,7 @@ document.addEventListener('alpine:init', () => {
         },
         touchStart(event) {
             this.touchX = event.changedTouches[0]?.clientX || 0;
+            this.swiped = false;
         },
         touchEnd(event) {
             const delta = (event.changedTouches[0]?.clientX || 0) - this.touchX;
@@ -256,7 +323,9 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
 
+            this.swiped = true;
             this.step(delta < 0 ? 1 : -1);
+            setTimeout(() => { this.swiped = false; }, 350);
         },
         label() {
             if (!this.current) {
@@ -266,4 +335,34 @@ document.addEventListener('alpine:init', () => {
             return `${this.index + 1} / ${this.pages.length}`;
         },
     }));
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+    });
+}
+
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    window.dispatchEvent(new CustomEvent('pwa-install-ready'));
+});
+
+window.addEventListener('pwa-install-request', async () => {
+    if (!deferredInstallPrompt) {
+        return;
+    }
+
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    window.dispatchEvent(new CustomEvent('pwa-installed'));
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    window.dispatchEvent(new CustomEvent('pwa-installed'));
 });

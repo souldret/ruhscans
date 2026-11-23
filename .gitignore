@@ -2,7 +2,12 @@
 .DS_Store
 .env
 .env.backup
+.env.preview
 .env.production
+/scratch
+/logs
+/test-results
+/playwright-report
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -16,6 +21,7 @@
 /public/build
 /public/hot
 /public/storage
+/public/preview
 /storage/*.key
 /storage/pail
 /vendor

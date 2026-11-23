@@ -18,6 +18,10 @@ class DiscoverCatalog extends Component
 {
     use WithPagination;
 
+    public int $perPage = 18;
+
+    public bool $filtersOpen = false;
+
     #[Url(as: 'q', except: '')]
     public string $q = '';
 
@@ -58,6 +62,18 @@ class DiscoverCatalog extends Component
         $this->resetPage();
     }
 
+    public function loadMore(): void
+    {
+        $this->perPage += 18;
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['q', 'type', 'status', 'level', 'sort']);
+        $this->sort = 'yeni';
+        $this->resetPage();
+    }
+
     public function render(CatalogQuery $catalog, MetaBuilder $meta): View|PageComponentConfig
     {
         $series = $catalog->query([
@@ -66,7 +82,7 @@ class DiscoverCatalog extends Component
             'status' => $this->status !== '' ? $this->status : null,
             'content_level' => $this->level !== '' ? $this->level : null,
             'sort' => $this->sort,
-        ], auth()->user())->withCount('chapters')->paginate(18);
+        ], auth()->user())->withCount('chapters')->paginate($this->perPage);
 
         return view('livewire.discover-catalog', [
             'series' => $series,

@@ -60,30 +60,28 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-gold">Gece Kütüphanesi</p>
+    <h1 class="mt-2 font-display text-3xl text-mist">Şifre sıfırlama</h1>
+    <p class="mt-2 text-base leading-7 text-mist/60">E-posta adresini yaz, sıfırlama bağlantısını gönderelim.</p>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status :status="session('status')" />
 
-    <form wire:submit="sendPasswordResetLink">
-        <!-- Email Address -->
+    <form wire:submit="sendPasswordResetLink" class="mt-6 space-y-5">
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email" :value="__('E-posta')" />
+            <x-text-input wire:model="email" id="email" class="block w-full" type="email" name="email" required autofocus placeholder="ornek@ruhscans.com" />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="mt-4">
+        <div>
             <x-turnstile wire-model="turnstileToken" />
-            <x-input-error :messages="$errors->get('turnstileToken')" class="mt-2" />
+            <x-input-error :messages="$errors->get('turnstileToken')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <x-primary-button>{{ __('Bağlantıyı gönder') }}</x-primary-button>
+
+        <p class="border-t border-white/10 pt-5 text-center text-base text-mist/60">
+            <a class="tap-target inline-flex items-center font-semibold text-magenta hover:underline" href="{{ route('login') }}" wire:navigate>Girişe dön</a>
+        </p>
     </form>
 </div>

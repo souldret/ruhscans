@@ -50,7 +50,7 @@
                 });
             }
         }"
-        class="turnstile-wrap flex w-full min-h-[65px] justify-center overflow-hidden"
+        class="turnstile-wrap flex min-h-[65px] w-full justify-center overflow-hidden rounded-2xl border border-white/5 bg-ink/60 p-3"
     >
         <input
             x-ref="token"

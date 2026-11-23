@@ -11,6 +11,11 @@
 <meta name="description" content="{{ $description }}">
 <meta name="robots" content="{{ $robots }}">
 <link rel="canonical" href="{{ $canonical }}">
+<link rel="manifest" href="{{ asset('manifest.json') }}">
+<link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ruhscans">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:site_name" content="{{ config('seo.site_name') }}">
 <meta property="og:type" content="website">

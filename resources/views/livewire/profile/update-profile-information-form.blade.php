@@ -64,16 +64,16 @@ new class extends Component
 
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
+        <h2 class="font-display text-2xl text-mist">
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-1 text-base text-mist/70">
             {{ __("Update your account's profile information and email address.") }}
         </p>
     </header>
 
-    <form wire:submit="updateProfileInformation" class="mt-6 space-y-6">
+    <form wire:submit="updateProfileInformation" class="mt-6 space-y-5">
         <div>
             <x-input-label for="name" :value="__('Name')" />
             <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
@@ -87,16 +87,16 @@ new class extends Component
 
             @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
                 <div>
-                    <p class="text-sm mt-2 text-gray-800">
+                    <p class="mt-3 text-base text-mist/80">
                         {{ __('Your email address is unverified.') }}
 
-                        <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button wire:click.prevent="sendVerification" class="tap-target inline-flex items-center text-base text-gold underline hover:text-magenta">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
+                        <p class="mt-2 text-base font-medium text-gold">
                             {{ __('A new verification link has been sent to your email address.') }}
                         </p>
                     @endif
@@ -104,10 +104,10 @@ new class extends Component
             @endif
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+        <div class="flex flex-wrap items-center gap-4">
+            <x-primary-button class="sm:w-auto sm:px-8">{{ __('Save') }}</x-primary-button>
 
-            <x-action-message class="me-3" on="profile-updated">
+            <x-action-message class="text-gold" on="profile-updated">
                 {{ __('Saved.') }}
             </x-action-message>
         </div>

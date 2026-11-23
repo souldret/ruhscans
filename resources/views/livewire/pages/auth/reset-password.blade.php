@@ -69,36 +69,29 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <form wire:submit="resetPassword">
-        <!-- Email Address -->
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-gold">Gece Kütüphanesi</p>
+    <h1 class="mt-2 font-display text-3xl text-mist">Yeni şifre</h1>
+    <p class="mt-2 text-base leading-7 text-mist/60">Bu bağlantıyı sen istedin. Yeni şifreni belirle.</p>
+
+    <form wire:submit="resetPassword" class="mt-6 space-y-5">
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email" :value="__('E-posta')" />
+            <x-text-input wire:model="email" id="email" class="block w-full" type="email" name="email" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <x-input-label for="password" :value="__('Yeni şifre')" />
+            <x-text-input wire:model="password" id="password" class="block w-full" type="password" name="password" required autocomplete="new-password" placeholder="En az 12 karakter" />
+            <x-input-error :messages="$errors->get('password')" />
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
-                          name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div>
+            <x-input-label for="password_confirmation" :value="__('Yeni şifre (tekrar)')" />
+            <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block w-full" type="password" name="password_confirmation" required autocomplete="new-password" placeholder="Şifreni tekrar yaz" />
+            <x-input-error :messages="$errors->get('password_confirmation')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <x-primary-button>{{ __('Şifreyi değiştir') }}</x-primary-button>
     </form>
 </div>

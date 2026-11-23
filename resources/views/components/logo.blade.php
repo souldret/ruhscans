@@ -1,4 +1,4 @@
-<a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-mist" aria-label="ruhscans ana sayfa">
+<a href="{{ route('home') }}" class="tap-target inline-flex items-center gap-2 text-mist" aria-label="ruhscans ana sayfa">
     <svg class="stone h-6 w-6" viewBox="0 0 32 32" aria-hidden="true">
         <defs>
             <linearGradient id="stone-fill" x1="0" y1="0" x2="1" y2="1">

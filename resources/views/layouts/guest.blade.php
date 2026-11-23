@@ -1,30 +1,33 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0B0709">
+    <x-seo-meta :meta="$seo ?? ['title' => $title ?? config('seo.site_name')]" />
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+</head>
+<body class="night-grain min-h-[100dvh] bg-ink font-sans text-mist antialiased">
+    <div class="safe-top flex min-h-[100dvh] flex-col">
+        <header class="mx-auto flex w-full max-w-md items-center justify-between px-5 pt-5">
+            <x-logo />
+            <a href="{{ route('home') }}" wire:navigate class="tap-target inline-flex items-center rounded-full px-3 text-base text-mist/70 hover:text-magenta">
+                ← Geri
+            </a>
+        </header>
 
-        <title>{{ config('app.name', 'Ruhscans') }}</title>
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/" wire:navigate>
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+        <main id="icerik" class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 pb-10 pt-8">
+            <div class="glass rounded-3xl p-6 sm:p-8">
                 {{ $slot }}
             </div>
-        </div>
-    </body>
+            <p class="mt-6 text-center text-sm leading-6 text-mist/50">
+                Gece Kütüphanesi · 18+ içerik. Giriş yaparak yaş doğrulamasını kabul etmiş olursun.
+            </p>
+        </main>
+    </div>
+    @livewireScripts
+</body>
 </html>
