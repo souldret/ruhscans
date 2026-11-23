@@ -190,6 +190,18 @@ php artisan queue:restart
 
 Test adımları: admin panelinde 8 MB geçerli JPG kapak yükle, 11 MB dosyanın "çok büyük" mesajını verdiğini gör, sahte JPG'nin "Desteklenmeyen biçim" mesajını verdiğini gör, 100 MB altı ZIP'i normal akışla yükle, 100 MB üstü ZIP'i "Büyük ZIP seç" ile yükleyip kuyrukta `ProcessChapterZip` oluşumunu kontrol et.
 
+## Mobil öncelikli Gece Kütüphanesi yenilemesi (2026-11-23)
+
+- Tüm ön yüz 360–412 px mobil öncelikli olarak yenilendi; tablet (768 px) ve masaüstü (1280 px) genişlemeleri doğrulandı.
+- Gece Kütüphanesi kimliği korundu (`#0B0709` zemin, `#5A0F2E` şarap, `#FF2E88` magenta, `#E8C26A` VIP altın, Fraunces + Inter), `100dvh`, `env(safe-area-inset-*)`, 44 px+ dokunma hedefleri, 16 px+ gövde/form metni, sıfır yatay taşma ve `prefers-reduced-motion` desteği uygulandı.
+- Navigasyon: mobilde 4 sekmeli alt gezinme çubuğu (Keşfet, Kütüphane, Ara, Profil), yapışkan üst çubukta blur geçişi ve üst sağda yanlışlıkla basılmayan erişilebilir panik tuşu; masaüstünde üst menü.
+- Ana sayfa: mobilde tek kart kaydırılabilir vitrin + nokta göstergeleri, "Kaldığın yerden devam et", 2 sütun "Yeni bölümler", yatay snap "Bu gece trend", tür çipleri ve VIP bandı.
+- Keşfet: yapışkan arama çubuğu, alttan açılan filtre sheet'i (tür/durum/seviye), sıralama çipleri, skeleton yükleme durumu ve sonsuz kaydırma/"Daha fazla göster".
+- Seri ve okuyucu: mobilde alt gezinme üstünde sabit "Okumaya başla/Devam et" butonu, masaüstünde hero CTA, net VIP/taş/erken rozetleri, tam ekran odak modu, ekrana dokunarak araç çubuğu aç/kapat, sayfa modunda sol/sağ dokunma bölgeleri, yanıp sönmeyi önleyen oran korumalı sayfa kapları ve sonraki bölüm önyükleme.
+- Giriş, kayıt, şifre sıfırlama, profil (`/profile`), tercihler (`/okuma-tercihleri`), cüzdan (`/cuzdan`), kütüphane (`/kutuphane`), yaş kapısı, yasal sayfalar ve hata sayfaları tamamen Gece Kütüphanesi temasına alındı.
+- PWA kabuğu: `public/manifest.json`, `public/icons/*`, `public/offline.html` ve yalnızca kabuk/derlenmiş varlıkları önbelleğe alan `public/sw.js` (kapaklar, sayfa görselleri ve +18 içerik asla çevrimdışı önbelleğe alınmaz).
+- Görsel doğrulama ve testler: Playwright ile 4 boyutta (360×800, 390×844, 768×1024, 1280×800) 56 ekran görüntüsü `docs/screenshots/` altına alındı (0 taşma, 0 küçük dokunma hedefi, 0 input font sorunu); `tests/e2e/smoke.spec.cjs` ve `tests/Feature/Ui/MobileFirstUiTest.php` eklendi.
+
 ## Kararlar
 
 - Laravel 12 korunur. İçerik şeması migration ile gelir.
@@ -223,7 +235,6 @@ Test adımları: admin panelinde 8 MB geçerli JPG kapak yükle, 11 MB dosyanın
 - Windows'ta Horizon `pcntl` / `posix` olmadan çalışmaz. Üretim Linux olmalı.
 - R2 anahtarları boşken dosya yüklenemez.
 - İlk admin `.env` doldurulunca seed edilir ve doğrudan `/admin` üzerinden giriş yapar; 2FA kurulumu yok.
-- Giriş, kayıt ve profil formları hâlâ Breeze düzeninde; gece temasına alınmadı.
 - `read_blocked_until` için ayrı admin formu yok; blok önbellek ve kolon üzerinden uygulanır.
 - PostgreSQL arama indeksi bu ortamda çalıştırılmadı; migration Postgres sürücüsünde `pg_trgm` ve GIN indeksini kurar.
 - R2 boşken sayfa yüklemesi `CONTENT_IMAGE_DISK=local` ile yerel diske düşürülebilir.

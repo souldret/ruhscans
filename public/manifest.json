@@ -1,0 +1,35 @@
+{
+  "name": "Ruhscans — Gece Kütüphanesi",
+  "short_name": "Ruhscans",
+  "description": "Türkçe 18+ manga ve manhwa kütüphanesi.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0709",
+  "theme_color": "#0B0709",
+  "lang": "tr",
+  "dir": "ltr",
+  "categories": ["entertainment", "books"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
