@@ -2,7 +2,7 @@
     $viewer = auth()->user();
     $panelUser = $viewer
         && $viewer->hasAnyRole([\App\Models\User::ROLE_ADMIN, \App\Models\User::ROLE_CEVIRI])
-        && ! $viewer->isBlocked;
+        && ! $viewer->isBlocked();
 @endphp
 <div class="mx-auto max-w-2xl px-4 pb-16 pt-8">
     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-gold">Profil</p>

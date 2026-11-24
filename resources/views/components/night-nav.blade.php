@@ -1,7 +1,7 @@
 @php
     $panelUser = auth()->check()
         && auth()->user()->hasAnyRole([\App\Models\User::ROLE_ADMIN, \App\Models\User::ROLE_CEVIRI])
-        && ! auth()->user()->isBlocked;
+        && ! auth()->user()->isBlocked();
     $current = request()->route()?->getName() ?? '';
     $isActive = static fn (string ...$names): bool => in_array($current, $names, true);
     $isSearchFocus = $current === 'discover' && request()->query('odak') === 'ara';

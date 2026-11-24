@@ -66,3 +66,16 @@ test('PWA kabuk dosyaları mevcuttur ve yalnızca kabuğu önbelleğe alır', fu
     expect($manifest['theme_color'])->toBe('#0B0709');
     expect($manifest['background_color'])->toBe('#0B0709');
 });
+
+test('admin ve çeviri ekibi tüm ana sayfalara 500 hatası olmadan girebilir', function () {
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => User::ROLE_ADMIN]);
+    $admin = User::factory()->create(['email_verified_at' => now()]);
+    $admin->assignRole(User::ROLE_ADMIN);
+
+    foreach (['/', '/kesfet', '/profile', '/okuma-tercihleri', '/cuzdan', '/kutuphane'] as $uri) {
+        $this->actingAs($admin)
+            ->withCookie('ruhscans_age_confirmed', '1')
+            ->get($uri)
+            ->assertOk();
+    }
+});
