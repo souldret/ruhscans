@@ -40,22 +40,20 @@ new #[Layout('layouts.guest')] class extends Component
             return;
         }
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
         $status = Password::sendResetLink(
             $this->only('email')
         );
 
-        if ($status != Password::RESET_LINK_SENT) {
+        if ($status === Password::RESET_THROTTLED) {
             $this->addError('email', __($status));
 
             return;
         }
 
+        // Kullanıcı numaralandırmayı önlemek için kayıtlı/kayıtsız e-postada aynı yanıt verilir.
         $this->reset('email');
 
-        session()->flash('status', __($status));
+        session()->flash('status', __(Password::RESET_LINK_SENT));
     }
 }; ?>
 

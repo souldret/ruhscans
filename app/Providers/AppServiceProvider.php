@@ -30,13 +30,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
  {
- Gate::before(function ($user, string $ability) {
- if ($user instanceof User && $user->hasRole(User::ROLE_ADMIN)) {
- return true;
- }
+        Gate::before(function ($user, string $ability) {
+            if ($user instanceof User && $user->hasRole(User::ROLE_ADMIN) && ! $user->isBlocked()) {
+                return true;
+            }
 
- return null;
- });
+            return null;
+        });
 
  Password::defaults(fn () => Password::min(12)->mixedCase()->numbers()->symbols());
 

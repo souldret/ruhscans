@@ -36,16 +36,16 @@ Route::get('/sayfa/{page}', [ReaderController::class, 'media'])
 Route::middleware('auth')->group(function () {
     Route::get('/cuzdan', [WalletController::class, 'show'])->name('wallet.show');
     Route::post('/cuzdan/kod', [RedeemCodeController::class, 'store'])->middleware('throttle:30,1')->name('wallet.redeem');
-    Route::post('/seri/{series:slug}/bolum/{number}/ac', [ChapterUnlockController::class, 'store'])->name('reader.unlock');
-    Route::post('/seri/{series:slug}/bolum/{number}/ilerleme', [ReaderController::class, 'progress'])->name('reader.progress');
-    Route::post('/okuma-modu', [ReaderController::class, 'mode'])->name('reader.mode');
+    Route::post('/seri/{series:slug}/bolum/{number}/ac', [ChapterUnlockController::class, 'store'])->middleware('throttle:20,1')->name('reader.unlock');
+    Route::post('/seri/{series:slug}/bolum/{number}/ilerleme', [ReaderController::class, 'progress'])->middleware('throttle:120,1')->name('reader.progress');
+    Route::post('/okuma-modu', [ReaderController::class, 'mode'])->middleware('throttle:30,1')->name('reader.mode');
     Route::get('/okuma-gecmisi', [ReaderController::class, 'history'])->name('reader.history');
 });
 
 Route::get('/kutuphane', LibraryController::class)->middleware('auth')->name('library');
 Route::get('/okuma-tercihleri', ReadingPreferences::class)->middleware('auth')->name('preferences');
 
-Route::post('/18-onay', [AgeGateController::class, 'confirm'])->name('age-gate.confirm');
+Route::post('/18-onay', [AgeGateController::class, 'confirm'])->middleware('throttle:30,1')->name('age-gate.confirm');
 
 Route::get('/kullanim-sartlari', [LegalPageController::class, 'terms'])->name('legal.terms');
 Route::get('/gizlilik', [LegalPageController::class, 'privacy'])->name('legal.privacy');
@@ -72,28 +72,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/avatar/{user}', [ProfileController::class, 'avatar'])->name('profile.avatar');
 });
 
-Route::middleware('auth')->prefix('admin/zip')->name('admin.zip.direct.')->group(function () {
+Route::middleware(['auth', 'throttle:30,1'])->prefix('admin/zip')->name('admin.zip.direct.')->group(function () {
     Route::post('/presign', [DirectZipUploadController::class, 'presign'])->name('presign');
     Route::post('/multipart', [DirectZipUploadController::class, 'startMultipart'])->name('multipart.start');
     Route::post('/multipart/tamamla', [DirectZipUploadController::class, 'completeMultipart'])->name('multipart.complete');
     Route::post('/tamamla', [DirectZipUploadController::class, 'complete'])->name('complete');
 });
 
-Route::middleware('auth')->get('/admin/kodlar/indir', function (Request $request, CodeExportStore $store) {
- abort_unless($request->user()?->hasRole(User::ROLE_ADMIN), 403);
+Route::middleware(['auth', 'throttle:10,1'])->get('/admin/kodlar/indir', function (Request $request, CodeExportStore $store) {
+    $user = $request->user();
+    abort_unless($user instanceof User && $user->hasRole(User::ROLE_ADMIN) && ! $user->isBlocked(), 403);
 
- $export = $store->pull((string) $request->query('token'));
- abort_unless($export !== null, 404);
+    $consumed = $store->pullAndConsume((string) $request->query('token'));
+    abort_unless($consumed !== null, 404);
 
- $csv = $store->contents($export);
- $batch = $export->batch_id;
- $export->forceFill(['downloaded_at' => now()])->save();
- $store->destroy($export);
+    activity('economy')
+        ->causedBy($user)
+        ->withProperties(['batch_id' => $consumed['batch_id']])
+        ->log('Tek seferlik kod CSV dosyası indirildi.');
 
- return response($csv, 200, [
- 'Content-Type' => 'text/csv; charset=UTF-8',
- 'Content-Disposition' => 'attachment; filename="ruhscans-kod-'.$batch.'.csv"',
- ]);
+    return response($consumed['csv'], 200, [
+        'Content-Type' => 'text/csv; charset=UTF-8',
+        'Content-Disposition' => 'attachment; filename="ruhscans-kod-'.$consumed['batch_id'].'.csv"',
+        'Cache-Control' => 'no-store, private',
+    ]);
 })->name('admin.codes.csv');
 
 require __DIR__.'/auth.php';

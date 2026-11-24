@@ -27,7 +27,12 @@ class TurnstileService
         }
 
         $request ??= request();
-        $remoteIp = trim(explode(',', (string) $request->header('CF-Connecting-IP', $request->ip()))[0]);
+        $remoteAddr = (string) $request->server->get('REMOTE_ADDR', '');
+        $cfHeader = trim(explode(',', (string) $request->header('CF-Connecting-IP', ''))[0]);
+
+        $remoteIp = ($cfHeader !== '' && filter_var($cfHeader, FILTER_VALIDATE_IP) && \App\Http\Middleware\TrustCloudflareProxies::isTrustedProxy($remoteAddr))
+            ? $cfHeader
+            : (string) $request->ip();
 
         try {
             $response = Http::timeout((int) config('turnstile.timeout', 5))

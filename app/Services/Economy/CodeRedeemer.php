@@ -46,12 +46,14 @@ class CodeRedeemer
     private function apply(User $user, string $plain): array
     {
         $normalized = $this->hasher->normalize($plain);
+        $validFormat = (bool) preg_match('/^RUH[2-9A-HJKMNP-Z]{16}$/', $normalized);
 
-        if (! preg_match('/^RUH[2-9A-HJKMNP-Z]{16}$/', $normalized)) {
+        // Zamanlama farkını azaltmak için biçim geçersiz olsa bile sabit maliyetli HMAC hesaplanır.
+        $hash = $this->hasher->hash($validFormat ? $normalized : 'RUH2222222222222222');
+
+        if (! $validFormat) {
             throw CodeRedeemException::generic();
         }
-
-        $hash = $this->hasher->hash($normalized);
 
         return DB::transaction(function () use ($user, $hash) {
             $code = RedeemCode::query()->where('kod_hash', $hash)->lockForUpdate()->first();
@@ -65,27 +67,27 @@ class CodeRedeemer
             }
 
             if ($code->son_kullanma !== null && $code->son_kullanma->isPast()) {
- throw CodeRedeemException::generic();
- }
+                throw CodeRedeemException::generic();
+            }
 
- $claimed = RedeemCode::query()
- ->whereKey($code->id)
- ->where('durum', CodeStatus::Aktif->value)
- ->where(function ($query) {
- $query->whereNull('son_kullanma')->orWhere('son_kullanma', '>', now());
- })
- ->update([
- 'durum' => CodeStatus::Kullanildi->value,
- 'kullanan_user_id' => $user->id,
- 'kullanim_tarihi' => now(),
- ]);
+            $claimed = RedeemCode::query()
+                ->whereKey($code->id)
+                ->where('durum', CodeStatus::Aktif->value)
+                ->where(function ($query) {
+                    $query->whereNull('son_kullanma')->orWhere('son_kullanma', '>', now());
+                })
+                ->update([
+                    'durum' => CodeStatus::Kullanildi->value,
+                    'kullanan_user_id' => $user->id,
+                    'kullanim_tarihi' => now(),
+                ]);
 
- if ($claimed !== 1) {
- throw CodeRedeemException::generic();
- }
+            if ($claimed !== 1) {
+                throw CodeRedeemException::generic();
+            }
 
- $code->durum = CodeStatus::Kullanildi;
- $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            $code->durum = CodeStatus::Kullanildi;
+            $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
 
             if ($code->tur === CodeKind::RuhTasi) {
                 $this->wallet->credit(
@@ -114,12 +116,18 @@ class CodeRedeemer
 
     private function guard(User $user, string $ip): void
     {
-        if (RateLimiter::tooManyAttempts($this->lockKey($user, $ip), 1)) {
-            throw CodeRedeemException::locked();
+        foreach ($this->lockKeys($user, $ip) as $key) {
+            if (RateLimiter::tooManyAttempts($key, 1)) {
+                throw CodeRedeemException::locked();
+            }
         }
 
-        if (RateLimiter::tooManyAttempts($this->attemptKey($user, $ip), (int) config('economy.redeem_attempts_per_minute'))) {
-            throw CodeRedeemException::throttled();
+        $maxPerMinute = (int) config('economy.redeem_attempts_per_minute');
+
+        foreach ($this->attemptKeys($user, $ip) as $key) {
+            if (RateLimiter::tooManyAttempts($key, $maxPerMinute)) {
+                throw CodeRedeemException::throttled();
+            }
         }
     }
 
@@ -127,10 +135,11 @@ class CodeRedeemer
     {
         $this->hitAttempt($user, $ip);
 
-        $failures = RateLimiter::hit(
-            $this->failureKey($user, $ip),
-            (int) config('economy.redeem_lock_minutes') * 60,
-        );
+        $lockSeconds = (int) config('economy.redeem_lock_minutes') * 60;
+        $threshold = (int) config('economy.redeem_failures_before_lock');
+
+        $userFailures = RateLimiter::hit($this->userFailureKey($user), $lockSeconds);
+        $ipFailures = RateLimiter::hit($this->ipFailureKey($ip), $lockSeconds);
 
         Log::warning('Kod kullanımı reddedildi.', [
             'user_id' => $user->id,
@@ -138,20 +147,28 @@ class CodeRedeemer
             'son_dort' => $this->mask($plain),
         ]);
 
-        if ($failures >= (int) config('economy.redeem_failures_before_lock')) {
-            RateLimiter::hit($this->lockKey($user, $ip), (int) config('economy.redeem_lock_minutes') * 60);
+        if ($userFailures >= $threshold) {
+            RateLimiter::hit($this->userLockKey($user), $lockSeconds);
+        }
+
+        if ($ipFailures >= $threshold) {
+            RateLimiter::hit($this->ipLockKey($ip), $lockSeconds);
         }
     }
 
     private function clearFailures(User $user, string $ip): void
     {
-        RateLimiter::clear($this->failureKey($user, $ip));
-        RateLimiter::clear($this->lockKey($user, $ip));
+        RateLimiter::clear($this->userFailureKey($user));
+        RateLimiter::clear($this->userLockKey($user));
+        RateLimiter::clear($this->ipFailureKey($ip));
+        RateLimiter::clear($this->ipLockKey($ip));
     }
 
     private function hitAttempt(User $user, string $ip): void
     {
-        RateLimiter::hit($this->attemptKey($user, $ip), 60);
+        foreach ($this->attemptKeys($user, $ip) as $key) {
+            RateLimiter::hit($key, 60);
+        }
     }
 
     private function mask(string $plain): string
@@ -165,18 +182,39 @@ class CodeRedeemer
         return '****'.substr($normalized, -4);
     }
 
-    private function attemptKey(User $user, string $ip): string
+    /**
+     * @return list<string>
+     */
+    private function attemptKeys(User $user, string $ip): array
     {
-        return 'kod-deneme:'.$user->id.':'.$ip;
+        return ['kod-deneme:u:'.$user->id, 'kod-deneme:ip:'.$ip];
     }
 
-    private function failureKey(User $user, string $ip): string
+    /**
+     * @return list<string>
+     */
+    private function lockKeys(User $user, string $ip): array
     {
-        return 'kod-hata:'.$user->id.':'.$ip;
+        return [$this->userLockKey($user), $this->ipLockKey($ip)];
     }
 
-    private function lockKey(User $user, string $ip): string
+    private function userFailureKey(User $user): string
     {
-        return 'kod-kilit:'.$user->id.':'.$ip;
+        return 'kod-hata:u:'.$user->id;
+    }
+
+    private function ipFailureKey(string $ip): string
+    {
+        return 'kod-hata:ip:'.$ip;
+    }
+
+    private function userLockKey(User $user): string
+    {
+        return 'kod-kilit:u:'.$user->id;
+    }
+
+    private function ipLockKey(string $ip): string
+    {
+        return 'kod-kilit:ip:'.$ip;
     }
 }

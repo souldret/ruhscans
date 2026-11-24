@@ -4,6 +4,7 @@ namespace App\Services\Economy;
 
 use App\Models\CodeBatch;
 use App\Models\CodeExport;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -37,6 +38,41 @@ class CodeExportStore
         }
 
         return $export;
+    }
+
+    /**
+     * Tek seferlik atomik indirme: paralel isteklerde yalnızca ilk istek CSV içeriğini alır.
+     *
+     * @return array{batch_id: int, csv: string}|null
+     */
+    public function pullAndConsume(string $token): ?array
+    {
+        return DB::transaction(function () use ($token): ?array {
+            $export = CodeExport::query()
+                ->where('token', $token)
+                ->lockForUpdate()
+                ->first();
+
+            if ($export === null) {
+                return null;
+            }
+
+            if ($export->downloaded_at !== null || $export->expires_at->isPast()) {
+                $this->destroy($export);
+
+                return null;
+            }
+
+            $batchId = (int) $export->batch_id;
+            $csv = $this->contents($export);
+
+            $this->destroy($export);
+
+            return [
+                'batch_id' => $batchId,
+                'csv' => $csv,
+            ];
+        });
     }
 
     public function contents(CodeExport $export): string
