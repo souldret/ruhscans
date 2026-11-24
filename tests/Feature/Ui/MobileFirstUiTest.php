@@ -43,7 +43,7 @@ test('profil ve cüzdan sayfaları gece temasında açılır', function () {
         ->withCookie('ruhscans_age_confirmed', '1')
         ->get('/profile')
         ->assertOk()
-        ->assertSee('Hesap ve parola')
+        ->assertSee('Hesap bilgileri')
         ->assertSee('night-grain');
 
     $this->actingAs($user)

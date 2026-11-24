@@ -202,6 +202,15 @@ Test adımları: admin panelinde 8 MB geçerli JPG kapak yükle, 11 MB dosyanın
 - PWA kabuğu: `public/manifest.json`, `public/icons/*`, `public/offline.html` ve yalnızca kabuk/derlenmiş varlıkları önbelleğe alan `public/sw.js` (kapaklar, sayfa görselleri ve +18 içerik asla çevrimdışı önbelleğe alınmaz).
 - Görsel doğrulama ve testler: Playwright ile 4 boyutta (360×800, 390×844, 768×1024, 1280×800) 56 ekran görüntüsü `docs/screenshots/` altına alındı (0 taşma, 0 küçük dokunma hedefi, 0 input font sorunu); `tests/e2e/smoke.spec.cjs` ve `tests/Feature/Ui/MobileFirstUiTest.php` eklendi.
 
+## Profil merkezi yenilemesi (2026-11-24)
+
+- `/profile` sayfası mobil öncelikli sekmeli/kartlı düzenle baştan kuruldu (`ProfileController` + Livewire 3 bileşenleri: `SummaryCard`, `PrivacySettings`, `WalletSummary`, `SessionsManager`, `ReadingHistoryManager` + yükseltilmiş Volt hesap formları).
+- Özet kartı: kare kırpma ve otomatik 256×256 WebP dönüşümlü avatar yükleme (`AvatarService`, R2 özel yol `avatars/{user_id}/{uuid}.webp`, gerçek `finfo` MIME kontrolü, varsayılan gradient avatar), üyelik tarihi, ruh taşı bakiyesi, VIP kalan gün, hızlı "Kod kullan" ve JSON veri indirme butonları.
+- Hesap: Türkçe doğrulama mesajları; e-posta değiştirmede Turnstile + rate limit + **e-posta enumeration koruması** (başkasına ait adreste genel mesaj); şifre değiştirmede 12+ güçlü şifre kuralı + diğer cihaz oturumlarını otomatik kapatma + şifresiz aktivite günlüğü; hesap silmede şifre onayı ve açık silme/anonimleştirme bildirimi (`AccountDeletionService`: kişisel veriler/avatar/oturumlar/kütüphane silinir, mali denetim bütünlüğü için `wallet_transactions.user_id` ve `redeem_codes.kullanan_user_id` `null` yapılarak anonimleştirilir).
+- Gizlilik ve +18: kapak blur, gizli mod ve nötr sekme başlığı (`users.notr_sekme_baslik`) anında kaydolur; panik hedef URL'si `SafePanicUrl` kuralıyla yalnızca güvenli `http://`/`https://` adreslerini kabul eder (javascript/localhost/özel IP reddedilir); etiket kara listesi arama + çip arayüzüyle anında güncellenir.
+- Cüzdan özeti (son 10 hareket + açılan bölümler), aktif cihaz/oturum takibi (`user_sessions` tablosu + `TrackUserSession` middleware — Redis/file/DB tüm oturum sürücüleriyle uyumlu + tekil/"diğer cihazlardan çıkış yap"), okuma geçmişi tek tek silme/toplu temizleme ve rate-limited JSON veri dışa aktarma (`/profile/veri-indir`).
+- Güvenlik ve testler: her uç nokta ve Livewire aksiyonunda yetki ve IDOR koruması, rate limit ve hassas alan hariç aktivite günlüğü; `tests/Feature/Profile/ProfileHubTest.php` eklendi.
+
 ## Kararlar
 
 - Laravel 12 korunur. İçerik şeması migration ile gelir.
