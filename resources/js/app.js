@@ -2,16 +2,23 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('nightShell', (config) => ({
         blur: config.blur,
         stealth: config.stealth,
+        neutralTitle: !!config.neutralTitle,
+        originalTitle: document.title,
         panicUrl: config.panic,
         toasts: [],
         lastEsc: 0,
         installAvailable: false,
         init() {
             document.documentElement.classList.toggle('covers-open', !this.blur);
+            this.applyTabDisguise();
 
             window.addEventListener('prefs-updated', (event) => {
                 this.blur = !!event.detail.blur;
                 this.stealth = !!event.detail.stealth;
+                if (typeof event.detail.neutralTitle !== 'undefined') {
+                    this.neutralTitle = !!event.detail.neutralTitle;
+                    this.applyTabDisguise();
+                }
                 this.panicUrl = event.detail.panic;
                 document.documentElement.classList.toggle('covers-open', !this.blur);
             });
@@ -38,6 +45,16 @@ document.addEventListener('alpine:init', () => {
         setBlur(value) {
             this.blur = !!value;
             document.documentElement.classList.toggle('covers-open', !this.blur);
+        },
+        applyTabDisguise() {
+            const icon = document.querySelector("link[rel='icon']");
+            if (this.neutralTitle) {
+                document.title = 'Yeni sekme';
+                if (icon) icon.setAttribute('href', '/favicon-neutral.svg');
+            } else {
+                document.title = this.originalTitle;
+                if (icon) icon.setAttribute('href', '/favicon.svg');
+            }
         },
         push(message) {
             const id = Date.now() + Math.random();

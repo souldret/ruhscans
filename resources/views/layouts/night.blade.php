@@ -1,3 +1,7 @@
+@php
+    $viewer = auth()->user();
+    $neutralTab = (bool) ($viewer->notr_sekme_baslik ?? false);
+@endphp
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,16 +10,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0B0709">
     <x-seo-meta :meta="$seo ?? ['title' => $title ?? config('seo.site_name')]" />
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ asset($neutralTab ? 'favicon-neutral.svg' : 'favicon.svg') }}" type="image/svg+xml">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
 <body class="night-grain bg-ink pb-24 font-sans text-mist antialiased md:pb-10">
     @php
-        $viewer = auth()->user();
         $shell = [
             'blur' => (bool) ($viewer->kapak_blur ?? true),
             'stealth' => (bool) ($viewer->gizli_mod ?? false),
+            'neutralTitle' => $neutralTab,
             'panic' => $viewer->panik_url ?? app(\App\Services\Ops\SiteOperations::class)->panicUrl(),
         ];
     @endphp

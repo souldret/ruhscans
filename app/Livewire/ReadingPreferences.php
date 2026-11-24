@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Actions\Profile\UpdateReadingPreferences;
 use App\Models\Tag;
+use App\Rules\SafePanicUrl;
 use App\Services\Ops\SiteOperations;
 use App\Services\Seo\MetaBuilder;
 use Illuminate\Contracts\View\View;
@@ -35,7 +36,7 @@ class ReadingPreferences extends Component
         $validated = $this->validate([
             'kapak_blur' => ['boolean'],
             'gizli_mod' => ['boolean'],
-            'panik_url' => ['required', 'url', 'max:255'],
+            'panik_url' => ['required', 'string', 'max:255', new SafePanicUrl],
             'etiket_karaliste' => ['array'],
             'etiket_karaliste.*' => ['string', 'max:80'],
         ]);

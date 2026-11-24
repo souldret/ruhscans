@@ -18,7 +18,7 @@
                 <a class="tap-target rounded-xl px-3 text-base transition-colors {{ $isActive('library') ? 'text-magenta' : 'text-mist/80 hover:text-magenta' }}" href="{{ route('library') }}">Kütüphane</a>
                 <a class="tap-target rounded-xl px-3 text-base transition-colors {{ $isActive('wallet.show') ? 'text-magenta' : 'text-mist/80 hover:text-magenta' }}" href="{{ route('wallet.show') }}">Cüzdan</a>
                 <a class="tap-target rounded-xl px-3 text-base transition-colors {{ $isActive('reader.history') ? 'text-magenta' : 'text-mist/80 hover:text-magenta' }}" href="{{ route('reader.history') }}">Geçmiş</a>
-                <a class="tap-target rounded-xl px-3 text-base transition-colors {{ $isActive('preferences', 'profile') ? 'text-magenta' : 'text-mist/80 hover:text-magenta' }}" href="{{ route('preferences') }}">Profil</a>
+                <a class="tap-target rounded-xl px-3 text-base transition-colors {{ $isActive('preferences', 'profile') ? 'text-magenta' : 'text-mist/80 hover:text-magenta' }}" href="{{ route('profile') }}">Profil</a>
                 @if ($panelUser)
                     <a class="tap-target rounded-xl px-3 text-base text-gold transition-colors hover:text-magenta" href="{{ url('/admin') }}">Admin</a>
                 @endif
@@ -91,7 +91,7 @@
 
         <a
             class="font-medium transition-colors {{ $isActive('preferences', 'profile', 'wallet.show', 'reader.history') ? 'text-magenta' : 'text-mist/65 hover:text-mist' }}"
-            href="{{ auth()->check() ? route('preferences') : route('login') }}"
+            href="{{ auth()->check() ? route('profile') : route('login') }}"
             aria-label="Profil"
             @if ($isActive('preferences', 'profile', 'wallet.show', 'reader.history')) aria-current="page" @endif
         >
