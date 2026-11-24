@@ -34,9 +34,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'avatar_path',
         'password',
         'vip_bitis',
         'gizli_mod',
+        'notr_sekme_baslik',
         'kapak_blur',
         'etiket_karaliste',
         'panik_url',
@@ -62,6 +64,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'password' => 'hashed',
             'vip_bitis' => 'datetime',
             'gizli_mod' => 'boolean',
+            'notr_sekme_baslik' => 'boolean',
             'kapak_blur' => 'boolean',
             'etiket_karaliste' => 'array',
             'panik_url' => 'string',
@@ -92,10 +95,29 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
  return $this->hasMany(ChapterUnlock::class);
  }
 
- public function redeemedCodes(): HasMany
- {
- return $this->hasMany(RedeemCode::class, 'kullanan_user_id');
- }
+    public function redeemedCodes(): HasMany
+    {
+        return $this->hasMany(RedeemCode::class, 'kullanan_user_id');
+    }
+
+    public function trackedSessions(): HasMany
+    {
+        return $this->hasMany(UserSession::class);
+    }
+
+    public function vipRemainingDays(): int
+    {
+        if (! $this->isVip()) {
+            return 0;
+        }
+
+        return max(1, (int) ceil(now()->diffInHours($this->vip_bitis) / 24));
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return app(\App\Services\Profile\AvatarService::class)->url($this);
+    }
 
  protected static function booted(): void
  {
@@ -131,7 +153,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'gizli_mod', 'kapak_blur'])
+            ->logOnly(['name', 'email', 'gizli_mod', 'notr_sekme_baslik', 'kapak_blur'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

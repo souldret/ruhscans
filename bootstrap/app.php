@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAdult;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrackUserSession;
 use App\Http\Middleware\TrustCloudflareProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             EnsureAdult::class,
+            TrackUserSession::class,
             SecurityHeaders::class,
         ]);
 

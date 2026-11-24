@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalNoticeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\RedeemCodeController;
 use App\Http\Controllers\SeoController;
@@ -63,9 +64,13 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::get('/profile/veri-indir', [ProfileController::class, 'export'])
+        ->middleware('throttle:5,10')
+        ->name('profile.export');
+    Route::get('/profile/avatar/{user}', [ProfileController::class, 'avatar'])->name('profile.avatar');
+});
 
 Route::middleware('auth')->prefix('admin/zip')->name('admin.zip.direct.')->group(function () {
     Route::post('/presign', [DirectZipUploadController::class, 'presign'])->name('presign');
