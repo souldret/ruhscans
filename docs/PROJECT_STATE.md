@@ -211,6 +211,16 @@ Test adımları: admin panelinde 8 MB geçerli JPG kapak yükle, 11 MB dosyanın
 - Cüzdan özeti (son 10 hareket + açılan bölümler), aktif cihaz/oturum takibi (`user_sessions` tablosu + `TrackUserSession` middleware — Redis/file/DB tüm oturum sürücüleriyle uyumlu + tekil/"diğer cihazlardan çıkış yap"), okuma geçmişi tek tek silme/toplu temizleme ve rate-limited JSON veri dışa aktarma (`/profile/veri-indir`).
 - Güvenlik ve testler: her uç nokta ve Livewire aksiyonunda yetki ve IDOR koruması, rate limit ve hassas alan hariç aktivite günlüğü; `tests/Feature/Profile/ProfileHubTest.php` eklendi.
 
+## Tam güvenlik denetimi ve sertleştirme (2026-11-24)
+
+- Ayrıntılı bulgu, rota envanteri ve sunucu kontrol listesi `docs/SECURITY_AUDIT.md` dosyasına yazıldı.
+- `TrustCloudflareProxies` ve `TurnstileService` sertleştirildi: `TRUSTED_PROXIES=*` kaldırıldı, resmi Cloudflare IPv4/IPv6 CIDR aralıkları varsayılan yapıldı; güvenilmeyen kaynaklardan gelen `CF-Connecting-IP` başlığı artık yok sayılır.
+- `CodeRedeemer` kullanıcı bazlı + IP bazlı çift hız sınırı/kilit ve sabit maliyetli HMAC zamanlama koruması ile güçlendirildi.
+- `CodeExportStore::pullAndConsume` ile tek seferlik kod CSV indirmesi `DB::transaction` + `lockForUpdate()` altında atomik hale getirildi ve aktivite günlüğüne bağlandı.
+- `AgeGateController` açık yönlendirme önek atlatması (`ruhscans.com.evil.com`), `seo-meta` JSON-LD `</script>` XSS vektörü, `forgot-password` e-posta numaralandırması ve `HorizonServiceProvider` engelli admin kontrolü düzeltildi.
+- `reader.unlock`, `reader.progress`, `reader.mode`, `age-gate.confirm`, `admin.zip.direct.*` ve `admin.codes.csv` rotalarına hız sınırı eklendi; üretimde `SESSION_SECURE_COOKIE` varsayılan `true`, CSP `object-src 'none'` ve `Cross-Origin-Opener-Policy: same-origin` eklendi.
+- Saatlik çalışan `php artisan economy:verify` ledger tutarlılık komutu ve canlı doğrulama betiği `scripts/security-smoke.sh` eklendi; `tests/Feature/Security/SecurityAuditTest.php` ile doğrulandı.
+
 ## Kararlar
 
 - Laravel 12 korunur. İçerik şeması migration ile gelir.

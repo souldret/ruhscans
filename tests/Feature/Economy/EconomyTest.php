@@ -290,9 +290,12 @@ PHP);
 
 test('on yanlış denemeden sonra kilitlenir ve dakika sınırı çalışır', function () {
     $user = User::factory()->create();
-    RateLimiter::clear('kod-deneme:'.$user->id.':127.0.0.1');
-    RateLimiter::clear('kod-hata:'.$user->id.':127.0.0.1');
-    RateLimiter::clear('kod-kilit:'.$user->id.':127.0.0.1');
+    RateLimiter::clear('kod-deneme:u:'.$user->id);
+    RateLimiter::clear('kod-deneme:ip:127.0.0.1');
+    RateLimiter::clear('kod-hata:u:'.$user->id);
+    RateLimiter::clear('kod-hata:ip:127.0.0.1');
+    RateLimiter::clear('kod-kilit:u:'.$user->id);
+    RateLimiter::clear('kod-kilit:ip:127.0.0.1');
 
     foreach (range(1, 5) as $attempt) {
         $this->actingAs($user)
@@ -304,7 +307,8 @@ test('on yanlış denemeden sonra kilitlenir ve dakika sınırı çalışır', f
         ->post(route('wallet.redeem'), ['kod' => 'RUH-ZZZZ-YYYY-XXXX-VVVV'])
         ->assertSessionHasErrors(['kod' => 'Çok hızlı deniyorsun. Bir dakika bekle.']);
 
-    RateLimiter::clear('kod-deneme:'.$user->id.':127.0.0.1');
+    RateLimiter::clear('kod-deneme:u:'.$user->id);
+    RateLimiter::clear('kod-deneme:ip:127.0.0.1');
 
     foreach (range(1, 5) as $attempt) {
         $this->actingAs($user)
