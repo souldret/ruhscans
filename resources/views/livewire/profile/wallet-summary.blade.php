@@ -48,7 +48,7 @@
                         </p>
                         <p class="text-sm text-mist/60">
                             @if ($chapter)
-                                Bölüm {{ $chapter->number }} ·
+                                Bölüm {{ $chapter->display_number }} ·
                             @endif
                             {{ $unlock->created_at?->timezone(config('app.timezone'))->format('d.m.Y H:i') }}
                         </p>

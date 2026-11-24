@@ -19,7 +19,7 @@
                         <x-cover-card
                             :series="$entry->series"
                             fluid
-                            :subtitle="$entry->rating ? '★ '.$entry->rating.'/5' : ($entry->lastChapter ? 'Bölüm '.$entry->lastChapter->number : null)"
+                            :subtitle="$entry->rating ? '★ '.$entry->rating.'/5' : ($entry->lastChapter ? 'Bölüm '.$entry->lastChapter->display_number : null)"
                         />
                     </li>
                 @endforeach

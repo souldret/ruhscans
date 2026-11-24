@@ -103,7 +103,7 @@
     }
 
     .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-base font-medium transition;
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-base font-medium transition active:scale-[0.98];
     }
 
     .btn-magenta {
@@ -216,9 +216,9 @@
         .library-grid { grid-template-columns: repeat(6, 1fr); }
     }
 
-    /* Seri sayfası sabit buton — alttan nav + safe-area hesabı */
+    /* Seri sayfası sabit buton — alttan nav (58px) + safe-area hesabı */
     .series-cta-bar {
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 4rem); /* 4rem = bottom-nav yüksekliği */
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 58px);
     }
     @media (min-width: 768px) {
         .series-cta-bar { bottom: 0; }

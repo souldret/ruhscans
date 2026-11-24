@@ -66,6 +66,17 @@ class Chapter extends Model
         return $this->morphMany(Report::class, 'reportable');
     }
 
+    public function getDisplayNumberAttribute(): string
+    {
+        $raw = (string) $this->number;
+
+        if (! str_contains($raw, '.')) {
+            return $raw;
+        }
+
+        return rtrim(rtrim($raw, '0'), '.');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();

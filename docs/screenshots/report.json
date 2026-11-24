@@ -422,12 +422,12 @@
   {
     "vp": "768x1024",
     "page": "forgot",
-    "status": 200,
+    "status": 429,
     "scrollWidth": 768,
     "clientWidth": 768,
     "overflow": 0,
     "bodyFont": 16,
-    "minInputFont": 16,
+    "minInputFont": null,
     "smallTargetCount": 0,
     "smallTargets": []
   },
@@ -578,24 +578,24 @@
   {
     "vp": "1280x800",
     "page": "register",
-    "status": 429,
+    "status": 200,
     "scrollWidth": 1280,
     "clientWidth": 1280,
     "overflow": 0,
     "bodyFont": 16,
-    "minInputFont": null,
+    "minInputFont": 16,
     "smallTargetCount": 0,
     "smallTargets": []
   },
   {
     "vp": "1280x800",
     "page": "forgot",
-    "status": 429,
+    "status": 200,
     "scrollWidth": 1280,
     "clientWidth": 1280,
     "overflow": 0,
     "bodyFont": 16,
-    "minInputFont": null,
+    "minInputFont": 16,
     "smallTargetCount": 0,
     "smallTargets": []
   },

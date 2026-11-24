@@ -12,9 +12,17 @@
                         x-ref="ara"
                         type="search"
                         placeholder="Başlık veya alternatif ad"
-                        class="h-12 w-full rounded-2xl border-white/10 bg-ink pl-12 pr-4 text-base text-mist placeholder:text-mist/45 focus:border-magenta focus:ring-magenta"
+                        class="h-12 w-full rounded-2xl border-white/10 bg-ink pl-12 pr-11 text-base text-mist placeholder:text-mist/45 focus:border-magenta focus:ring-magenta"
                         @if (request('odak') === 'ara') autofocus @endif
                     >
+                    @if ($q !== '')
+                        <button
+                            type="button"
+                            wire:click="$set('q', '')"
+                            class="tap-target absolute right-1 top-1/2 -translate-y-1/2 rounded-full px-2 text-lg text-mist/60 hover:text-magenta"
+                            aria-label="Aramayı temizle"
+                        >×</button>
+                    @endif
                 </label>
                 @php
                     $activeFilterCount = collect([$type, $status, $level])->filter()->count();
@@ -54,6 +62,30 @@
                 <button type="button" wire:click="resetFilters" class="tap-target ml-auto text-base text-gold">Filtreleri temizle</button>
             @endif
         </div>
+
+        @if ($type !== '' || $status !== '' || $level !== '')
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+                @if ($type !== '')
+                    <button type="button" wire:click="$set('type', '')" class="tap-target inline-flex items-center gap-1.5 rounded-full border border-magenta/50 bg-wine/50 px-3.5 text-sm text-mist">
+                        <span>Tür: {{ \App\Enums\SeriesType::tryFrom($type)?->label() ?? $type }}</span>
+                        <span aria-hidden="true">×</span>
+                    </button>
+                @endif
+                @if ($status !== '')
+                    <button type="button" wire:click="$set('status', '')" class="tap-target inline-flex items-center gap-1.5 rounded-full border border-magenta/50 bg-wine/50 px-3.5 text-sm text-mist">
+                        <span>Durum: {{ \App\Enums\SeriesStatus::tryFrom($status)?->label() ?? $status }}</span>
+                        <span aria-hidden="true">×</span>
+                    </button>
+                @endif
+                @if ($level !== '')
+                    <button type="button" wire:click="$set('level', '')" class="tap-target inline-flex items-center gap-1.5 rounded-full border border-magenta/50 bg-wine/50 px-3.5 text-sm text-mist">
+                        <span>Seviye: {{ \App\Enums\ContentLevel::tryFrom($level)?->label() ?? $level }}</span>
+                        <span aria-hidden="true">×</span>
+                    </button>
+                @endif
+                <button type="button" wire:click="resetFilters" class="tap-target px-2 text-sm text-gold hover:underline">Tümünü temizle</button>
+            </div>
+        @endif
 
         <p class="mt-4 text-base text-mist/60" aria-live="polite" wire:loading.remove>
             {{ $series->total() }} seri bulundu

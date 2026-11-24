@@ -28,7 +28,7 @@
                 <div class="min-w-0 flex-1">
                     <p class="truncate text-base font-medium text-mist">{{ $entry->series?->title ?? 'Seri' }}</p>
                     <p class="mt-0.5 text-sm text-mist/60">
-                        Bölüm {{ $entry->lastChapter?->number }}
+                        Bölüm {{ $entry->lastChapter?->display_number }}
                         @if ($entry->last_page_order)
                             · sayfa {{ $entry->last_page_order }}
                         @endif

@@ -14,7 +14,7 @@
             'previousUrl' => isset($neighbors['previous']) ? route('reader.show', [$series, $neighbors['previous']->number]) : null,
             'seriesUrl' => route('series.show', $series),
             'panicUrl' => $viewer->panik_url ?? app(\App\Services\Ops\SiteOperations::class)->panicUrl(),
-            'title' => 'Bölüm '.$chapter->number.($chapter->title ? ' · '.$chapter->title : ''),
+            'title' => 'Bölüm '.$chapter->display_number.($chapter->title && mb_strtolower(trim($chapter->title)) !== mb_strtolower('Bölüm '.$chapter->display_number) ? ' · '.$chapter->title : ''),
             'seriesTitle' => $series->title,
         ];
     @endphp
@@ -78,7 +78,18 @@
             </section>
         @else
             <div class="px-0 pb-32 pt-20 sm:px-4">
-                <div x-show="mode === 'webtoon'" x-cloak class="space-y-0.5">
+                <div x-show="loading" class="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+                    <x-stone class="h-8 w-8" />
+                    <p class="text-base text-mist/70">Sayfalar hazırlanıyor…</p>
+                </div>
+
+                <div x-show="!loading && loadError" x-cloak class="glass mx-4 my-12 rounded-3xl p-6 text-center">
+                    <p class="font-display text-2xl text-mist">Sayfalar yüklenemedi</p>
+                    <p class="mt-2 text-base text-mist/70">Bağlantı geçici olarak kesilmiş olabilir.</p>
+                    <button type="button" @click="reloadPages()" class="btn-magenta tap-target mt-5 px-6 text-base font-semibold">Yeniden dene</button>
+                </div>
+
+                <div x-show="!loading && !loadError && mode === 'webtoon'" x-cloak class="space-y-0.5">
                     <template x-for="page in pages" :key="page.order">
                         <figure
                             class="reader-page mx-auto w-full max-w-3xl bg-surface/40"

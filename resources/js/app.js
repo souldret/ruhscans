@@ -80,6 +80,8 @@ document.addEventListener('alpine:init', () => {
         stealth: !!boot.stealth,
         locked: !!boot.locked,
         pages: [],
+        loading: true,
+        loadError: false,
         watermark: null,
         index: 0,
         focus: false,
@@ -100,12 +102,28 @@ document.addEventListener('alpine:init', () => {
             document.body.classList.add('reader-open');
 
             if (this.locked) {
+                this.loading = false;
                 return;
             }
 
+            await this.reloadPages();
+        },
+        async reloadPages() {
+            this.loading = true;
+            this.loadError = false;
+
             const stored = this.stealth ? null : localStorage.getItem(this.storageKey());
             const start = stored ? Number(stored) : Number(boot.startPage || 1);
-            this.pages = await this.load(boot.pagesUrl);
+
+            try {
+                this.pages = await this.load(boot.pagesUrl);
+            } catch (error) {
+                this.loadError = true;
+                this.loading = false;
+                return;
+            }
+
+            this.loading = false;
 
             if (!this.pages.length) {
                 return;

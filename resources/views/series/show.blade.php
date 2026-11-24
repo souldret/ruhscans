@@ -36,7 +36,7 @@
                 <div class="mt-6 flex flex-wrap items-center gap-3">
                     @if ($readUrl)
                         <a href="{{ $readUrl }}" class="btn-magenta tap-target hidden px-7 py-3 text-base font-semibold md:inline-flex">
-                            {{ $entry?->lastChapter ? 'Kaldığın yerden devam et · Bölüm '.$entry->lastChapter->number : 'Okumaya başla' }}
+                            {{ $entry?->lastChapter ? 'Kaldığın yerden devam et · Bölüm '.$entry->lastChapter->display_number : 'Okumaya başla' }}
                         </a>
                     @endif
                     <livewire:series-shelf :series="$series" />
@@ -47,10 +47,10 @@
 
     {{-- Büyük sabit okuma butonu (mobilde bottom-nav üstünde) --}}
     @if ($readUrl)
-        <div class="glass series-cta-bar fixed inset-x-0 z-20 border-t border-white/10 md:hidden">
-            <div class="mx-auto max-w-6xl px-4 py-2.5">
+        <div class="glass series-cta-bar fixed inset-x-0 z-20 border-t border-white/10 shadow-[0_-8px_24px_rgba(0,0,0,0.5)] md:hidden">
+            <div class="mx-auto max-w-6xl px-4 py-2">
                 <a href="{{ $readUrl }}" class="btn-magenta tap-target h-12 w-full text-base font-semibold">
-                    {{ $entry?->lastChapter ? 'Kaldığın yerden devam et · Bölüm '.$entry->lastChapter->number : 'Okumaya başla' }}
+                    {{ $entry?->lastChapter ? 'Devam et · Bölüm '.$entry->lastChapter->display_number : 'Okumaya başla' }}
                 </a>
             </div>
         </div>
@@ -66,11 +66,15 @@
                 @php
                     $locked = $chapter->ruh_tasi_fiyat > 0;
                     $early = $chapter->erken_erisim_bitis && $chapter->erken_erisim_bitis->isFuture();
+                    $chapterLabel = 'Bölüm '.$chapter->display_number;
+                    $hasDistinctTitle = filled($chapter->title) && mb_strtolower(trim($chapter->title)) !== mb_strtolower($chapterLabel);
                 @endphp
-                <li class="flex items-center justify-between gap-3 py-2">
+                <li class="-mx-3 flex items-center justify-between gap-3 rounded-2xl px-3 py-1.5 transition hover:bg-white/[0.03]">
                     <a class="tap-target flex min-w-0 flex-1 !justify-start py-2 text-left" href="{{ route('reader.show', [$series, $chapter->number]) }}">
                         <span class="min-w-0">
-                            <span class="block truncate text-base font-medium text-mist">Bölüm {{ $chapter->number }} @if($chapter->title)<span class="text-mist/70">· {{ $chapter->title }}</span>@endif</span>
+                            <span class="block truncate text-base font-medium text-mist">
+                                {{ $chapterLabel }}@if($hasDistinctTitle)<span class="font-normal text-mist/70"> · {{ $chapter->title }}</span>@endif
+                            </span>
                             <span class="block text-sm text-mist/55">{{ optional($chapter->published_at)->translatedFormat('d M Y') }}</span>
                         </span>
                     </a>
@@ -84,6 +88,7 @@
                         @if ($early)
                             <span class="badge-new">Erken</span>
                         @endif
+                        <span class="ml-1 text-mist/35" aria-hidden="true">›</span>
                     </div>
                 </li>
             @empty

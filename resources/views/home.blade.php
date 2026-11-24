@@ -17,10 +17,10 @@
             aria-hidden="true"
             :style="covers[index] ? `background-image:url('${covers[index]}');background-size:cover` : ''"
         ></div>
-        <div class="relative mx-auto max-w-6xl px-4 pb-6 pt-8 sm:pt-12">
-            <p class="text-sm uppercase tracking-[0.28em] text-magenta">Gece kütüphanesi</p>
-            <h1 class="mt-3 max-w-xl font-display text-4xl leading-tight sm:text-6xl"><span class="sr-only">Ruhscans. </span>Bu gece rafta ne var?</h1>
-            <p class="mt-4 max-w-lg text-base text-mist/75">Yeni bölümler, trend seriler ve kaldığın yer — hepsi tek rafta.</p>
+        <div class="relative mx-auto max-w-6xl px-4 pb-5 pt-6 sm:pb-6 sm:pt-10">
+            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-magenta">Gece kütüphanesi</p>
+            <h1 class="mt-2 max-w-xl font-display text-3xl leading-tight sm:text-5xl"><span class="sr-only">Ruhscans. </span>Bu gece rafta ne var?</h1>
+            <p class="mt-2.5 max-w-lg text-base text-mist/75">Yeni bölümler, trend seriler ve kaldığın yer — hepsi tek rafta.</p>
         </div>
 
         @if ($showcase->isEmpty())
@@ -89,11 +89,25 @@
                         </x-slot:action>
                     </x-empty-state>
                 @else
-                    <div class="strip no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-2">
+                    <div class="strip no-scrollbar mt-4 flex gap-3.5 overflow-x-auto pb-2">
                         @foreach ($continue as $entry)
-                            <a class="glass w-64 shrink-0 rounded-2xl p-4 sm:w-72" href="{{ $entry->lastChapter ? route('reader.show', [$entry->series, $entry->lastChapter->number]) : route('series.show', $entry->series) }}">
-                                <p class="text-sm text-magenta">Bölüm {{ $entry->lastChapter?->number }}</p>
-                                <h3 class="mt-2 font-display text-xl">{{ $entry->series->title }}</h3>
+                            <a class="glass group flex w-72 shrink-0 items-center gap-3.5 rounded-2xl p-3 transition hover:border-magenta/40 sm:w-80" href="{{ $entry->lastChapter ? route('reader.show', [$entry->series, $entry->lastChapter->number]) : route('series.show', $entry->series) }}">
+                                <div class="cover-frame relative w-14 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-surface">
+                                    @if ($entry->series->cover_path)
+                                        <img src="{{ $entry->series->coverSmallUrl }}" alt="" width="56" height="84" loading="lazy" class="cover-art h-full w-full object-cover">
+                                    @else
+                                        <div class="cover-art flex h-full w-full items-center justify-center bg-gradient-to-br from-wine via-surface to-ink">
+                                            <x-stone class="h-4 w-4 opacity-70" />
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold uppercase tracking-wider text-magenta">
+                                        {{ $entry->lastChapter ? 'Bölüm '.$entry->lastChapter->display_number : 'Kütüphanede' }}
+                                    </p>
+                                    <h3 class="mt-1 truncate font-display text-lg text-mist group-hover:text-magenta">{{ $entry->series->title }}</h3>
+                                    <p class="mt-1 text-xs text-mist/60">Devam et →</p>
+                                </div>
                             </a>
                         @endforeach
                     </div>
@@ -112,7 +126,7 @@
                 <ul class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                     @foreach ($fresh as $chapter)
                         <li>
-                            <x-cover-card :series="$chapter->series" fluid :subtitle="'Bölüm ' . $chapter->number" />
+                            <x-cover-card :series="$chapter->series" fluid :subtitle="'Bölüm ' . $chapter->display_number" />
                         </li>
                     @endforeach
                 </ul>

@@ -52,7 +52,8 @@ test('navigation menu can be rendered', function () {
 
     $response
         ->assertOk()
-        ->assertSeeVolt('layout.navigation');
+        ->assertSee('Ana menü')
+        ->assertSee('Mobil menü');
 });
 
 test('users can logout', function () {
